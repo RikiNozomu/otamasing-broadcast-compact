@@ -16,6 +16,8 @@ import { Field, inputClass } from "../components/Field";
 import { Section, hintClass } from "../components/Section";
 import { Switch } from "../components/Switch";
 import { FlagPicker } from "./FlagPicker";
+import { CardPagesSection } from "./CardPagesSection";
+import { pageOfHorse, showCardPage } from "../lib/cardPages";
 
 const SCHEME_LABEL: Record<Scheme, string> = { jra: "JRA 8 สีตามซอง", us: "อเมริกา (Saddle towel)", plain: "ไม่มีสี (กรอบขาว)", custom: "Custom" };
 const NO_SCHEME_LABEL: Record<Scheme, string> = { ...SCHEME_LABEL, jra: "JRA ตามซองของม้า" };
@@ -43,7 +45,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
   const S = race.style;
   const n = race.runners.length;
   const showCustom = S.drawScheme === "custom" || S.numberScheme === "custom";
-  const text = (k: "name" | "jpName" | "subtitle" | "course" | "round" | "postTime" | "date", label: string, extra: Record<string, string> = {}) => (
+  const text = (k: "name" | "course" | "round" | "postTime" | "date", label: string, extra: Record<string, string> = {}) => (
     <Field id={`f-${k}`} label={label}>
       <input className={inputClass} id={`f-${k}`} value={race[k]} {...extra} onChange={(e) => set({ [k]: e.target.value } as Partial<Race>)} />
     </Field>
@@ -101,8 +103,6 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
           <PhotoSetEditor race={race} view="card" />
           <Section title="ข้อมูลรายการ">
             {text("name", "ชื่อรายการ")}
-            {text("jpName", "ชื่อญี่ปุ่น")}
-            {text("subtitle", "บรรทัดรอง")}
             {text("date", "วันที่", { type: "date" })}
             {text("round", "เลขรอบ", { maxLength: "12", placeholder: "เช่น 11R, R11, Main" })}
             {text("postTime", "เวลาออกตัว", { placeholder: "15:40" })}
@@ -115,6 +115,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             <Switch on={race.jump} label="Jump race (ขึ้น J- หน้าเกรด)" onToggle={() => set({ jump: !race.jump })} />
             {select("f-class", "Class", race.class ?? "", (v) => set({ class: (v || null) as RaceClass | null }), [["", "ไม่มี"], ...(Object.keys(CLASSES) as RaceClass[]).map((c): [string, string] => [c, CLASS_LABEL[c]])])}
           </Section>
+          <CardPagesSection race={race} />
           <Section title="ไฮไลต์ม้าบนจอ (กดซ้ำเพื่อเอาออก)">
             <div className="grid grid-cols-8 gap-1">
               {race.runners.map((h) => {
@@ -122,7 +123,9 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
                 return (
                   <button key={h.number} type="button" data-h={h.number} aria-pressed={on} disabled={h.scratched}
                     className={cx("border-2 py-[3px] font-display text-[17px] font-bold disabled:opacity-35", on ? "border-yellow bg-yellow text-navy" : "border-white bg-navy text-white")}
-                    onClick={() => set({ highlight: on ? null : h.number })}>{h.number}</button>
+                    onClick={() => updateRace(race.id, (r) => ({ ...r, highlight: on ? null : h.number,
+                      // turn the racecard to the page with the highlighted horse
+                      card: on ? r.card : showCardPage(r, pageOfHorse(r, h.number)) }))}>{h.number}</button>
                 );
               })}
             </div>
@@ -195,7 +198,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             </select>
           </Section>
           <Section title="แสดงบนการ์ด">
-            {([["draw", "ช่อง DRAW (ซอง)"], ["grade", "ป้ายเกรด"], ["class", "ป้าย Class"], ["fav", "ป้าย Fav (อันดับตัวเต็ง)"], ["horseFlag", "ธงชาติม้า"], ["jockeyFlag", "ธงชาติจ็อกกี้"], ["jpName", "ชื่อภาษาญี่ปุ่นบรรทัดบน"]] as const).map(([k, label]) => (
+            {([["draw", "ช่อง DRAW (ซอง)"], ["grade", "ป้ายเกรด"], ["class", "ป้าย Class"], ["fav", "ป้าย Fav (อันดับตัวเต็ง)"], ["horseFlag", "ธงชาติม้า"], ["jockeyFlag", "ธงชาติจ็อกกี้"]] as const).map(([k, label]) => (
               <Switch key={k} on={S.show[k]} label={label} testId={`show-${k}`} onToggle={() => setStyle((s) => ({ ...s, show: { ...s.show, [k]: !s.show[k] } }))} />
             ))}
           </Section>

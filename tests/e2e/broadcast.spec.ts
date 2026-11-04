@@ -15,8 +15,11 @@ test("first open seeds the sample and the overlay shows the Active race", async 
   const { dock, overlay } = await open(context);
   await expect(dock.getByTestId("active-tag")).toHaveText("Active: 11R");
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Cup");
-  await expect(overlay.locator("[data-layer][data-active] [data-no]")).toHaveCount(18);
+  // 18 runners: 10 a page
+  await expect(overlay.locator("[data-layer][data-active] [data-no]")).toHaveCount(10);
   await expect(overlay.locator("[data-layer][data-active] [data-no][data-hl=on]")).toHaveAttribute("data-no", "9");
+  // the title is on top: name with the grade badge after it, then date · round · course · distance
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-facts]")).toHaveText(/2026\.11\.29.*11R.*Tokyo.*2400/i);
 });
 
 test("setting home or another race Active switches the overlay with a transition", async ({ context }) => {
@@ -37,7 +40,7 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
   await dock.getByLabel("ชื่อรายการ").fill("Edited Cup");
   await dock.getByLabel("เลขรอบ").fill("Main");
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Edited Cup");
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-facts]")).toContainText("Main Tokyo");
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-facts]")).toContainText(/Main.*Tokyo/);
   await dock.locator("[data-h='3']").click();
   await expect(overlay.locator("[data-layer][data-active] [data-no][data-hl=on]")).toHaveAttribute("data-no", "3");
   await expect(overlay.locator("[data-layer][data-active] [data-no][data-hl=out]")).toHaveAttribute("data-no", "9");
@@ -186,10 +189,10 @@ test("a save that leaves an empty file is reported, and an empty file is named o
 test("a name too long for its box is squeezed sideways, not cut with an ellipsis", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  await dock.getByLabel("ชื่อม้าเบอร์ 1", { exact: true }).fill("Onesmoothoperator Extraordinaire");
+  await dock.getByLabel("ชื่อม้าเบอร์ 1", { exact: true }).fill("Onesmoothoperator Extraordinaire Of The Northern Lantern Valley");
   const cell = overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse]");
   const text = cell.locator("[data-fit]");
-  await expect(text).toHaveText("ONESMOOTHOPERATOR EXTRAORDINAIRE");
+  await expect(text).toHaveText("ONESMOOTHOPERATOR EXTRAORDINAIRE OF THE NORTHERN LANTERN VALLEY");
   const k = Number(await text.getAttribute("data-fit"));
   expect(k).toBeGreaterThan(0.3);
   expect(k).toBeLessThan(1);
@@ -201,12 +204,34 @@ test("a name too long for its box is squeezed sideways, not cut with an ellipsis
   await expect(cell.locator("[data-fit]")).toHaveCount(0);
 });
 
-test("two-column card for more than 18 runners", async ({ context }) => {
+test("racecard: 10 horses a page, turned from the dock or by itself, and a highlight opens its page", async ({ context }) => {
   const { dock, overlay } = await open(context);
+  const live = overlay.locator("[data-layer][data-active] [data-testid=racecard]");
+  const nos = () => live.locator("[data-no]").evaluateAll((els) => els.map((e) => Number(e.getAttribute("data-no"))));
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await expect(dock.getByTestId("card-auto")).toHaveAttribute("aria-checked", "true");
+  await dock.getByTestId("card-auto").click();
+  await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 2" }).click();
+  await expect(live).toHaveAttribute("data-page", "2");
+  await expect.poll(nos).toEqual([11, 12, 13, 14, 15, 16, 17, 18]);
+  // more horses: a third page
   for (let i = 0; i < 4; i++) await dock.getByRole("button", { name: "+ เพิ่มม้า" }).click();
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=runner-column]")).toHaveCount(2);
-  await expect(overlay.locator("[data-layer][data-active] [data-no]")).toHaveCount(22);
+  await expect(dock.getByTestId("card-pages").getByRole("button")).toHaveCount(3);
+  // highlighting a horse turns to its page
+  await dock.locator("[data-h='4']").click();
+  await expect(live).toHaveAttribute("data-page", "1");
+  await expect(live.locator("[data-no][data-hl=on]")).toHaveAttribute("data-no", "4");
+  // the quick page buttons under the Active race in the races tab
+  await dock.getByRole("tab", { name: "รายการแข่งขัน" }).click();
+  await dock.getByTestId("quick-card-pages").getByRole("button", { name: "หน้ารายชื่อ 3" }).click();
+  await expect(live).toHaveAttribute("data-page", "3");
+  await expect.poll(nos).toEqual([21, 22]);
+  // auto: every second
+  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await dock.getByLabel("เปลี่ยนหน้าทุกกี่วินาที").fill("1");
+  await dock.getByTestId("card-auto").click();
+  await expect(live).toHaveAttribute("data-page", "1", { timeout: 4000 });
+  await expect(live).toHaveAttribute("data-page", "2", { timeout: 4000 });
 });
 
 test("result page: 10 rows a page, locked horses stay on top with the yellow bar", async ({ context }) => {
@@ -267,6 +292,7 @@ test("result pages take turns by themselves every x seconds", async ({ context }
   await expect(first).toHaveText("11th", { timeout: 4000 });
   // off: stays on the page on screen
   await dock.getByTestId("result-auto").click();
+  await overlay.waitForTimeout(1200); // let the rows finish sliding
   const now = await first.textContent();
   await overlay.waitForTimeout(2500);
   await expect(first).toHaveText(now!);
@@ -299,13 +325,15 @@ test("pictures: separate sets for the racecard and the result page, step by hand
   await dock.getByRole("button", { name: "แสดงรูปที่ 1" }).click();
   await expect(dock.getByTestId("photo-pos-card")).toHaveText("1 / 2");
   await expect.poll(shownKey).toBeTruthy();
+  // wait for an earlier picture still fading out (auto was on until just now)
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=photo]")).toHaveCount(1);
   const first = await shownKey();
   await dock.getByRole("button", { name: "รูปถัดไป" }).click();
   await expect(dock.getByTestId("photo-pos-card")).toHaveText("2 / 2");
   await expect.poll(shownKey).not.toBe(first);
   const second = await shownKey();
   // automatic every 1 second
-  await dock.getByLabel("ทุกกี่วินาที").fill("1");
+  await dock.getByLabel("ทุกกี่วินาที", { exact: true }).fill("1");
   await dock.getByTestId("auto-card").click();
   await expect.poll(shownKey, { timeout: 4000 }).toBe(first);
   await expect.poll(shownKey, { timeout: 4000 }).toBe(second);

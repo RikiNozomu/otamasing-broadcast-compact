@@ -9,6 +9,7 @@ import { showPage, useResultPage } from "../lib/results";
 import { HOME_ROWS, paginate } from "../lib/paging";
 import { PageButtons } from "../components/PageButtons";
 import { ExportPanel } from "./ExportPanel";
+import { CardPageButtons } from "./CardPagesSection";
 import { cx } from "../lib/cx";
 import { Button, buttonClass } from "../components/Button";
 import { Field, inputClass } from "../components/Field";
@@ -216,6 +217,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
               </span>
             </div>
             {resultOn && <QuickResultPages race={x} />}
+            {on && !resultOn && <CardPageButtons race={x} className="mt-1 ml-[26px]" testId="quick-card-pages" />}
             </motion.div>
           );
         })}

@@ -1,17 +1,19 @@
-# โอตะม้าซิ่ง Broadcast
+# โอตะม้าซิ่ง Broadcast Compact
+
+ต่อยอดจาก [otamasing-broadcast](https://github.com/RikiNozomu/otamasing-broadcast) โดยเปลี่ยนหน้าตา: ชื่อรายการอยู่ด้านบน (ชื่อ + ป้ายเกรด/Class หลังชื่อ แล้วบรรทัด วันที่ · รอบ · สนาม · ระยะ), ตารางรายชื่อม้าและผลการแข่งขันเต็มความกว้าง หน้าละไม่เกิน 10 แถว เปลี่ยนหน้าอัตโนมัติ และรูปฉากหลังเต็มจอมี gradient ทับ ข้อมูลเก็บแยกจากเว็บเดิม (คนละ localStorage key) ไฟล์ JSON ใช้ร่วมกันได้
 
 แผงควบคุมใน OBS (Custom Browser Dock) กับหน้าจอออกอากาศ (Browser Source) สำหรับ **การ์ดรายชื่อม้า** และ **รายการแข่งขัน** ของโอตะม้าซิ่ง เป็นเว็บ static บน GitHub Pages ไม่มี server ไม่มีล็อกอิน และไม่เกี่ยวกับเกม POG
 
 | หน้า | URL | ใช้ใน OBS เป็น |
 | --- | --- | --- |
-| Dock | `https://rikinozomu.github.io/otamasing-broadcast/#/dock` | Docks → Custom Browser Docks |
-| หน้าจอออกอากาศ | `https://rikinozomu.github.io/otamasing-broadcast/#/overlay` | Sources → Browser ขนาด 1920×1080 (ตัวเดียว) |
+| Dock | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/dock` | Docks → Custom Browser Docks |
+| หน้าจอออกอากาศ | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/overlay` | Sources → Browser ขนาด 1920×1080 (ตัวเดียว) |
 
 ## ใช้งาน
 
 - หน้าจอออกอากาศแสดงสิ่งที่ **Active** อยู่ใน dock: "หน้าแรก" (รายการแข่งขันทั้งหมด) หรือการ์ดรายชื่อม้าของรายการหนึ่ง เปลี่ยน Active แล้วมีทรานซิชัน (Wipe / Slide / Fade / ไม่มี)
 - แท็บ **รายการแข่งขัน**: ตั้ง Active, นำเข้า JSON (เลือกไฟล์ หรือ "วาง JSON" เป็นข้อความ), ส่งออก (บันทึกไฟล์ หรือ "คัดลอก JSON" เพราะ dock ใน OBS บันทึกไฟล์ไม่ได้ ได้ไฟล์ว่าง), เพิ่มเอง, ลาก ⠿ เรียงลำดับ, ลบ, ตั้งค่าหน้าแรก (Title, Sub title, BG, ไฮไลต์รายการ), คัดลอก URL
-- แท็บ **แก้ไข**: เลือกรายการไหนก็ได้ (ไม่ต้อง Active) แก้ **ข้อมูล** (รูป, ชื่อ, เลขรอบ, เวลา, สนาม, พื้น, ระยะ, เกรด, Class, ไฮไลต์ม้า, ตารางม้า 2–30 ตัว พร้อมธง) และ **สไตล์** ของรายการนั้น (สี DRAW/NO. แบบ JRA / อเมริกา / ไม่มีสี / Custom, ป้ายเกรด, เปิด/ปิดแต่ละส่วน)
+- แท็บ **แก้ไข**: เลือกรายการไหนก็ได้ (ไม่ต้อง Active) แก้ **ข้อมูล** (รูป, ชื่อ, เลขรอบ, เวลา, สนาม, พื้น, ระยะ, เกรด, Class, หน้ารายชื่อม้าบนจอ (กดเลขหน้า / วนหน้าอัตโนมัติ), ไฮไลต์ม้า (เปิดหน้าที่มีม้าตัวนั้นให้), ตารางม้า 2–30 ตัว พร้อมธง) และ **สไตล์** ของรายการนั้น (สี DRAW/NO. แบบ JRA / อเมริกา / ไม่มีสี / Custom, ป้ายเกรด, เปิด/ปิดแต่ละส่วน)
 - ข้อมูลเก็บใน localStorage ของเบราว์เซอร์ (รูปเก็บใน IndexedDB) ครั้งแรกจะมีข้อมูลตัวอย่างให้ dock กับหน้าจอใน OBS ใช้ที่เก็บเดียวกันจึงซิงก์กันทันที แต่ OBS แยกจาก Chrome ปกติ ถ้าเตรียมข้อมูลใน Chrome ให้ส่งออก JSON แล้วนำเข้าใน OBS
 - รูปแบบไฟล์ JSON: [docs/race-json.md](docs/race-json.md), ตัวอย่าง [docs/example-race.json](docs/example-race.json), JSON Schema [schema/race.schema.json](schema/race.schema.json)
 
