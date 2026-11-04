@@ -56,6 +56,12 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
 test("a moving highlight bar is never hidden behind the row backgrounds", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  // hold page 1 (18 runners turn pages every 5 s; a turn mid-test would replace row 9 instead of moving its bar)
+  await dock.getByTestId("card-auto").click();
+  await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 1" }).click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=racecard]")).toHaveAttribute("data-page", "1");
+  await expect(overlay.locator("[data-layer][data-active] [data-no='9']")).toHaveAttribute("data-hl", "on");
+  await overlay.waitForTimeout(1000); // rows finished sliding in
   // Sample every frame while the bar grows on row 3 and shrinks on row 9: wherever a bar reaches, it must be the
   // topmost element at the left edge of the horse cell (a cell animating its opacity used to be painted over it).
   const result = overlay.evaluate(() => new Promise<{ samples: Record<string, number>; hidden: number }>((resolve) => {
