@@ -163,7 +163,7 @@ test("export outside OBS downloads the file", async ({ context }) => {
   const { dock } = await open(context);
   await dock.getByRole("button", { name: "ส่งออก", exact: true }).click();
   const [download] = await Promise.all([dock.waitForEvent("download"), dock.getByRole("button", { name: "บันทึกไฟล์…" }).click()]);
-  expect(download.suggestedFilename()).toMatch(/^otamasing-broadcast-.*\.json$/);
+  expect(download.suggestedFilename()).toMatch(/^otamasing-broadcast-compact-.*\.json$/);
   await expect(dock.getByTestId("export-panel").getByRole("status")).toContainText("ดาวน์โหลด");
 });
 

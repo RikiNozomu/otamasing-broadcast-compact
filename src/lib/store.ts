@@ -4,12 +4,13 @@
  * Changes reach other pages through the storage event, a BroadcastChannel, and a 1 s poll as a fallback.
  */
 import { useSyncExternalStore } from "react";
-import { activeExists, HOME, newPhotos, newResult, type AppData } from "./model";
+import { activeExists, HOME, newPhotos, newCard, newResult, type AppData } from "./model";
 import { sampleData } from "./sample";
 import { raceImageKey } from "./images";
 
-export const STORAGE_KEY = "otamasing-broadcast/v1";
-const CHANNEL = "otamasing-broadcast";
+// own keys: this site shares the rikinozomu.github.io origin (and so its storage) with otamasing-broadcast
+export const STORAGE_KEY = "otamasing-broadcast-compact/v1";
+const CHANNEL = "otamasing-broadcast-compact";
 
 let raw: string | null | undefined;
 let cache: AppData | undefined;
@@ -46,6 +47,7 @@ export function getData(): AppData {
   for (const r of data.races) {
     // and before the result pages could turn by themselves
     r.result = { ...newResult(), ...r.result };
+    r.card = { ...newCard(), ...r.card };
     // one picture per race before: it becomes the racecard's first picture
     r.photos ??= { ...newPhotos(), card: { ...newPhotos().card, keys: data.images[raceImageKey(r.id)] ? [raceImageKey(r.id)] : [] } };
     for (const h of r.runners) { h.finish ??= null; h.outcome ??= null; h.time ??= ""; h.margin ??= ""; }

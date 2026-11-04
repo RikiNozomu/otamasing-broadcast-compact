@@ -1,7 +1,7 @@
 /** Tab "รายการแข่งขัน": pick Active (home or a race), import/export, order, delete, home page settings, URL. */
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState, type ReactNode } from "react";
-import { BLANK, exportFile, HOME, mergeImport, newPhotos, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
+import { BLANK, exportFile, HOME, mergeImport, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
 import { setData, update, updateRace, useData, bumpImage } from "../lib/store";
 import { deleteImage, HOME_BG, putImage } from "../lib/images";
 import { sampleRunner } from "../lib/sample";
@@ -86,7 +86,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
     const id = newId();
     update((x) => ({
       ...x,
-      races: [...x.races, { id, date: new Date().toISOString().slice(0, 10), course: "", round: "", postTime: "", name: "New Race", jpName: "", subtitle: "", grade: null, jump: false, class: null, surface: "Turf", distanceM: null, highlight: null, style: newStyle(), result: newResult(), photos: newPhotos(), runners: Array.from({ length: 8 }, (_, i) => ({ ...sampleRunner(i), name: `Horse ${i + 1}`, jockey: "", fav: null })) }],
+      races: [...x.races, { id, date: new Date().toISOString().slice(0, 10), course: "", round: "", postTime: "", name: "New Race", jpName: "", subtitle: "", grade: null, jump: false, class: null, surface: "Turf", distanceM: null, highlight: null, style: newStyle(), result: newResult(), card: newCard(), photos: newPhotos(), runners: Array.from({ length: 8 }, (_, i) => ({ ...sampleRunner(i), name: `Horse ${i + 1}`, jockey: "", fav: null })) }],
     }));
     onEdit(id);
   };
@@ -132,7 +132,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
         <Button variant="primary" onClick={() => fileRef.current?.click()}>นำเข้า JSON</Button>
         <input ref={fileRef} type="file" accept="application/json,.json" hidden data-testid="import-file" onChange={(e) => { pickFile(e.target.files?.[0]); e.target.value = ""; }} />
         <Button onClick={() => { setPending(null); setPaste((p) => (p == null ? "" : null)); }} aria-expanded={paste != null}>วาง JSON</Button>
-        <Button onClick={() => setExportName((x) => (x ? null : `otamasing-broadcast-${stamp()}.json`))} aria-expanded={!!exportName}>ส่งออก</Button>
+        <Button onClick={() => setExportName((x) => (x ? null : `otamasing-broadcast-compact-${stamp()}.json`))} aria-expanded={!!exportName}>ส่งออก</Button>
         <Button onClick={addRace}>+ เพิ่มเอง</Button>
       </div>
       <AnimatePresence>

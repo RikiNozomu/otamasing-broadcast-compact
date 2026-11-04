@@ -1,5 +1,5 @@
 /** Sample data written on first open, so every page shows something straight away. Names are made up. */
-import { HOME, newPhotos, newResult, newStyle, type AppData, type Race, type Runner } from "./model";
+import { HOME, newPhotos, newCard, newResult, newStyle, type AppData, type Race, type Runner } from "./model";
 
 const NAMES = ["Morning Gallop", "Silver Paddock", "Northern Lantern", "Checkered Flag", "Royal Furlong", "Paper Owner", "Gate Seven", "Blue Silks", "Final Furlong", "Yellow Draw", "Navy Plate", "Turf Comet", "Night Rally", "Rising Second", "Cream Headline", "Long Stretch", "Photo Finish", "Last Corner"];
 const JOCKEYS: [string, string][] = [["A. Sample", "JP"], ["B. Example", "JP"], ["C. Rider", "FR"], ["D. Jockey", "JP"], ["E. Saddle", "IT"], ["F. Whip", "JP"], ["G. Stirrup", "GB"], ["H. Reins", "JP"], ["I. Crop", "JP"], ["J. Girth", "IE"], ["K. Bridle", "JP"], ["L. Bit", "JP"], ["M. Halter", "DE"], ["N. Tack", "JP"], ["O. Visor", "JP"], ["P. Blinker", "JP"], ["Q. Hood", "FR"], ["R. Shoe", "JP"]];
@@ -19,9 +19,9 @@ const RESULT_11: [number, string, string][] = [
   [5, "2:25.9", "3"], [16, "2:25.9", "nk"], [8, "2:26.3", "2½"], [13, "2:26.5", "1"],
 ];
 
-const race = (r: Omit<Race, "style" | "highlight" | "runners" | "result" | "photos"> & { n: number }): Race => {
+const race = (r: Omit<Race, "style" | "highlight" | "runners" | "result" | "card" | "photos"> & { n: number }): Race => {
   const { n, ...rest } = r;
-  return { ...rest, highlight: null, style: newStyle(), result: newResult(), photos: newPhotos(), runners: Array.from({ length: n }, (_, i) => sampleRunner(i)) };
+  return { ...rest, highlight: null, style: newStyle(), result: newResult(), card: newCard(), photos: newPhotos(), runners: Array.from({ length: n }, (_, i) => sampleRunner(i)) };
 };
 
 export function sampleData(): AppData {

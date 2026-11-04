@@ -85,6 +85,19 @@ export type ResultView = z.infer<typeof ResultViewSchema>;
 export const newResult = (): ResultView => ResultViewSchema.parse({});
 
 /**
+ * How the racecard pages: at most 10 horses a page, `page` on screen at time `since`; with `auto`
+ * the pages take turns every `seconds` (like the result page).
+ */
+export const CardViewSchema = z.object({
+  page: z.number().int().min(0).default(0),
+  auto: z.boolean().default(true),
+  seconds: z.number().min(1).max(600).default(5),
+  since: z.number().default(0),
+});
+export type CardView = z.infer<typeof CardViewSchema>;
+export const newCard = (): CardView => CardViewSchema.parse({});
+
+/**
  * The left-hand pictures of one scene (racecard or result): keys of pictures in IndexedDB, in order.
  * `index` is the picture shown at time `since`; with `auto` it moves on every `seconds` from there
  * (every page works out the same picture from the clock, so nothing has to write while it runs).
@@ -117,6 +130,8 @@ export const RaceSchema = z
     highlight: z.number().int().nullable().default(null),
     style: StyleSchema.default({}),
     result: ResultViewSchema.default({}),
+    /** Racecard paging (10 horses a page). */
+    card: CardViewSchema.default({}),
     /** Pictures are not in the file (they live in the browser), only their order and slideshow settings. */
     photos: z.object({ card: PhotoSetSchema.default({}), result: PhotoSetSchema.default({}) }).default({}),
     runners: z.array(RunnerSchema).min(MIN_RUNNERS, `ม้าต้องมีอย่างน้อย ${MIN_RUNNERS} ตัว`).max(MAX_RUNNERS, `ม้าได้ไม่เกิน ${MAX_RUNNERS} ตัว`),

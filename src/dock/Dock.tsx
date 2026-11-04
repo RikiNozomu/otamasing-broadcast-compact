@@ -20,7 +20,7 @@ export function Dock() {
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setToast(null), bad ? 6000 : 2500);
   }, []);
-  useEffect(() => { document.body.classList.add("bg-panel"); document.title = "โอตะม้าซิ่ง Broadcast · Dock"; }, []);
+  useEffect(() => { document.body.classList.add("bg-panel"); document.title = "โอตะม้าซิ่ง Broadcast Compact · Dock"; }, []);
   const a = parseActive(d.active);
   const race = d.races.find((r) => r.id === a.raceId);
   const activeLabel = a.view === "blank" ? "หน้าเปล่า" : !race ? "หน้าแรก" : `${race.round || race.name}${a.view === "result" ? " ผล" : ""}`;
@@ -28,7 +28,7 @@ export function Dock() {
   return (
     <div className="grid min-h-screen grid-rows-[auto_auto_1fr] bg-panel">
       <div className="flex items-center justify-between bg-navy px-3.5 py-2.5 font-display text-[15px] font-bold tracking-[.06em] uppercase">
-        <span>โอตะม้าซิ่ง Broadcast</span>
+        <span>โอตะม้าซิ่ง Broadcast Compact</span>
         <span data-testid="active-tag">Active: {activeLabel}</span>
       </div>
       <div className="grid grid-cols-2 border-b border-line" role="tablist">
