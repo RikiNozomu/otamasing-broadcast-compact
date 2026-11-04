@@ -220,10 +220,12 @@ test("racecard: 10 horses a page, turned from the dock or by itself, and a highl
   await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 2" }).click();
   await expect(live).toHaveAttribute("data-page", "2");
   await expect.poll(nos).toEqual([11, 12, 13, 14, 15, 16, 17, 18]);
-  // out of the race (17 did not finish) is at half opacity, the others full
+  // DNF is a result: on the racecard 17 stays at full opacity; only a scratched horse is faded
   const opacity = (no: number) => live.locator(`[data-no='${no}']`).evaluate((e) => Number(getComputedStyle(e).opacity));
-  await expect.poll(() => opacity(17)).toBeCloseTo(0.5);
-  expect(await opacity(16)).toBe(1);
+  await expect.poll(() => opacity(17)).toBe(1);
+  await dock.getByLabel("ถอนเบอร์ 16").check();
+  await expect.poll(() => opacity(16)).toBeCloseTo(0.5);
+  await dock.getByLabel("ถอนเบอร์ 16").uncheck();
   // more horses: a third page
   for (let i = 0; i < 4; i++) await dock.getByRole("button", { name: "+ เพิ่มม้า" }).click();
   await expect(dock.getByTestId("card-pages").getByRole("button")).toHaveCount(3);
