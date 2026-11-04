@@ -8,7 +8,6 @@ import type { Race, Runner } from "../lib/model";
 import { boxColors, drawOf, favColor } from "../lib/colors";
 import { ordinal } from "../lib/labels";
 import { useCardPage } from "../lib/cardPages";
-import { resultMark } from "../lib/results";
 import { cx } from "../lib/cx";
 import { Flag } from "../components/Flag";
 import { FitText } from "../components/FitText";
@@ -25,6 +24,8 @@ export const EASE = [0.65, 0, 0.35, 1] as const;
 export const headClass = "grid h-[44px] items-center gap-2 text-center font-display text-[24px] font-bold tracking-[.05em] text-white [text-shadow:0_2px_8px_rgb(0_0_0/.4)]";
 /** Opacity of a row that is out of the race (scratched, DNF, DQ). */
 export const DIM = 0.5;
+/** A header over a text column (horse, jockey): left-aligned with the text in the cells below. */
+export const headLeft = "px-5 text-left";
 /** Row motion on a page change: in from the right, out to the left, one after another. `dim` = out of the race. */
 export const rowMotion = (i: number, dim = false) => ({
   initial: { opacity: 0, x: 90 },
@@ -54,8 +55,8 @@ export function RacecardScene({ race }: { race: Race }) {
   const row = (h: Runner, i: number) => {
     const d = drawOf(S, h.number, h.draw, n);
     const hl = highlightOf(h.number);
-    // scratched, DNF or DQ: the row is faded
-    const out = resultMark(h) != null;
+    // only a scratched horse is faded here; DNF / DQ are results and show on the result page
+    const out = h.scratched;
     return (
       <motion.div key={h.number} data-no={h.number} data-hl={hl.state} data-out={out ? "" : undefined} {...rowMotion(i, out)}
         className="relative grid items-center gap-2 py-1" style={{ height: ROW_H, gridTemplateColumns: cols }}>
@@ -80,7 +81,7 @@ export function RacecardScene({ race }: { race: Race }) {
       <RaceTitle race={race} />
       <div className="absolute grid content-start" style={{ left: SIDE, top: TABLE_TOP, width: TABLE_W }}>
         <div data-testid="table-head" className={headClass} style={{ gridTemplateColumns: cols }}>
-          {show.draw && <span>DRAW</span>}<span>NO.</span><span>HORSE</span><span>JOCKEY</span>
+          {show.draw && <span>DRAW</span>}<span>NO.</span><span className={headLeft}>HORSE</span><span className={headLeft}>JOCKEY</span>
         </div>
         <div className="relative grid content-start" data-testid="runner-rows">
           <AnimatePresence initial={false} mode="popLayout">

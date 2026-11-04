@@ -13,7 +13,7 @@ import { cx } from "../lib/cx";
 import { Flag } from "../components/Flag";
 import { FitText } from "../components/FitText";
 import { HighlightBar, NAVY } from "./Highlight";
-import { band, BOX_W, cell, EASE, GAP, headClass, NumberBox, ROW_H, rowMotion } from "./RacecardScene";
+import { band, BOX_W, headLeft, cell, EASE, GAP, headClass, NumberBox, ROW_H, rowMotion } from "./RacecardScene";
 import { PageCount, RacePhoto, RaceTitle, SIDE, TABLE_TOP, TABLE_W } from "./RaceBackdrop";
 
 /** Space between the locked rows and the rows that change with the page. */
@@ -75,7 +75,7 @@ export function ResultScene({ race }: { race: Race }) {
         tag={<span data-testid="result-tag" className="w-fit bg-yellow px-4 py-1.5 font-display text-[34px] leading-none font-bold tracking-[.08em] text-navy [text-shadow:none]">RESULT</span>} />
       <div className="absolute grid content-start" style={{ left: SIDE, top: TABLE_TOP, width: TABLE_W }}>
         <div data-testid="table-head" className={headClass} style={{ gridTemplateColumns: cols }}>
-          <span>POS</span><span>NO.</span>{show.draw && <span>DRAW</span>}<span>HORSE</span><span>JOCKEY</span><span>TIME</span><span>MARGIN</span>
+          <span>POS</span><span>NO.</span>{show.draw && <span>DRAW</span>}<span className={headLeft}>HORSE</span><span className={headLeft}>JOCKEY</span><span>TIME</span><span>MARGIN</span>
         </div>
         <div className="relative grid content-start" data-testid="result-rows">
           <AnimatePresence initial={false} mode="popLayout">
