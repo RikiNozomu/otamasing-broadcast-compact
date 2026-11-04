@@ -47,7 +47,7 @@ export function ResultScene({ race }: { race: Race }) {
     const d = drawOf(S, h.number, h.draw, n);
     return (
       <motion.div key={h.number} data-no={h.number} data-locked={on ? "" : undefined} data-mark={mark ?? undefined} layout="position"
-        {...rowMotion(i)} transition={{ layout: { duration: 0.4, ease: EASE } }}
+        {...rowMotion(i, !!mark)} transition={{ layout: { duration: 0.4, ease: EASE } }}
         className="relative grid items-center gap-2 py-1" style={{ height: ROW_H, gridTemplateColumns: cols, marginTop: i === lockedCount && lockedCount > 0 ? LOCK_GAP : 0 }}>
         <HighlightBar on={on} className="inset-y-1" style={{ left: 0, width: POS_W }} />
         <HighlightBar on={on} className="inset-y-1" style={{ left: textL, width: textW }} />

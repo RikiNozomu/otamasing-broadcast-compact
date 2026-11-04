@@ -8,6 +8,7 @@ import type { Race, Runner } from "../lib/model";
 import { boxColors, drawOf, favColor } from "../lib/colors";
 import { ordinal } from "../lib/labels";
 import { useCardPage } from "../lib/cardPages";
+import { resultMark } from "../lib/results";
 import { cx } from "../lib/cx";
 import { Flag } from "../components/Flag";
 import { FitText } from "../components/FitText";
@@ -22,10 +23,12 @@ export const BOX_W = 90;
 export const GAP = 8;
 export const EASE = [0.65, 0, 0.35, 1] as const;
 export const headClass = "grid h-[44px] items-center gap-2 text-center font-display text-[24px] font-bold tracking-[.05em] text-white [text-shadow:0_2px_8px_rgb(0_0_0/.4)]";
-/** Row motion on a page change: in from the right, out to the left, one after another. */
-export const rowMotion = (i: number) => ({
+/** Opacity of a row that is out of the race (scratched, DNF, DQ). */
+export const DIM = 0.5;
+/** Row motion on a page change: in from the right, out to the left, one after another. `dim` = out of the race. */
+export const rowMotion = (i: number, dim = false) => ({
   initial: { opacity: 0, x: 90 },
-  animate: { opacity: 1, x: 0, transition: { duration: 0.32, ease: EASE, delay: 0.25 + i * 0.045 } },
+  animate: { opacity: dim ? DIM : 1, x: 0, transition: { duration: 0.32, ease: EASE, delay: 0.25 + i * 0.045 } },
   exit: { opacity: 0, x: -90, transition: { duration: 0.25, ease: EASE, delay: i * 0.035 } },
 });
 
@@ -51,9 +54,11 @@ export function RacecardScene({ race }: { race: Race }) {
   const row = (h: Runner, i: number) => {
     const d = drawOf(S, h.number, h.draw, n);
     const hl = highlightOf(h.number);
+    // scratched, DNF or DQ: the row is faded
+    const out = resultMark(h) != null;
     return (
-      <motion.div key={h.number} data-no={h.number} data-hl={hl.state} {...rowMotion(i)}
-        className={cx("relative grid items-center gap-2 py-1", h.scratched && "opacity-40!")} style={{ height: ROW_H, gridTemplateColumns: cols }}>
+      <motion.div key={h.number} data-no={h.number} data-hl={hl.state} data-out={out ? "" : undefined} {...rowMotion(i, out)}
+        className="relative grid items-center gap-2 py-1" style={{ height: ROW_H, gridTemplateColumns: cols }}>
         <HighlightBar on={hl.on} className="inset-y-1" style={{ left: barLeft, width: barWidth }} />
         {show.draw && <NumberBox colors={boxColors(S.drawScheme, d, h.number, n, S, false)} value={d} hl={hl} />}
         <NumberBox colors={boxColors(S.numberScheme, h.number, h.number, n, S, true)} value={h.number} hl={hl} />
