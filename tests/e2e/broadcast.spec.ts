@@ -56,6 +56,12 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
 test("a moving highlight bar is never hidden behind the row backgrounds", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  // hold page 1 (18 runners turn pages every 5 s; a turn mid-test would replace row 9 instead of moving its bar)
+  await dock.getByTestId("card-auto").click();
+  await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 1" }).click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=racecard]")).toHaveAttribute("data-page", "1");
+  await expect(overlay.locator("[data-layer][data-active] [data-no='9']")).toHaveAttribute("data-hl", "on");
+  await overlay.waitForTimeout(1000); // rows finished sliding in
   // Sample every frame while the bar grows on row 3 and shrinks on row 9: wherever a bar reaches, it must be the
   // topmost element at the left edge of the horse cell (a cell animating its opacity used to be painted over it).
   const result = overlay.evaluate(() => new Promise<{ samples: Record<string, number>; hidden: number }>((resolve) => {
@@ -214,6 +220,10 @@ test("racecard: 10 horses a page, turned from the dock or by itself, and a highl
   await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 2" }).click();
   await expect(live).toHaveAttribute("data-page", "2");
   await expect.poll(nos).toEqual([11, 12, 13, 14, 15, 16, 17, 18]);
+  // out of the race (17 did not finish) is at half opacity, the others full
+  const opacity = (no: number) => live.locator(`[data-no='${no}']`).evaluate((e) => Number(getComputedStyle(e).opacity));
+  await expect.poll(() => opacity(17)).toBeCloseTo(0.5);
+  expect(await opacity(16)).toBe(1);
   // more horses: a third page
   for (let i = 0; i < 4; i++) await dock.getByRole("button", { name: "+ เพิ่มม้า" }).click();
   await expect(dock.getByTestId("card-pages").getByRole("button")).toHaveCount(3);
@@ -256,10 +266,14 @@ test("result page: 10 rows a page, locked horses stay on top with the yellow bar
   await expect(live.locator("[data-testid=pos]")).toHaveText(["1st", "2nd", "3rd", "11th", "12th", "13th", "14th", "15th", "16th", "DNF"]);
   await expect(live.locator("[data-locked]")).toHaveCount(3);
   await expect(live.locator("[data-no='17'] [data-testid=time]")).toHaveText("");
+  // DNF / DQ / SCR rows are at half opacity
+  for (const no of [17]) await expect.poll(() => live.locator(`[data-no='${no}']`).evaluate((e) => Number(getComputedStyle(e).opacity))).toBeCloseTo(0.5);
+  expect(await live.locator("[data-no='9']").evaluate((e) => Number(getComputedStyle(e).opacity))).toBe(1);
 
   // a new position from the dock reaches the screen; unlocking puts the horse back in the paged rows
   await dock.getByLabel("ล็อคเบอร์ 12").click();
   await expect(live.locator("[data-testid=pos]")).toHaveText(["1st", "2nd", "11th", "12th", "13th", "14th", "15th", "16th", "DNF", "SCR"]);
+  await expect.poll(() => live.locator("[data-no='6']").evaluate((e) => Number(getComputedStyle(e).opacity))).toBeCloseTo(0.5);
   // a disqualified horse leaves the finishers and goes after DNF
   await dock.getByLabel("สถานะเบอร์ 11").selectOption("dq");
   await expect(live.locator("[data-testid=pos]")).toHaveText(["1st", "2nd", "12th", "13th", "14th", "15th", "16th", "DNF", "DQ", "SCR"]);
