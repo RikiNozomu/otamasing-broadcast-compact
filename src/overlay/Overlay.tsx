@@ -6,7 +6,7 @@ import { Stage } from "./Stage";
 export function Overlay() {
   useEffect(() => {
     document.body.classList.add("overflow-hidden", "bg-transparent");
-    document.title = "โอตะม้าซิ่ง Broadcast · Overlay";
+    document.title = "โอตะม้าซิ่ง Broadcast Compact · Overlay";
   }, []);
   return (
     <div className="fixed inset-0 overflow-hidden">

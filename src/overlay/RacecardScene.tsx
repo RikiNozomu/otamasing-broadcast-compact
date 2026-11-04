@@ -1,22 +1,39 @@
-/** The racecard scene (1920x1080): photo left fading into navy, runner table right, title bottom-left. */
-import { motion } from "motion/react";
+/**
+ * The compact racecard scene (1920x1080): title on top, the runners full width below, at most 10 a page.
+ * The pages take turns by themselves (or are picked in the dock); on a page change the rows slide out to
+ * the left one after another and the next ones slide in from the right.
+ */
+import { AnimatePresence, motion } from "motion/react";
 import type { Race, Runner } from "../lib/model";
 import { boxColors, drawOf, favColor } from "../lib/colors";
 import { ordinal } from "../lib/labels";
+import { useCardPage } from "../lib/cardPages";
 import { cx } from "../lib/cx";
 import { Flag } from "../components/Flag";
 import { FitText } from "../components/FitText";
 import { HighlightBar, useHighlight, type RowHighlight } from "./Highlight";
-import { pill, RacePhoto, RaceTitle } from "./RaceBackdrop";
+import { PageCount, pill, RacePhoto, RaceTitle, SIDE, TABLE_TOP, TABLE_W } from "./RaceBackdrop";
 
 export const cell = "flex h-full items-center";
-export const band = cx(cell, "gap-2.5 overflow-hidden whitespace-nowrap px-3.5 font-display text-[31px] bg-[linear-gradient(90deg,var(--color-band)_75%,rgb(44_48_96/0))]");
+/** A text cell of the table (horse, jockey): a dark band fading out on its right. */
+export const band = cx(cell, "gap-3.5 overflow-hidden whitespace-nowrap px-5 font-display text-[38px] bg-[linear-gradient(90deg,var(--color-band)_80%,rgb(44_48_96/.35))]");
+export const ROW_H = 70;
+export const BOX_W = 90;
+export const GAP = 8;
+export const EASE = [0.65, 0, 0.35, 1] as const;
+export const headClass = "grid h-[44px] items-center gap-2 text-center font-display text-[24px] font-bold tracking-[.05em] text-white [text-shadow:0_2px_8px_rgb(0_0_0/.4)]";
+/** Row motion on a page change: in from the right, out to the left, one after another. */
+export const rowMotion = (i: number) => ({
+  initial: { opacity: 0, x: 90 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.32, ease: EASE, delay: 0.25 + i * 0.045 } },
+  exit: { opacity: 0, x: -90, transition: { duration: 0.25, ease: EASE, delay: i * 0.035 } },
+});
 
 /** A DRAW or NO. box: coloured, or plain (white frame on navy). `hl` fades it with its row. */
 export function NumberBox({ colors, value, hl }: { colors: readonly [string, string] | null; value: number; hl?: RowHighlight }) {
   return (
     <motion.span initial={false} {...hl?.cell}
-      className={cx(cell, "justify-center font-display text-[32px] font-bold", !colors && "bg-scene text-white shadow-[inset_0_0_0_3px_#fff]")}
+      className={cx(cell, "justify-center font-display text-[38px] font-bold", !colors && "bg-scene text-white shadow-[inset_0_0_0_3px_#fff]")}
       style={colors ? { background: colors[0], color: colors[1] } : undefined}>
       {value}
     </motion.span>
@@ -24,56 +41,49 @@ export function NumberBox({ colors, value, hl }: { colors: readonly [string, str
 }
 
 export function RacecardScene({ race }: { race: Race }) {
-  const S = race.style, show = S.show;
-  const n = race.runners.length, two = n > 18, per = two ? Math.ceil(n / 2) : n;
-  // column widths in px at 1920x1080; the horse column grows for the flag and Fav pill
-  const bx = two ? 54 : 62;
-  const hw = (two ? 230 : 290) + (show.fav ? 50 : 0) + (show.horseFlag ? 40 : 0) + (show.draw ? 0 : 40);
-  const jw = two ? 230 : 290;
-  const colW = [show.draw ? bx : null, bx, hw, jw].filter((x): x is number => x != null);
-  const cols = colW.map((w) => w + "px").join(" ");
-  const tableW = (two ? 2 : 1) * (colW.reduce((a, b) => a + b, 0) + (colW.length - 1) * 8) + (two ? 26 : 0);
-  const right = two ? 30 : 40;
-  const tableL = 1920 - right - tableW;
-  const barLeft = (show.draw ? bx + 8 : 0) + bx + 8, barWidth = hw + 8 + jw;
+  const S = race.style, show = S.show, n = race.runners.length;
+  const { rows, page, pageCount } = useCardPage(race);
+  const cols = [show.draw ? `${BOX_W}px` : null, `${BOX_W}px`, "minmax(0,1.3fr)", "minmax(0,1fr)"].filter(Boolean).join(" ");
+  // the bar covers HORSE and JOCKEY
+  const barLeft = (show.draw ? BOX_W + GAP : 0) + BOX_W + GAP, barWidth = TABLE_W - barLeft;
   const highlightOf = useHighlight(race.highlight);
 
-  const row = (h: Runner) => {
+  const row = (h: Runner, i: number) => {
     const d = drawOf(S, h.number, h.draw, n);
     const hl = highlightOf(h.number);
     return (
-      <div key={h.number} data-no={h.number} data-hl={hl.state}
-        className={cx("relative grid h-[47.5px] items-center gap-2 py-1", h.scratched && "opacity-40")} style={{ gridTemplateColumns: cols }}>
-        <HighlightBar on={hl.on} className="top-1 h-12" style={{ left: barLeft, width: barWidth }} />
+      <motion.div key={h.number} data-no={h.number} data-hl={hl.state} {...rowMotion(i)}
+        className={cx("relative grid items-center gap-2 py-1", h.scratched && "opacity-40!")} style={{ height: ROW_H, gridTemplateColumns: cols }}>
+        <HighlightBar on={hl.on} className="inset-y-1" style={{ left: barLeft, width: barWidth }} />
         {show.draw && <NumberBox colors={boxColors(S.drawScheme, d, h.number, n, S, false)} value={d} hl={hl} />}
         <NumberBox colors={boxColors(S.numberScheme, h.number, h.number, n, S, true)} value={h.number} hl={hl} />
         <motion.span data-testid="horse" initial={false} {...hl.ink(false)} className={cx(band, "font-bold")}>
-          {show.horseFlag && <Flag code={h.horseCountry} className="relative h-[22px] w-[33px]" />}
+          {show.horseFlag && <Flag code={h.horseCountry} className="relative h-[26px] w-[39px]" />}
           <FitText className="relative" strike={h.scratched}>{h.name.toUpperCase()}</FitText>
-          {show.fav && h.fav && !h.scratched ? <span className={cx(pill, "relative h-6 flex-none px-[9px] text-[18px] text-scene")} style={{ background: favColor(h.fav) }}>{ordinal(h.fav)}</span> : null}
+          {show.fav && h.fav && !h.scratched ? <span className={cx(pill, "relative h-8 flex-none px-3 text-[24px] text-scene")} style={{ background: favColor(h.fav) }}>{ordinal(h.fav)}</span> : null}
         </motion.span>
         <motion.span data-testid="jockey" initial={false} {...hl.ink(true)} className={cx(band, "font-medium")}>
-          {show.jockeyFlag && <Flag code={h.jockeyCountry} className="relative h-[22px] w-[33px]" />}
+          {show.jockeyFlag && <Flag code={h.jockeyCountry} className="relative h-[26px] w-[39px]" />}
           <FitText className="relative" strike={h.scratched}>{h.jockey.toUpperCase()}</FitText>
         </motion.span>
-      </div>
+      </motion.div>
     );
   };
-  const columns = two ? [race.runners.slice(0, per), race.runners.slice(per)] : [race.runners];
   return (
-    <div className="absolute inset-0 bg-scene" data-testid="racecard" data-race={race.id}>
-      <RacePhoto photos={race.photos.card} tableL={tableL} />
-      <div className="absolute grid grid-flow-col gap-x-[26px]" style={{ right, top: two ? 128 : 108 }}>
-        {columns.map((c, i) => (
-          <div className="grid content-start" key={i} data-testid="runner-column">
-            <div data-testid="table-head" className="grid h-[42px] items-center gap-2 text-center font-display text-[21px] font-bold tracking-[.04em] text-white" style={{ gridTemplateColumns: cols }}>
-              {show.draw && <span>DRAW</span>}<span>NO.</span><span>HORSE</span><span>JOCKEY</span>
-            </div>
-            {c.map(row)}
-          </div>
-        ))}
+    <div className="absolute inset-0 bg-scene" data-testid="racecard" data-race={race.id} data-page={page + 1}>
+      <RacePhoto photos={race.photos.card} />
+      <RaceTitle race={race} />
+      <div className="absolute grid content-start" style={{ left: SIDE, top: TABLE_TOP, width: TABLE_W }}>
+        <div data-testid="table-head" className={headClass} style={{ gridTemplateColumns: cols }}>
+          {show.draw && <span>DRAW</span>}<span>NO.</span><span>HORSE</span><span>JOCKEY</span>
+        </div>
+        <div className="relative grid content-start" data-testid="runner-rows">
+          <AnimatePresence initial={false} mode="popLayout">
+            {rows.map(row)}
+          </AnimatePresence>
+        </div>
       </div>
-      <RaceTitle race={race} maxWidth={tableL - 57 - 50} />
+      <PageCount page={page} count={pageCount} />
     </div>
   );
 }

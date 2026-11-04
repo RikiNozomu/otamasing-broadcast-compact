@@ -1,7 +1,7 @@
 /** Pictures (race photo, home background) are Blobs in IndexedDB: localStorage only holds ~5 MB of text. */
 import { useEffect, useState } from "react";
 
-const DB = "otamasing-broadcast", STORE = "images";
+const DB = "otamasing-broadcast-compact", STORE = "images";
 
 function open(): Promise<IDBDatabase> {
   return new Promise((res, rej) => {
