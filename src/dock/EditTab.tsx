@@ -1,4 +1,4 @@
-/** Tab "แก้ไข": pick any race, edit its data (ข้อมูล), its result (ผล) or its own style (สไตล์). A scene that is not on screen shows a preview. */
+/** Tab "การแข่งขัน": pick any race, edit its data (ข้อมูล), its result (ผล) or its own style (สไตล์). A scene that is not on screen shows a preview. */
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CLASSES, exportFile, parseActive, resultOf, GRADES, MAX_RUNNERS, MIN_RUNNERS, SURFACES, type Grade, type Race, type RaceClass, type Runner, type Scheme, type Style } from "../lib/model";
@@ -29,7 +29,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
   /** The race whose export panel is open. */
   const [exporting, setExporting] = useState<string | null>(null);
   const race = d.races.find((r) => r.id === editing) ?? d.races[0];
-  if (!race) return <div className="grid content-start gap-3 p-3" role="tabpanel" id="p-edit"><p className={hintClass}>ยังไม่มีรายการแข่งขัน เพิ่มหรือนำเข้าได้ที่แท็บรายการแข่งขัน</p></div>;
+  if (!race) return <div className="grid content-start gap-3 p-3" role="tabpanel" id="p-edit"><p className={hintClass}>ยังไม่มีรายการแข่งขัน เพิ่มหรือนำเข้าได้ที่แท็บภาพรวม</p></div>;
   const a = parseActive(d.active);
   // which scene of this race the open sub-tab is about, and whether that scene is on screen
   const view = sub === "result" ? "result" : "card";

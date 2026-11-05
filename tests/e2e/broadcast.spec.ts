@@ -14,6 +14,7 @@ async function open(context: BrowserContext): Promise<{ dock: Page; overlay: Pag
 test("first open seeds the sample and the overlay shows the Active race", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await expect(dock.getByTestId("active-tag")).toHaveText("Active: 11R");
+  await expect(dock.getByRole("tab")).toHaveText(["ภาพรวม", "การแข่งขัน"]);
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Cup");
   // 18 runners: 10 a page
   await expect(overlay.locator("[data-layer][data-active] [data-no]")).toHaveCount(10);
@@ -234,7 +235,7 @@ test("racecard: 10 horses a page, turned from the dock or by itself, and a highl
   await expect(live).toHaveAttribute("data-page", "1");
   await expect(live.locator("[data-no][data-hl=on]")).toHaveAttribute("data-no", "4");
   // the quick page buttons under the Active race in the races tab
-  await dock.getByRole("tab", { name: "รายการแข่งขัน" }).click();
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
   await dock.getByTestId("quick-card-pages").getByRole("button", { name: "หน้ารายชื่อ 3" }).click();
   await expect(live).toHaveAttribute("data-page", "3");
   await expect.poll(nos).toEqual([21, 22]);

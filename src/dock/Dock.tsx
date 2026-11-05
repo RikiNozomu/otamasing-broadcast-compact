@@ -1,4 +1,4 @@
-/** The OBS Custom Browser Dock: two tabs, รายการแข่งขัน and แก้ไข. */
+/** The OBS Custom Browser Dock: two tabs, ภาพรวม (overview) and การแข่งขัน (one race). */
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { parseActive } from "../lib/model";
@@ -24,7 +24,7 @@ export function Dock() {
   const a = parseActive(d.active);
   const race = d.races.find((r) => r.id === a.raceId);
   const activeLabel = a.view === "blank" ? "หน้าเปล่า" : !race ? "หน้าแรก" : `${race.round || race.name}${a.view === "result" ? " ผล" : ""}`;
-  const tabs = [["races", "รายการแข่งขัน"], ["edit", "แก้ไข"]] as const;
+  const tabs = [["races", "ภาพรวม"], ["edit", "การแข่งขัน"]] as const;
   return (
     <div className="grid min-h-screen grid-rows-[auto_auto_1fr] bg-panel">
       <div className="flex items-center justify-between bg-navy px-3.5 py-2.5 font-display text-[15px] font-bold tracking-[.06em] uppercase">
