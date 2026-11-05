@@ -36,6 +36,11 @@ const gradeColor = (g: string) => GRADE_COLOR[g.replace(/^Jpn/i, "G").toUpperCas
 /** Light blue for the male side, light red for the female side. */
 export const MALE_BG = "#CDE6FF", FEMALE_BG = "#FFD3DA";
 const sexBg = (sex: Horse["sex"]) => (sex === "F" ? FEMALE_BG : sex ? MALE_BG : "#FFFFFF");
+/** A pedigree box: the same colour, a little see-through, lighter at the top and deeper at the bottom for depth. */
+const boxBg = (sex: Horse["sex"]) => {
+  const [top, bottom] = sex === "F" ? ["#FFE6EA", "#F4A9B6"] : sex ? ["#E6F3FF", "#9CC8F2"] : ["#FFFFFF", "#D5DAE6"];
+  return `linear-gradient(180deg, ${top}E6 0%, ${bottom}C7 100%)`;
+};
 
 /** Real gold, silver and bronze for the first three places (the text stays navy, white on bronze). */
 export const MEDAL: Record<number, { background: string; color: string }> = {
@@ -230,8 +235,8 @@ function Pedigree({ h }: { h: Horse }) {
       </svg>
       {boxes.map((b, i) => (
         <motion.div key={b.id} {...rowMotion(i)} data-testid={`ped-${b.id}`} data-sex={b.sex ?? undefined}
-          className="absolute grid content-center gap-0.5 rounded-[6px] px-5 text-navy shadow-[0_6px_18px_rgb(0_0_0/.35)]"
-          style={{ left: COL_X[b.col], top: b.y - BOX_H / 2, width: BOX_W, height: BOX_H, background: sexBg(b.sex) }}>
+          className="absolute grid content-center gap-0.5 rounded-[6px] px-5 text-navy shadow-[0_6px_18px_rgb(0_0_0/.35),inset_0_1px_0_rgb(255_255_255/.7)] backdrop-blur-[2px]"
+          style={{ left: COL_X[b.col], top: b.y - BOX_H / 2, width: BOX_W, height: BOX_H, background: boxBg(b.sex) }}>
           {b.label && <span className="font-display text-[20px] leading-none font-bold tracking-[.08em] text-navy/60">{b.label}</span>}
           <FitText className={cx("font-display leading-[1.1] font-bold uppercase", b.col === 0 ? "text-[42px]" : "text-[36px]")}>{b.name || "–"}</FitText>
         </motion.div>
