@@ -582,13 +582,30 @@
                         "type": "string",
                         "enum": [
                           "plain",
-                          "cross",
+                          "hoop1",
+                          "hoop2",
+                          "hoop3",
+                          "belt",
                           "sash",
-                          "hoops",
+                          "cross",
                           "stripes",
+                          "seams",
+                          "braces",
                           "halves",
+                          "quartered",
+                          "check",
+                          "harlequin",
+                          "diamondBand",
                           "chevron",
-                          "spots"
+                          "bigV",
+                          "sawtooth",
+                          "hash",
+                          "yoke",
+                          "spots",
+                          "stars",
+                          "star",
+                          "ring",
+                          "diamond"
                         ],
                         "default": "plain"
                       },
@@ -606,8 +623,17 @@
                         "type": "string",
                         "enum": [
                           "plain",
+                          "hoop1",
+                          "hoop2",
+                          "hoop3",
                           "stripes",
-                          "hoops"
+                          "chevrons",
+                          "diamonds",
+                          "check",
+                          "spots",
+                          "stars",
+                          "cuffs",
+                          "halved"
                         ],
                         "default": "plain"
                       },

@@ -56,8 +56,15 @@ export type CareerRace = z.infer<typeof CareerRaceSchema>;
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "สีต้องเป็น #RRGGBB");
 /** Patterns of the owner's silks drawn by the app (body and sleeves). */
-export const SILKS_BODY = ["plain", "cross", "sash", "hoops", "stripes", "halves", "chevron", "spots"] as const;
-export const SILKS_SLEEVES = ["plain", "stripes", "hoops"] as const;
+/**
+ * Body patterns, from the JRA list (netkeiba) and the US / European names (Breeders' Cup):
+ * hoops 一本輪 二本輪 三本輪, belt 帯, sash 襷, crossbelts, stripes 縦縞, seams, braces, halves, quartered,
+ * check 格子, harlequin 元禄/菱形, diamond band, chevron 山形, large V, sawtooth 鋸歯形, hash 井桁,
+ * yoke, spots 銭形, stars 星散, large star, ring 蛇目, large diamond.
+ */
+export const SILKS_BODY = ["plain", "hoop1", "hoop2", "hoop3", "belt", "sash", "cross", "stripes", "seams", "braces", "halves", "quartered", "check", "harlequin", "diamondBand", "chevron", "bigV", "sawtooth", "hash", "yoke", "spots", "stars", "star", "ring", "diamond"] as const;
+/** Sleeve patterns: armlets (one, two, three), stripes along the arm, chevrons, diamonds, check, spots, stars, cuffs, halved (top/bottom). */
+export const SILKS_SLEEVES = ["plain", "hoop1", "hoop2", "hoop3", "stripes", "chevrons", "diamonds", "check", "spots", "stars", "cuffs", "halved"] as const;
 /** The owner's silks drawn as an SVG jersey with sleeves: body colour, a pattern in a second colour, sleeves. */
 export const SilksSchema = z.object({
   body: hex.default("#000000"),

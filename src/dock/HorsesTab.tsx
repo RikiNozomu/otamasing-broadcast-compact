@@ -143,8 +143,18 @@ function CareerEditor({ h }: { h: Horse }) {
   );
 }
 
-const BODY_LABEL: Record<Silks["pattern"], string> = { plain: "สีพื้น", cross: "กากบาท (X)", sash: "สายสะพาย", hoops: "แถบขวาง", stripes: "แถบตั้ง", halves: "ครึ่งซ้าย-ขวา", chevron: "บั้ง (V)", spots: "จุด" };
-const SLEEVE_LABEL: Record<Silks["sleevePattern"], string> = { plain: "สีพื้น", stripes: "แถบ 2 เส้นตามแขน", hoops: "แถบขวาง" };
+const BODY_LABEL: Record<Silks["pattern"], string> = {
+  plain: "สีพื้น (無地)", hoop1: "แถบขวาง 1 เส้น (一本輪)", hoop2: "แถบขวาง 2 เส้น (二本輪)", hoop3: "แถบขวาง 3 เส้น (三本輪)", belt: "แถบกว้าง (帯)",
+  sash: "สายสะพาย (襷 / Sash)", cross: "กากบาท (Crossbelts)", stripes: "แถบตั้ง (縦縞 / Stripes)", seams: "เส้นกลาง (Seams)", braces: "สายเอี๊ยม (Braces)",
+  halves: "ครึ่งซ้าย-ขวา (Halves)", quartered: "สี่ช่อง (Quartered)", check: "ตาราง (格子 / Check)", harlequin: "ข้าวหลามตัดเต็มตัว (元禄・菱形 / Harlequin)",
+  diamondBand: "ข้าวหลามตัดแถวอก (Diamonds)", chevron: "บั้ง (山形 / Chevron)", bigV: "ตัว V ใหญ่ (Large V)", sawtooth: "ฟันเลื่อย (鋸歯形)", hash: "ตาราง # (井桁)",
+  yoke: "ไหล่ต่างสี (Yoke)", spots: "จุด (銭形 / Spots)", stars: "ดาวกระจาย (星散 / Stars)", star: "ดาวใหญ่ (Star)", ring: "วงแหวน (蛇目 / Ring)", diamond: "ข้าวหลามตัดใหญ่ (Diamond)",
+};
+const SLEEVE_LABEL: Record<Silks["sleevePattern"], string> = {
+  plain: "สีพื้น", hoop1: "ปลอกแขน 1 เส้น (一本輪)", hoop2: "ปลอกแขน 2 เส้น (二本輪)", hoop3: "ปลอกแขน 3 เส้น (三本輪)", stripes: "แถบ 2 เส้นตามแขน (縦縞)",
+  chevrons: "บั้ง (山形 / Chevrons)", diamonds: "ข้าวหลามตัด (菱形 / Diamonds)", check: "ตาราง (格子 / Check)", spots: "จุด (銭形 / Spots)", stars: "ดาว (星散 / Stars)",
+  cuffs: "ปลายแขน (Cuffs)", halved: "ครึ่งบน-ล่าง (Halved)",
+};
 
 /** The owner's silks drawn as SVG: colours and patterns of the body and the sleeves. An uploaded picture takes its place. */
 function SilksSection({ h }: { h: Horse }) {

@@ -88,7 +88,7 @@
 | `coat` | `"Bay"` `"Dark Bay"` `"Brown"` `"Black"` `"Chestnut"` `"Dark Chestnut"` `"Grey"` `"White"` หรือ `null` | `null` | สีขน (มีกรอบสีขนบนจอ) |
 | `sire` / `dam` / `bms` | string | `""` | พ่อพันธุ์ / แม่พันธุ์ / พ่อของแม่ |
 | `owner` / `trainer` | string | `""` | เจ้าของ / เทรนเนอร์ |
-| `silks` | object หรือ `null` | `null` | สีเสื้อเจ้าของที่วาดเป็น SVG (เสื้อมีแขน): `body` สีตัว, `pattern` ลายตัว (`"plain"` `"cross"` `"sash"` `"hoops"` `"stripes"` `"halves"` `"chevron"` `"spots"`), `accent` สีลายตัว, `sleeves` สีแขน, `sleevePattern` ลายแขน (`"plain"` `"stripes"` `"hoops"`), `sleeveAccent` สีลายแขน สีเป็น `"#RRGGBB"` |
+| `silks` | object หรือ `null` | `null` | สีเสื้อเจ้าของที่วาดเป็น SVG (เสื้อมีแขน): `body` สีตัว, `pattern` ลายตัว (`"plain"` `"hoop1"` `"hoop2"` `"hoop3"` `"belt"` `"sash"` `"cross"` `"stripes"` `"seams"` `"braces"` `"halves"` `"quartered"` `"check"` `"harlequin"` `"diamondBand"` `"chevron"` `"bigV"` `"sawtooth"` `"hash"` `"yoke"` `"spots"` `"stars"` `"star"` `"ring"` `"diamond"`), `accent` สีลายตัว, `sleeves` สีแขน, `sleevePattern` ลายแขน (`"plain"` `"hoop1"` `"hoop2"` `"hoop3"` `"stripes"` `"chevrons"` `"diamonds"` `"check"` `"spots"` `"stars"` `"cuffs"` `"halved"`), `sleeveAccent` สีลายแขน สีเป็น `"#RRGGBB"` |
 | `record` | `{ starts, first, second, third }` | 0 ทั้งหมด | สถิติ แสดงเป็น `12 (5-3-1-3)` (ตัวสุดท้าย = อันดับ 4 ลงไป คิดให้เอง) |
 | `earnings` | number หรือ `null` | `null` | เงินรางวัลรวม |
 | `currency` | `"JPY"` `"USD"` `"GBP"` `"EUR"` `"AUD"` `"HKD"` `"AED"` `"SAR"` `"THB"` | `"JPY"` | สกุลเงินของ `earnings` |
