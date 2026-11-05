@@ -14,6 +14,7 @@ async function open(context: BrowserContext): Promise<{ dock: Page; overlay: Pag
 test("first open seeds the sample and the overlay shows the Active race", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await expect(dock.getByTestId("active-tag")).toHaveText("Active: 11R");
+  await expect(dock.getByRole("tab")).toHaveText(["ภาพรวม", "การแข่งขัน", "ม้า"]);
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Cup");
   // 18 runners: 10 a page
   await expect(overlay.locator("[data-layer][data-active] [data-no]")).toHaveCount(10);
@@ -124,8 +125,11 @@ test("import JSON (append / replace), reject a bad file, delete with confirm", a
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list]")).toBeVisible();
 
   await dock.getByTestId("import-file").setInputFiles(file);
-  await dock.getByRole("button", { name: "แทนที่ทั้งหมด" }).click();
+  // a file of races replaces the races only: the horses stay
+  await dock.getByRole("button", { name: "แทนที่รายการแข่งทั้งหมด" }).click();
   await expect(dock.getByTestId("race-row")).toHaveCount(1);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await expect(dock.getByRole("tab", { name: "Sample Star" })).toBeVisible();
 });
 
 test("export inside OBS: copy the JSON and paste it back in", async ({ context }) => {
@@ -195,6 +199,9 @@ test("a save that leaves an empty file is reported, and an empty file is named o
 test("a name too long for its box is squeezed sideways, not cut with an ellipsis", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  // keep horse 1 on screen: stop the racecard turning its pages
+  await dock.getByTestId("card-auto").click();
+  await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 1" }).click();
   await dock.getByLabel("ชื่อม้าเบอร์ 1", { exact: true }).fill("Onesmoothoperator Extraordinaire Of The Northern Lantern Valley");
   const cell = overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse]");
   const text = cell.locator("[data-fit]");
@@ -234,7 +241,7 @@ test("racecard: 10 horses a page, turned from the dock or by itself, and a highl
   await expect(live).toHaveAttribute("data-page", "1");
   await expect(live.locator("[data-no][data-hl=on]")).toHaveAttribute("data-no", "4");
   // the quick page buttons under the Active race in the races tab
-  await dock.getByRole("tab", { name: "รายการแข่งขัน" }).click();
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
   await dock.getByTestId("quick-card-pages").getByRole("button", { name: "หน้ารายชื่อ 3" }).click();
   await expect(live).toHaveAttribute("data-page", "3");
   await expect.poll(nos).toEqual([21, 22]);
@@ -381,4 +388,72 @@ test("the home page shows 8 races a page; the dock turns the page", async ({ con
   await dock.locator("[data-lh='sample-11']").click();
   await expect(rows).toHaveCount(8);
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list-row][data-hl=on]")).toHaveAttribute("data-race", "sample-11");
+});
+
+test("horse tab: put a horse on screen, profile then past races newest first, currency choice", async ({ context }) => {
+  const { dock, overlay } = await open(context);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await expect(dock.getByTestId("horse-preview")).toBeVisible();
+  await dock.getByRole("button", { name: "ตั้งเป็น Active" }).click();
+  await expect(dock.getByTestId("active-tag")).toHaveText("Active: Sample Star");
+  const scene = overlay.locator("[data-layer][data-active] [data-testid=horse]");
+  await expect(scene.getByTestId("horse-name")).toHaveText("Sample Star");
+  await expect(scene.getByTestId("pedigree")).toHaveText(/Example Sire – Paper Princess.*\(by Old Champion\)/i);
+  await expect(scene.getByTestId("fact-record")).toContainText("10 (5-2-1-2)");
+  await expect(scene.getByTestId("fact-earnings")).toContainText("¥812,345,000");
+  await expect(scene.getByTestId("fact-born")).toContainText("Japan");
+  // the owner's silks drawn as SVG; turned off in the dock they leave the screen
+  await expect(scene.getByTestId("silks-svg")).toBeVisible();
+  // silks: upload / pattern / none
+  await dock.getByTestId("silks-mode-none").click();
+  await expect(scene.getByTestId("silks")).toHaveCount(0);
+  await dock.getByTestId("silks-mode-upload").click();
+  await dock.getByTestId("silks-file").setInputFiles(png("silks.png"));
+  await expect(scene.locator("[data-testid=silks] img")).toBeVisible();
+  await dock.getByTestId("silks-mode-pattern").click();
+  await expect(scene.getByTestId("silks-svg")).toBeVisible();
+  // several horse pictures take turns
+  await dock.getByTestId("add-photos-horse").setInputFiles([png("a.png"), png("b.png")]);
+  await dock.getByTestId("auto-horse-photos").click();
+  await dock.getByRole("button", { name: "แสดงรูปที่ 1" }).click();
+  await expect(dock.getByTestId("photo-pos-horse")).toHaveText("1 / 2");
+  await dock.getByRole("button", { name: "รูปม้าถัดไป" }).click();
+  await expect(dock.getByTestId("photo-pos-horse")).toHaveText("2 / 2");
+  await expect(scene.getByTestId("horse-photo")).toHaveAttribute("data-has", "");
+  await expect(scene.getByTestId("horse-page-title").filter({ hasText: "PROFILE" })).toHaveCount(1);
+  // the dock picks the prize money currency for every horse
+  await dock.getByTestId("horse-currency").selectOption("USD");
+  await expect(scene.getByTestId("fact-earnings")).toContainText("≈ $5,361,477");
+  // the sex after the name and between foaled and colour
+  await expect(scene.getByTestId("horse-sex")).toHaveText("COLT");
+  await expect(scene.getByTestId("fact-sex")).toContainText("COLT");
+  // page 2: the pedigree, three generations, male side light blue, female side light red
+  await dock.getByTestId("horse-auto").click();
+  await dock.getByRole("button", { name: "หน้า 2" }).click();
+  await expect(scene).toHaveAttribute("data-page", "2");
+  await expect(scene.getByTestId("horse-page-title").filter({ hasText: "PEDIGREE" })).toHaveCount(1);
+  await expect(scene.getByTestId("ped-sire")).toContainText("Example Sire");
+  await expect(scene.getByTestId("ped-sire")).toHaveAttribute("data-sex", "M");
+  await expect(scene.getByTestId("ped-damDam")).toContainText("Paper Queen");
+  await expect(scene.getByTestId("ped-damDam")).toHaveAttribute("data-sex", "F");
+  await expect(scene.getByTestId("ped-damSire")).toContainText("Old Champion");
+  // page 3: the newest 7 races; a win shows the runner-up in brackets, 1st/2nd/3rd in gold/silver/bronze
+  await dock.getByRole("button", { name: "หน้า 3" }).click();
+  await expect(scene.getByTestId("career-row")).toHaveCount(7);
+  await expect(scene.getByTestId("horse-page-title").filter({ hasText: "RACE RECORD 1/2" })).toHaveCount(1);
+  await expect(scene.getByTestId("career-pos").first()).toHaveText("1/18");
+  await expect(scene.getByTestId("career-pos").first()).toHaveAttribute("data-medal", "1");
+  await expect(scene.getByTestId("career-pos").nth(2)).toHaveAttribute("data-medal", "2");
+  await expect(scene.getByTestId("career-pos").nth(3)).toHaveAttribute("data-medal", "3");
+  await expect(scene.getByTestId("career-winner").first()).toHaveText("(Morning Gallop)");
+  await dock.getByRole("button", { name: "หน้า 4" }).click();
+  await expect(scene.getByTestId("career-row")).toHaveCount(3);
+  // a new horse; deleting the Active horse puts the home page back
+  await dock.getByRole("button", { name: "+ เพิ่มม้า" }).click();
+  await dock.locator("#h-name").fill("Brand New");
+  await expect(dock.getByRole("tab", { name: "Brand New" })).toBeVisible();
+  await dock.getByRole("tab", { name: "Sample Star" }).click();
+  await dock.getByRole("button", { name: "ลบ", exact: true }).click();
+  await dock.getByRole("button", { name: "ลบเลย" }).click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list]")).toBeVisible();
 });

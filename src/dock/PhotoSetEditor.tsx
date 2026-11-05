@@ -14,7 +14,7 @@ import { Switch } from "../components/Switch";
 
 const VIEW_LABEL: Record<PhotoView, string> = { card: "หน้าการ์ดรายชื่อ", result: "หน้าผล" };
 
-function Thumb({ k, rev, on, n, onShow, onRemove }: { k: string; rev: number | undefined; on: boolean; n: number; onShow: () => void; onRemove: () => void }) {
+export function Thumb({ k, rev, on, n, onShow, onRemove }: { k: string; rev: number | undefined; on: boolean; n: number; onShow: () => void; onRemove: () => void }) {
   const url = useImage(k, rev);
   return (
     <div className={cx("relative aspect-video border-2 bg-studio bg-cover bg-center", on ? "border-yellow" : "border-line")} style={{ backgroundImage: url ? `url("${url}")` : undefined }} data-thumb={n}>
@@ -67,7 +67,7 @@ export function PhotoSetEditor({ race, view }: { race: Race; view: PhotoView }) 
   };
 
   return (
-    <Section title={`รูปด้านซ้าย (${VIEW_LABEL[view]})`}>
+    <Section title={`รูปฉากหลัง (${VIEW_LABEL[view]})`}>
       {n > 0 && (
         <div className="grid grid-cols-4 gap-1" data-testid={`thumbs-${view}`}>
           {set.keys.map((k, i) => <Thumb key={k} k={k} rev={d.images[k]} n={i + 1} on={i === shown} onShow={() => save((s) => showPhoto(s, i))} onRemove={() => remove(k)} />)}

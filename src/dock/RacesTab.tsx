@@ -1,4 +1,4 @@
-/** Tab "รายการแข่งขัน": pick Active (home or a race), import/export, order, delete, home page settings, URL. */
+/** Tab "ภาพรวม": pick Active (home or a race), import/export, order, delete, home page settings, URL. */
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState, type ReactNode } from "react";
 import { BLANK, exportFile, HOME, mergeImport, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
@@ -20,6 +20,12 @@ const TRANSITION_LABEL: Record<Transition, string> = { wipe: "Wipe (แถบเ
 const stamp = () => new Date().toISOString().slice(0, 10).replaceAll("-", "");
 const rowGrid = "grid grid-cols-[22px_minmax(0,1fr)_30px] gap-1";
 const sideBtn = "border border-line bg-studio";
+/** The replace button says what it replaces: only what the file holds. */
+const replaceLabel = (f: { races: unknown[]; horses: unknown[] }) =>
+  f.races.length && f.horses.length ? "แทนที่ทั้งหมด" : f.horses.length ? "แทนที่ม้าทั้งหมด" : "แทนที่รายการแข่งทั้งหมด";
+/** "3 รายการ", "1 ม้า" or "3 รายการ · 1 ม้า": what a file holds. */
+const importCount = (f: { races: unknown[]; horses: unknown[] }) =>
+  [f.races.length ? `${f.races.length} รายการ` : "", f.horses.length ? `ม้า ${f.horses.length} ตัว` : ""].filter(Boolean).join(" · ");
 
 /** One clickable row: a round tag, title + facts, and on the right the ACTIVE badge (+ extra buttons). */
 function ActiveRow({ id, on, round, title, facts, label, onPick, side, home, badge = "ACTIVE" }: {
@@ -80,7 +86,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
   const doImport = (mode: "append" | "replace") => {
     if (!pending) return;
     setData(mergeImport(d, pending.data, mode));
-    toast(`นำเข้า ${pending.data.races.length} รายการแล้ว`);
+    toast(`นำเข้า ${importCount(pending.data)}แล้ว`);
     setPending(null);
   };
   const addRace = () => {
@@ -156,10 +162,10 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
         {pending && (
           <motion.div role="alertdialog" aria-label="ยืนยันการนำเข้า" className="flex flex-wrap items-center justify-between gap-1.5 overflow-hidden border border-yellow px-2.5 py-2 text-[13px]"
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-            <span>{pending.name}: {pending.data.races.length} รายการ</span>
+            <span>{pending.name}: {importCount(pending.data)}</span>
             <span className="flex flex-wrap gap-1.5">
               <Button variant="primary" onClick={() => doImport("append")}>เพิ่มต่อ</Button>
-              <Button onClick={() => doImport("replace")}>แทนที่ทั้งหมด</Button>
+              <Button onClick={() => doImport("replace")}>{replaceLabel(pending.data)}</Button>
               <Button onClick={() => setPending(null)}>ยกเลิก</Button>
             </span>
           </motion.div>
