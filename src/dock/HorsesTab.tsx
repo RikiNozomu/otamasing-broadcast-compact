@@ -7,7 +7,7 @@ import { useState, type ReactNode } from "react";
 import { exportHorse, horseOf, HOME, newId, parseActive } from "../lib/model";
 import {
   COATS, CURRENCIES, HorseSchema, careerNewestFirst, horsePhotoKey, posText, rateOf, recordFromRaces, recordText, setHorseAuto, showHorsePage, silksKey, useHorsePage, dotDate,
-  CareerRaceSchema, SilksSchema, SILKS_BODY, SILKS_MODES, SILKS_SLEEVES, silksModeOf, type CareerRace, type SilksMode, type Silks, type Coat, type Currency, type Horse,
+  CAREER_GRADES, CareerRaceSchema, SilksSchema, SILKS_BODY, SILKS_MODES, SILKS_SLEEVES, silksModeOf, type CareerRace, type SilksMode, type Silks, type Coat, type Currency, type Horse,
 } from "../lib/horses";
 import { bumpImage, update, useData } from "../lib/store";
 import { deleteImage, putImage, useImage } from "../lib/images";
@@ -183,8 +183,14 @@ function CareerEditor({ h }: { h: Horse }) {
                   {cellIn(i, "date", "วันที่", { type: "date" })}
                   {cellIn(i, "name", "ชื่อรายการ")}
                 </div>
-                <div className="grid grid-cols-[60px_minmax(0,1fr)_76px_70px] gap-1.5">
-                  {cellIn(i, "grade", "เกรด", { placeholder: "G1" })}
+                <div className="grid grid-cols-[76px_minmax(0,1fr)_76px_70px] gap-1.5">
+                  <label className="grid gap-0.5 text-[11px] text-ink-muted">เกรด
+                    <select className={inputClass} aria-label="เกรด" value={r.grade} onChange={(e) => setRace(i, { grade: e.target.value })}>
+                      <option value="">–</option>
+                      {/* a grade from an imported file that isn't in the list stays selectable */}
+                      {[...CAREER_GRADES, ...(r.grade && !(CAREER_GRADES as readonly string[]).includes(r.grade) ? [r.grade] : [])].map((g) => <option key={g}>{g}</option>)}
+                    </select>
+                  </label>
                   {cellIn(i, "course", "สนาม")}
                   <label className="grid gap-0.5 text-[11px] text-ink-muted">พื้น
                     <select className={inputClass} aria-label="พื้น" value={r.surface} onChange={(e) => setRace(i, { surface: e.target.value as CareerRace["surface"] })}>

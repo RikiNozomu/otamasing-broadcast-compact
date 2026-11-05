@@ -32,8 +32,8 @@ const ROW_H = 86;
 const REGION = new Intl.DisplayNames(["en"], { type: "region" });
 const countryName = (c: string) => { try { return REGION.of(c) ?? c; } catch { return c; } };
 
-/** Colour of a grade pill: "Jpn1" like G1, anything else (OP, L…) a muted blue unless known. */
-const gradeColor = (g: string) => GRADE_COLOR[g.replace(/^Jpn/i, "G").toUpperCase()] ?? "#4A5590";
+/** Colour of a grade pill: "Jpn1" and the jump grade "JG-1" like G1, anything else (OP…) a muted blue unless known. */
+const gradeColor = (g: string) => GRADE_COLOR[g.replace(/^(Jpn|JG-?)/i, "G").toUpperCase()] ?? "#4A5590";
 
 /** Light blue for the male side, light red for the female side. */
 export const MALE_BG = "#CDE6FF", FEMALE_BG = "#FFD3DA";

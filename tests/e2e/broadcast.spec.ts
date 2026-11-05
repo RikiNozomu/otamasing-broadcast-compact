@@ -448,6 +448,12 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await expect(scene.getByTestId("career-winner").first()).toHaveText("(Morning Gallop)");
   await dock.getByRole("button", { name: "หน้า 4" }).click();
   await expect(scene.getByTestId("career-row")).toHaveCount(3);
+  // a past race's grade is picked from a list, jump grades included
+  await dock.getByTestId("career-list").getByRole("button").first().click();
+  await expect(dock.getByTestId("career-edit").getByLabel("เกรด").locator("option")).toHaveText(["–", "G1", "G2", "G3", "L", "JG-1", "JG-2", "JG-3"]);
+  await dock.getByTestId("career-edit").getByLabel("เกรด").selectOption("JG-1");
+  await dock.getByRole("button", { name: "หน้า 3" }).click();
+  await expect(scene.getByTestId("career-grade").first()).toHaveText("JG-1");
   // a new horse; deleting the Active horse puts the home page back
   await dock.getByRole("button", { name: "+ เพิ่มม้า" }).click();
   await dock.locator("#h-name").fill("Brand New");
