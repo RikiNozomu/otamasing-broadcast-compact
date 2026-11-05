@@ -14,7 +14,7 @@ import { Switch } from "../components/Switch";
 
 const VIEW_LABEL: Record<PhotoView, string> = { card: "หน้าการ์ดรายชื่อ", result: "หน้าผล" };
 
-function Thumb({ k, rev, on, n, onShow, onRemove }: { k: string; rev: number | undefined; on: boolean; n: number; onShow: () => void; onRemove: () => void }) {
+export function Thumb({ k, rev, on, n, onShow, onRemove }: { k: string; rev: number | undefined; on: boolean; n: number; onShow: () => void; onRemove: () => void }) {
   const url = useImage(k, rev);
   return (
     <div className={cx("relative aspect-video border-2 bg-studio bg-cover bg-center", on ? "border-yellow" : "border-line")} style={{ backgroundImage: url ? `url("${url}")` : undefined }} data-thumb={n}>

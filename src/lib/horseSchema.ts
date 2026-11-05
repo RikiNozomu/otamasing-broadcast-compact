@@ -76,6 +76,19 @@ export const SilksSchema = z.object({
 });
 export type Silks = z.infer<typeof SilksSchema>;
 
+/** The horse's pictures (IndexedDB keys) and their slideshow; same shape as a race's PhotoSet. */
+export const HorsePhotosSchema = z.object({
+  keys: z.array(z.string()).default([]),
+  index: z.number().int().min(0).default(0),
+  auto: z.boolean().default(true),
+  seconds: z.number().min(1).max(600).default(5),
+  since: z.number().default(0),
+});
+
+/** How the owner's silks are shown: an uploaded picture, the pattern drawn by the app, or none. */
+export const SILKS_MODES = ["upload", "pattern", "none"] as const;
+export type SilksMode = (typeof SILKS_MODES)[number];
+
 /** Which page of the horse scene is on screen; the pages take turns with `auto` like the racecard. */
 export const HorseViewSchema = z.object({
   page: z.number().int().min(0).default(0),
@@ -105,8 +118,12 @@ export const HorseSchema = z.object({
   damDam: z.string().default(""),
   owner: z.string().default(""),
   trainer: z.string().default(""),
-  /** The owner's silks drawn by the app (null = none; an uploaded picture takes its place). */
+  /** The owner's silks drawn by the app (its colours and patterns). */
   silks: SilksSchema.nullable().default(null),
+  /** Which silks are shown; left out = the drawn pattern when `silks` is set, otherwise none. */
+  silksMode: z.enum(SILKS_MODES).optional(),
+  /** The horse's pictures on the left of the scene, taking turns. */
+  photos: HorsePhotosSchema.default({}),
   /** Career record: starts and 1st / 2nd / 3rd (4th or worse = the rest). */
   record: z.object({
     starts: z.number().int().min(0).default(0),

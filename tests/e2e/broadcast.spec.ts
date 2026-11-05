@@ -398,10 +398,23 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await expect(scene.getByTestId("fact-born")).toContainText("Japan");
   // the owner's silks drawn as SVG; turned off in the dock they leave the screen
   await expect(scene.getByTestId("silks-svg")).toBeVisible();
-  await dock.getByTestId("silks-on").click();
+  // silks: upload / pattern / none
+  await dock.getByTestId("silks-mode-none").click();
   await expect(scene.getByTestId("silks")).toHaveCount(0);
-  await dock.getByTestId("silks-on").click();
+  await dock.getByTestId("silks-mode-upload").click();
+  await dock.getByTestId("silks-file").setInputFiles(png("silks.png"));
+  await expect(scene.locator("[data-testid=silks] img")).toBeVisible();
+  await dock.getByTestId("silks-mode-pattern").click();
   await expect(scene.getByTestId("silks-svg")).toBeVisible();
+  // several horse pictures take turns
+  await dock.getByTestId("add-photos-horse").setInputFiles([png("a.png"), png("b.png")]);
+  await dock.getByTestId("auto-horse-photos").click();
+  await dock.getByRole("button", { name: "แสดงรูปที่ 1" }).click();
+  await expect(dock.getByTestId("photo-pos-horse")).toHaveText("1 / 2");
+  await dock.getByRole("button", { name: "รูปม้าถัดไป" }).click();
+  await expect(dock.getByTestId("photo-pos-horse")).toHaveText("2 / 2");
+  await expect(scene.getByTestId("horse-photo")).toHaveAttribute("data-has", "");
+  await expect(scene.getByTestId("horse-page-title").filter({ hasText: "PROFILE" })).toHaveCount(1);
   // the dock picks the prize money currency for every horse
   await dock.getByTestId("horse-currency").selectOption("USD");
   await expect(scene.getByTestId("fact-earnings")).toContainText("≈ $5,361,477");
@@ -412,6 +425,7 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await dock.getByTestId("horse-auto").click();
   await dock.getByRole("button", { name: "หน้า 2" }).click();
   await expect(scene).toHaveAttribute("data-page", "2");
+  await expect(scene.getByTestId("horse-page-title").filter({ hasText: "PEDIGREE" })).toHaveCount(1);
   await expect(scene.getByTestId("ped-sire")).toContainText("Example Sire");
   await expect(scene.getByTestId("ped-sire")).toHaveAttribute("data-sex", "M");
   await expect(scene.getByTestId("ped-damDam")).toContainText("Paper Queen");
@@ -420,6 +434,7 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   // page 3: the newest 7 races; a win shows the runner-up in brackets, 1st/2nd/3rd in gold/silver/bronze
   await dock.getByRole("button", { name: "หน้า 3" }).click();
   await expect(scene.getByTestId("career-row")).toHaveCount(7);
+  await expect(scene.getByTestId("horse-page-title").filter({ hasText: "RACE RECORD 1/2" })).toHaveCount(1);
   await expect(scene.getByTestId("career-pos").first()).toHaveText("1/18");
   await expect(scene.getByTestId("career-pos").first()).toHaveAttribute("data-medal", "1");
   await expect(scene.getByTestId("career-pos").nth(2)).toHaveAttribute("data-medal", "2");

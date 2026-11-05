@@ -7,7 +7,7 @@ import { useSyncExternalStore } from "react";
 import { activeExists, HOME, newPhotos, newCard, newResult, type AppData } from "./model";
 import { sampleData } from "./sample";
 import { raceImageKey } from "./images";
-import { newHorseSettings, newHorseView } from "./horses";
+import { horsePhotoKey, newHorseSettings, newHorseView, silksKey } from "./horses";
 
 // own keys: this site shares the rikinozomu.github.io origin (and so its storage) with otamasing-broadcast
 export const STORAGE_KEY = "otamasing-broadcast-compact/v1";
@@ -50,6 +50,10 @@ export function getData(): AppData {
     h.silks ??= null;
     h.sex ??= null;
     h.sireSire ??= ""; h.sireDam ??= ""; h.damDam ??= "";
+    // one picture per horse before the slideshow
+    if (!h.photos) h.photos = { keys: data.images[horsePhotoKey(h.id)] ? [horsePhotoKey(h.id)] : [], index: 0, auto: true, seconds: 5, since: 0 };
+    // an uploaded silks picture used to win over the drawn one
+    if (!h.silksMode && data.images[silksKey(h.id)]) h.silksMode = "upload";
   }
   if (!activeExists(data.active, data.races, data.horses)) data.active = HOME;
   data.home.page ??= 0;

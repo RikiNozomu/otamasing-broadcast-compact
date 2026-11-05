@@ -1,5 +1,5 @@
 /**
- * Tab "ม้า": horse profiles. Pick a horse, put it on screen, edit its facts, pictures (horse, owner's silks)
+ * Tab "ม้า": horse profiles. Pick a horse, put it on screen, edit its facts, pictures (a slideshow), owner's silks (upload, pattern or none)
  * and past races; the currency prize money is shown in applies to every horse.
  */
 import { AnimatePresence } from "motion/react";
@@ -7,7 +7,7 @@ import { useState, type ReactNode } from "react";
 import { exportHorse, horseOf, HOME, newId, parseActive } from "../lib/model";
 import {
   COATS, CURRENCIES, HorseSchema, careerNewestFirst, horsePhotoKey, posText, rateOf, recordFromRaces, recordText, setHorseAuto, showHorsePage, silksKey, useHorsePage, dotDate,
-  CareerRaceSchema, SilksSchema, SILKS_BODY, SILKS_SLEEVES, type CareerRace, type Silks, type Coat, type Currency, type Horse,
+  CareerRaceSchema, SilksSchema, SILKS_BODY, SILKS_MODES, SILKS_SLEEVES, silksModeOf, type CareerRace, type SilksMode, type Silks, type Coat, type Currency, type Horse,
 } from "../lib/horses";
 import { bumpImage, update, useData } from "../lib/store";
 import { deleteImage, putImage, useImage } from "../lib/images";
@@ -22,6 +22,8 @@ import { Stage } from "../overlay/Stage";
 import { HorseScene } from "../overlay/HorseScene";
 import { FlagPicker } from "./FlagPicker";
 import { ExportPanel } from "./ExportPanel";
+import { Thumb } from "./PhotoSetEditor";
+import { setAuto, showPhoto, shownIndex, useShownIndex } from "../lib/photos";
 
 const CODES = Object.keys(CURRENCIES) as Currency[];
 const num = (v: string) => (v === "" ? null : Math.max(0, Math.round(+v)));
@@ -50,6 +52,79 @@ function PictureField({ k, label, testId, contain, light }: { k: string; label: 
         {url && <Button onClick={remove}>ลบรูป</Button>}
       </span>
     </div>
+  );
+}
+
+type PhotoSet = Horse["photos"];
+
+/** The horse's pictures: add several, remove, pick the one on screen (or step with ◀ ▶), and the automatic slideshow. */
+function HorsePhotosSection({ h }: { h: Horse }) {
+  const d = useData();
+  const set = h.photos;
+  const shown = useShownIndex(set);
+  const n = set.keys.length;
+  const save = (fn: (s: PhotoSet) => PhotoSet) => updateHorse(h.id, (x) => ({ ...x, photos: fn(x.photos) }));
+  const add = async (files: FileList | null) => {
+    if (!files?.length) return;
+    const keys: string[] = [];
+    for (const f of Array.from(files)) {
+      const k = `photo:${newId()}`;
+      await putImage(k, f);
+      keys.push(k);
+    }
+    const now = Date.now();
+    update((x) => ({
+      ...x,
+      images: { ...x.images, ...Object.fromEntries(keys.map((k) => [k, now])) },
+      horses: x.horses.map((y) => (y.id === h.id ? { ...y, photos: { ...y.photos, keys: [...y.photos.keys, ...keys] } } : y)),
+    }));
+  };
+  const remove = async (k: string) => {
+    await deleteImage(k).catch(() => {});
+    update((x) => {
+      const images = { ...x.images };
+      delete images[k];
+      return {
+        ...x, images,
+        horses: x.horses.map((y) => {
+          if (y.id !== h.id) return y;
+          const s = y.photos, at = s.keys.indexOf(k), cur = Math.max(0, shownIndex(s));
+          const keys = s.keys.filter((z) => z !== k);
+          return { ...y, photos: showPhoto({ ...s, keys }, cur > at ? cur - 1 : cur) };
+        }),
+      };
+    });
+  };
+  return (
+    <Section title="รูปม้า (ซ้ายจอ)">
+      {n > 0 && (
+        <div className="grid grid-cols-4 gap-1" data-testid="thumbs-horse">
+          {set.keys.map((k, i) => <Thumb key={k} k={k} rev={d.images[k]} n={i + 1} on={i === shown} onShow={() => save((s) => showPhoto(s, i))} onRemove={() => remove(k)} />)}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <label className={buttonClass("primary")} htmlFor="horse-photos">เพิ่มรูป…</label>
+        <input type="file" id="horse-photos" data-testid="add-photos-horse" accept="image/*" multiple hidden onChange={(e) => { const f = e.target.files; add(f).finally(() => { e.target.value = ""; }); }} />
+        {n > 1 && (
+          <>
+            <Button aria-label="รูปม้าก่อนหน้า" onClick={() => save((s) => showPhoto(s, shownIndex(s) - 1))}>◀</Button>
+            <span className="text-xs text-ink-muted" data-testid="photo-pos-horse">{shown + 1} / {n}</span>
+            <Button aria-label="รูปม้าถัดไป" onClick={() => save((s) => showPhoto(s, shownIndex(s) + 1))}>▶</Button>
+          </>
+        )}
+      </div>
+      {n > 1 && (
+        <>
+          <Switch on={set.auto} label="เปลี่ยนรูปอัตโนมัติ" testId="auto-horse-photos" onToggle={() => save((s) => setAuto(s, { auto: !s.auto }))} />
+          <label className="flex items-center justify-between gap-3 text-[13px]" htmlFor="horse-photos-sec">
+            <span className="whitespace-nowrap">ทุกกี่วินาที</span>
+            <input id="horse-photos-sec" className={cx(inputClass, "w-20 text-center")} type="number" min={1} max={600} step={1} value={set.seconds}
+              onChange={(e) => { const v = Math.round(+e.target.value); if (v >= 1 && v <= 600) save((s) => setAuto(s, { seconds: v })); }} />
+          </label>
+        </>
+      )}
+      <span className={hintClass}>เลือกได้หลายรูปพร้อมกัน · รูปแนวตั้งจะชัดที่สุด (ช่องรูปกว้าง 1/3 ของจอ) · กดรูปเล็กเพื่อขึ้นจอรูปนั้น · รูปเก็บในเครื่องนี้ ไม่อยู่ในไฟล์ JSON</span>
+    </Section>
   );
 }
 
@@ -153,19 +228,34 @@ const SLEEVE_LABEL: Record<Silks["sleevePattern"], string> = {
   diamonds: "Diamonds", check: "Check", spots: "Spots", stars: "Stars", cuffs: "Cuffs", halved: "Halved",
 };
 
-/** The owner's silks drawn as SVG: colours and patterns of the body and the sleeves. An uploaded picture takes its place. */
+const MODE_LABEL: Record<SilksMode, string> = { upload: "Upload", pattern: "Pattern", none: "ไม่มี" };
+
+/** The owner's silks: an uploaded picture (PNG or SVG), a pattern drawn as SVG (colours and patterns of the body and sleeves), or none. */
 function SilksSection({ h }: { h: Horse }) {
-  const s = h.silks;
+  const mode = silksModeOf(h);
+  const s = h.silks ?? SilksSchema.parse({});
   const set = (patch: Partial<Silks>) => updateHorse(h.id, (x) => ({ ...x, silks: { ...(x.silks ?? SilksSchema.parse({})), ...patch } }));
   const color = (k: "body" | "accent" | "sleeves" | "sleeveAccent", label: string) => (
     <label className="grid justify-items-center gap-0.5 text-[11px] text-ink-muted">{label}
-      <input type="color" aria-label={`สีเสื้อ ${label}`} className="h-7 w-full cursor-pointer border border-line bg-transparent p-0" value={s![k]} onChange={(e) => set({ [k]: e.target.value.toUpperCase() })} />
+      <input type="color" aria-label={`สีเสื้อ ${label}`} className="h-7 w-full cursor-pointer border border-line bg-transparent p-0" value={s[k]} onChange={(e) => set({ [k]: e.target.value.toUpperCase() })} />
     </label>
   );
   return (
-    <Section title="สีเสื้อเจ้าของ (วาดเป็น SVG)">
-      <Switch on={!!s} label="แสดงสีเสื้อ" testId="silks-on" onToggle={() => updateHorse(h.id, (x) => ({ ...x, silks: x.silks ? null : SilksSchema.parse({}) }))} />
-      {s && (
+    <Section title="สีเสื้อเจ้าของ">
+      <div className="grid grid-cols-3 border border-line" role="radiogroup" aria-label="แบบสีเสื้อ">
+        {SILKS_MODES.map((m) => (
+          <button key={m} type="button" role="radio" aria-checked={mode === m} data-testid={`silks-mode-${m}`}
+            onClick={() => updateHorse(h.id, (x) => ({ ...x, silksMode: m, silks: m === "pattern" ? x.silks ?? SilksSchema.parse({}) : x.silks }))}
+            className={cx("p-[7px] text-[13px]", mode === m ? "bg-yellow font-semibold text-navy" : "bg-studio text-ink-muted")}>{MODE_LABEL[m]}</button>
+        ))}
+      </div>
+      {mode === "upload" && (
+        <>
+          <PictureField k={silksKey(h.id)} label="รูปสีเสื้อ (PNG หรือ .svg ทรงเสื้อมีแขน)" testId="silks-file" contain light />
+          <span className={hintClass}>บนจอจะอยู่ในกรอบสีขาว · รูปเก็บในเครื่องนี้ ไม่อยู่ในไฟล์ JSON</span>
+        </>
+      )}
+      {mode === "pattern" && (
         <>
           <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-2">
             <span className="grid aspect-video place-items-center rounded-[6px] bg-white p-1"><SilksSvg silks={s} className="h-full w-full" /></span>
@@ -181,9 +271,9 @@ function SilksSection({ h }: { h: Horse }) {
           <div className="grid grid-cols-4 gap-1.5">
             {color("body", "ตัว")}{color("accent", "ลายตัว")}{color("sleeves", "แขน")}{color("sleeveAccent", "ลายแขน")}
           </div>
+          <span className={hintClass}>วาดเป็น SVG · สีและลายอยู่ในไฟล์ JSON ด้วย</span>
         </>
       )}
-      <span className={hintClass}>ถ้าอัปรูปสีเสื้อ (PNG หรือ .svg) ไว้ในส่วนรูป จะใช้รูปนั้นแทน · สีเสื้อที่วาดนี้อยู่ในไฟล์ JSON ด้วย</span>
     </Section>
   );
 }
@@ -262,10 +352,11 @@ export function HorsesTab() {
     </Field>
   );
   const remove = async () => {
-    await Promise.all([horsePhotoKey(h.id), silksKey(h.id)].map((k) => deleteImage(k).catch(() => {})));
+    const keys = [...h.photos.keys, horsePhotoKey(h.id), silksKey(h.id)];
+    await Promise.all(keys.map((k) => deleteImage(k).catch(() => {})));
     update((x) => {
       const images = { ...x.images };
-      delete images[horsePhotoKey(h.id)]; delete images[silksKey(h.id)];
+      for (const k of keys) delete images[k];
       return { ...x, images, horses: x.horses.filter((y) => y.id !== h.id), active: x.active === horseOf(h.id) ? HOME : x.active };
     });
     setConfirmDel(false);
@@ -300,13 +391,7 @@ export function HorsesTab() {
 
       <HorsePages h={h} />
       <CurrencySection />
-      <Section title="รูป">
-        <div className="grid grid-cols-2 gap-2">
-          <PictureField k={horsePhotoKey(h.id)} label="รูปม้า (ซ้ายจอ)" testId="horse-photo-file" />
-          <PictureField k={silksKey(h.id)} label="รูปสีเสื้อ (ถ้ามี)" testId="silks-file" contain light />
-        </div>
-        <span className={hintClass}>รูปม้าแนวตั้งจะชัดที่สุด (ช่องรูปกว้าง 1/3 ของจอ) · รูปสีเสื้อใช้ PNG หรือ .svg ทรงเสื้อมีแขนได้เลย (ใช้แทนเสื้อที่วาด) บนจอจะอยู่ในกรอบสีขาว · รูปเก็บในเครื่องนี้ ไม่อยู่ในไฟล์ JSON</span>
-      </Section>
+      <HorsePhotosSection h={h} />
       <SilksSection h={h} />
       <Section title="ข้อมูลม้า">
         {text("name", "ชื่อม้า")}

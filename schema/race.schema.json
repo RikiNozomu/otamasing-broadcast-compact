@@ -679,6 +679,47 @@
                 ],
                 "default": null
               },
+              "silksMode": {
+                "type": "string",
+                "enum": [
+                  "upload",
+                  "pattern",
+                  "none"
+                ]
+              },
+              "photos": {
+                "type": "object",
+                "properties": {
+                  "keys": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": []
+                  },
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "auto": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "seconds": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 600,
+                    "default": 5
+                  },
+                  "since": {
+                    "type": "number",
+                    "default": 0
+                  }
+                },
+                "additionalProperties": false,
+                "default": {}
+              },
               "record": {
                 "type": "object",
                 "properties": {

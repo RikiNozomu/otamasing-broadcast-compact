@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { careerPage, earningsIn, horsePageKinds, horsePages, sexText, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
+import { careerPage, silksModeOf, earningsIn, horsePageKinds, horsePages, sexText, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
 import { activeExists, exportHorse, horseOf, mergeImport, parseActive, parseFile } from "../../src/lib/model";
 import { sampleData, sampleHorse } from "../../src/lib/sample";
 
@@ -40,6 +40,11 @@ describe("horse profile", () => {
     expect(sexText({ sex: "F", foaled: "2020-01-01" }, now)).toBe("MARE");
     expect(sexText({ sex: "G", foaled: "" }, now)).toBe("GELDING");
     expect(sexText({ sex: null, foaled: "" }, now)).toBe("");
+  });
+  it("silks mode: the drawn pattern when silks are set, unless chosen", () => {
+    expect(silksModeOf(horse())).toBe("none");
+    expect(silksModeOf(horse({ silks: {} }))).toBe("pattern");
+    expect(silksModeOf(horse({ silks: {}, silksMode: "upload" }))).toBe("upload");
   });
   it("position text", () => {
     const [a, b, c] = horse({ races: [race("2026-01-01", 1, { field: 18 }), race("2026-01-02", null, { outcome: "dq" }), race("2026-01-03", null)] }).races;
