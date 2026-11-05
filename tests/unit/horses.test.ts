@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { careerPage, earningsIn, horsePages, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
+import { careerPage, earningsIn, horsePageKinds, horsePages, sexText, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
 import { activeExists, exportHorse, horseOf, mergeImport, parseActive, parseFile } from "../../src/lib/model";
 import { sampleData, sampleHorse } from "../../src/lib/sample";
 
@@ -24,6 +24,22 @@ describe("horse profile", () => {
     expect(careerPage(h, 1)).toHaveLength(7);
     expect(careerPage(h, 2).map((r) => r.date)).toEqual(["2026-02-01", "2026-01-01"]);
     expect(horsePages(horse())).toBe(1);
+  });
+  it("a horse with a sire or dam gets the pedigree page after the profile", () => {
+    const h = horse({ sire: "S", races: Array.from({ length: 8 }, (_, i) => race(`2026-0${i + 1}-01`, 1)) });
+    expect(horsePageKinds(h).map((k) => k.kind)).toEqual(["profile", "pedigree", "races", "races"]);
+    expect(careerPage(h, 1)).toEqual([]);
+    expect(careerPage(h, 2)).toHaveLength(7);
+    expect(careerPage(h, 3)).toHaveLength(1);
+  });
+  it("sex text by age", () => {
+    const now = new Date("2026-11-05");
+    expect(sexText({ sex: "M", foaled: "2022-03-14" }, now)).toBe("COLT");
+    expect(sexText({ sex: "M", foaled: "2021-03-14" }, now)).toBe("HORSE");
+    expect(sexText({ sex: "F", foaled: "2023-01-01" }, now)).toBe("FILLY");
+    expect(sexText({ sex: "F", foaled: "2020-01-01" }, now)).toBe("MARE");
+    expect(sexText({ sex: "G", foaled: "" }, now)).toBe("GELDING");
+    expect(sexText({ sex: null, foaled: "" }, now)).toBe("");
   });
   it("position text", () => {
     const [a, b, c] = horse({ races: [race("2026-01-01", 1, { field: 18 }), race("2026-01-02", null, { outcome: "dq" }), race("2026-01-03", null)] }).races;

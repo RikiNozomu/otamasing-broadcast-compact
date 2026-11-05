@@ -76,7 +76,7 @@
 ## ข้อมูลม้า (`horses[]`)
 
 หน้าข้อมูลม้า: รูปม้าซ้ายจอ 1/3, ธงประเทศที่ฝึก + ชื่อม้า, "SIRE – DAM (by BMS)", O เจ้าของ / T เทรนเนอร์
-หน้า 1 เป็นข้อมูลม้า หน้าต่อไปเป็นผลงานหน้าละ 7 รายการ เรียงจากใหม่ไปเก่า (เรียงให้เองตาม `date`) รูปม้าและรูปสีเสื้อไม่อยู่ในไฟล์
+หน้า 1 เป็นข้อมูลม้า หน้า 2 เป็น Pedigree 3 รุ่น (มีเมื่อใส่ `sire` หรือ `dam`) หน้าต่อไปเป็นผลงานหน้าละ 7 รายการ เรียงจากใหม่ไปเก่า (เรียงให้เองตาม `date`) รูปม้าและรูปสีเสื้อไม่อยู่ในไฟล์
 ตอนนำเข้าแบบเพิ่มต่อ ม้าที่ชื่อ (หรือ `id`) ตรงกับของเดิมจะถูกแทนที่ ช่องที่ต้องมีคือ `name`
 
 | ช่อง | ชนิด | ค่าเริ่มต้น | ความหมาย |
@@ -86,7 +86,9 @@
 | `trainedIn` / `bornIn` | รหัสประเทศ 2 ตัว | `""` | ประเทศที่ฝึก (ธงหน้าชื่อ) / ประเทศเกิด |
 | `foaled` | `"YYYY-MM-DD"` | `""` | วันเกิด |
 | `coat` | `"Bay"` `"Dark Bay"` `"Brown"` `"Black"` `"Chestnut"` `"Dark Chestnut"` `"Grey"` `"White"` หรือ `null` | `null` | สีขน (มีกรอบสีขนบนจอ) |
+| `sex` | `"M"` `"F"` `"G"` หรือ `null` | `null` | เพศ: ผู้ (แสดง COLT ถึงอายุ 4 ปี, HORSE ตั้งแต่ 5 ปี), เมีย (FILLY / MARE), ตอน (GELDING) |
 | `sire` / `dam` / `bms` | string | `""` | พ่อพันธุ์ / แม่พันธุ์ / พ่อของแม่ |
+| `sireSire` / `sireDam` / `damDam` | string | `""` | พ่อของพ่อ / แม่ของพ่อ / แม่ของแม่ (หน้า Pedigree) |
 | `owner` / `trainer` | string | `""` | เจ้าของ / เทรนเนอร์ |
 | `silks` | object หรือ `null` | `null` | สีเสื้อเจ้าของที่วาดเป็น SVG (เสื้อมีแขน): `body` สีตัว, `pattern` ลายตัว (`"plain"` `"hoop1"` `"hoop2"` `"hoop3"` `"belt"` `"sash"` `"cross"` `"stripes"` `"seams"` `"braces"` `"halves"` `"quartered"` `"check"` `"harlequin"` `"diamondBand"` `"chevron"` `"bigV"` `"sawtooth"` `"hash"` `"yoke"` `"spots"` `"stars"` `"star"` `"ring"` `"diamond"`), `accent` สีลายตัว, `sleeves` สีแขน, `sleevePattern` ลายแขน (`"plain"` `"hoop1"` `"hoop2"` `"hoop3"` `"stripes"` `"chevrons"` `"diamonds"` `"check"` `"spots"` `"stars"` `"cuffs"` `"halved"`), `sleeveAccent` สีลายแขน สีเป็น `"#RRGGBB"` |
 | `record` | `{ starts, first, second, third }` | 0 ทั้งหมด | สถิติ แสดงเป็น `12 (5-3-1-3)` (ตัวสุดท้าย = อันดับ 4 ลงไป คิดให้เอง) |

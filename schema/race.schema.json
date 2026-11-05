@@ -548,6 +548,22 @@
                 ],
                 "default": null
               },
+              "sex": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "M",
+                      "F",
+                      "G"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
               "sire": {
                 "type": "string",
                 "default": ""
@@ -557,6 +573,18 @@
                 "default": ""
               },
               "bms": {
+                "type": "string",
+                "default": ""
+              },
+              "sireSire": {
+                "type": "string",
+                "default": ""
+              },
+              "sireDam": {
+                "type": "string",
+                "default": ""
+              },
+              "damDam": {
                 "type": "string",
                 "default": ""
               },

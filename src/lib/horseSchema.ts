@@ -93,10 +93,16 @@ export const HorseSchema = z.object({
   bornIn: country.default(""),
   foaled: z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "วันเกิดต้องเป็น YYYY-MM-DD"), z.literal("")]).default(""),
   coat: z.enum(Object.keys(COATS) as [Coat, ...Coat[]]).nullable().default(null),
+  /** M = male (colt / horse), F = female (filly / mare), G = gelding. */
+  sex: z.enum(["M", "F", "G"]).nullable().default(null),
   sire: z.string().default(""),
   dam: z.string().default(""),
   /** Broodmare sire (the dam's sire). */
   bms: z.string().default(""),
+  /** The other grandparents, for the pedigree page: the sire's sire and dam, the dam's dam. */
+  sireSire: z.string().default(""),
+  sireDam: z.string().default(""),
+  damDam: z.string().default(""),
   owner: z.string().default(""),
   trainer: z.string().default(""),
   /** The owner's silks drawn by the app (null = none; an uploaded picture takes its place). */

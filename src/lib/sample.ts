@@ -41,13 +41,14 @@ export function sampleData(): AppData {
 
 export { HOME };
 
-/** A made-up horse with ten past races (two pages of races after the profile). */
+/** A made-up horse with ten past races (profile, pedigree, then two pages of races). */
 export function sampleHorse(): Horse {
   const r = (date: string, name: string, grade: string, course: string, surface: "Turf" | "Dirt", distanceM: number, fav: number, finish: number, field: number, time: string, other: string) =>
     ({ date, name, grade, course, surface, distanceM, fav, finish, outcome: null, field, time, other });
   return {
     id: "sample-horse", name: "Sample Star", trainedIn: "JP", bornIn: "JP", foaled: "2022-03-14", coat: "Dark Bay",
-    sire: "Example Sire", dam: "Paper Princess", bms: "Old Champion", owner: "Otamasing Racing", trainer: "T. Example",
+    sex: "M",
+    sire: "Example Sire", dam: "Paper Princess", bms: "Old Champion", sireSire: "Grand Example", sireDam: "Model Mare", damDam: "Paper Queen", owner: "Otamasing Racing", trainer: "T. Example",
     silks: { body: "#000000", pattern: "cross", accent: "#E30613", sleeves: "#000000", sleevePattern: "stripes", sleeveAccent: "#FFE600" },
     record: { starts: 10, first: 5, second: 2, third: 1 }, earnings: 812_345_000, currency: "JPY",
     races: [

@@ -1,12 +1,13 @@
 /**
  * The horse scene (1920x1080). The horse's picture sharp on the left third; on the right, beside the
  * picture, the trained-in flag and the name, then "SIRE – DAM (by BMS)", then the owner (O) and trainer (T).
- * Below that the pages: page 1 is the profile (foaled, coat, born in, trained in, owner with silks,
- * trainer, record, prize money), the next pages the past races newest first. With auto on, the pages take turns.
+ * Below that the pages: page 1 is the profile (foaled, sex, coat, born in, trained in, owner with silks,
+ * trainer, record, prize money), page 2 the pedigree (three generations as a knockout bracket), the next pages
+ * the past races newest first. With auto on, the pages take turns.
  */
 import { AnimatePresence, motion } from "motion/react";
 import { useLayoutEffect, useRef, type ReactNode } from "react";
-import { careerPage, COATS, dotDate, earningsIn, horsePhotoKey, moneyText, posText, recordText, silksKey, useHorsePage, CAREER_ROWS, type CareerRace, type Horse } from "../lib/horses";
+import { careerPage, COATS, dotDate, earningsIn, horsePageKinds, horsePhotoKey, moneyText, posText, recordText, sexText, silksKey, useHorsePage, CAREER_ROWS, type CareerRace, type Horse } from "../lib/horses";
 import { useData } from "../lib/store";
 import { useImage } from "../lib/images";
 import { GRADE_COLOR } from "../lib/colors";
@@ -31,6 +32,17 @@ const countryName = (c: string) => { try { return REGION.of(c) ?? c; } catch { r
 
 /** Colour of a grade pill: "Jpn1" like G1, anything else (OP, L…) a muted blue unless known. */
 const gradeColor = (g: string) => GRADE_COLOR[g.replace(/^Jpn/i, "G").toUpperCase()] ?? "#4A5590";
+
+/** Light blue for the male side, light red for the female side. */
+export const MALE_BG = "#CDE6FF", FEMALE_BG = "#FFD3DA";
+const sexBg = (sex: Horse["sex"]) => (sex === "F" ? FEMALE_BG : sex ? MALE_BG : "#FFFFFF");
+
+/** Real gold, silver and bronze for the first three places (the text stays navy, white on bronze). */
+export const MEDAL: Record<number, { background: string; color: string }> = {
+  1: { background: "linear-gradient(135deg,#FFF1A8 0%,#F2C94C 30%,#C9971C 62%,#F6D86B 100%)", color: "#3A2A00" },
+  2: { background: "linear-gradient(135deg,#FFFFFF 0%,#D9DEE3 32%,#A7B0B8 64%,#E6EAEE 100%)", color: "#1F2A36" },
+  3: { background: "linear-gradient(135deg,#F7C08A 0%,#CD7F32 38%,#8C4F1C 70%,#D8935A 100%)", color: "#FFFFFF" },
+};
 
 function Badge({ letter }: { letter: string }) {
   return <span className="grid size-[44px] flex-none place-items-center rounded-[6px] bg-yellow font-display text-[30px] font-bold text-navy [text-shadow:none]">{letter}</span>;
@@ -74,13 +86,14 @@ function Header({ h }: { h: Horse }) {
     let s = 112;
     name.style.fontSize = s + "px";
     while (line.scrollWidth > maxWidth && s > 52) { s -= 4; name.style.fontSize = s + "px"; }
-  }, [h.name, h.trainedIn, maxWidth]);
+  }, [h.name, h.trainedIn, h.sex, maxWidth]);
   const pedigree = [h.sire, h.dam].filter(Boolean).join(" – ");
   return (
     <div className="absolute grid gap-2 text-white [text-shadow:0_2px_14px_rgb(0_0_0/.45)]" style={{ left: LEFT, top: 44, width: W }}>
       <div ref={lineRef} className="flex w-max items-center gap-5">
         <Flag code={h.trainedIn} className="h-[60px] w-[90px] rounded-[5px]" />
         <div ref={nameRef} data-testid="horse-name" className="font-display text-[112px] leading-[.95] font-bold whitespace-nowrap uppercase">{h.name}</div>
+        {h.sex && <span data-testid="horse-sex" className={cx(pill, "h-[52px] flex-none px-6 text-[36px] text-navy")} style={{ background: sexBg(h.sex) }}>{sexText(h)}</span>}
       </div>
       {(pedigree || h.bms) && (
         <div data-testid="pedigree" className="font-display text-[40px] leading-[1.15] font-semibold tracking-[.02em] uppercase">
@@ -95,10 +108,10 @@ function Header({ h }: { h: Horse }) {
   );
 }
 
-function Fact({ i, label, testId, children }: { i: number; label: string; testId: string; children: ReactNode }) {
+function Fact({ i, label, testId, span = 3, children }: { i: number; label: string; testId: string; span?: number; children: ReactNode }) {
   return (
-    <motion.div {...rowMotion(i)} data-testid={testId}
-      className="grid content-center gap-1 bg-[linear-gradient(90deg,var(--color-band)_70%,rgb(44_48_96/.4))] px-7 py-3 text-white">
+    <motion.div {...rowMotion(i)} data-testid={testId} style={{ gridColumn: `span ${span}` }}
+      className="grid min-w-0 content-center gap-1 bg-[linear-gradient(90deg,var(--color-band)_70%,rgb(44_48_96/.4))] px-7 py-3 text-white">
       <span className="font-display text-[24px] font-bold tracking-[.08em] text-yellow">{label}</span>
       <span className="flex min-w-0 items-center gap-4 font-display text-[44px] leading-[1.1] font-bold uppercase">{children}</span>
     </motion.div>
@@ -114,14 +127,17 @@ function Profile({ h }: { h: Horse }) {
   const dash = <span className="text-white/50">–</span>;
   const place = (c: string) => (c ? <><Flag code={c} className="h-[34px] w-[51px]" /><FitText>{countryName(c)}</FitText></> : dash);
   return (
-    <div data-testid="horse-profile" className="grid grid-cols-2 gap-x-4 gap-y-3" style={{ gridAutoRows: 128 }}>
-      <Fact i={0} label="FOALED" testId="fact-foaled">{h.foaled ? dotDate(h.foaled) : dash}</Fact>
-      <Fact i={1} label="COLOR" testId="fact-coat">
+    <div data-testid="horse-profile" className="grid grid-cols-6 gap-x-4 gap-y-3" style={{ gridAutoRows: 128 }}>
+      <Fact i={0} span={2} label="FOALED" testId="fact-foaled">{h.foaled ? dotDate(h.foaled) : dash}</Fact>
+      <Fact i={1} span={2} label="SEX" testId="fact-sex">
+        {h.sex ? <><span className="size-[40px] flex-none rounded-full shadow-[0_0_0_3px_#fff]" style={{ background: sexBg(h.sex) }} /><FitText>{sexText(h)}</FitText></> : dash}
+      </Fact>
+      <Fact i={2} span={2} label="COLOR" testId="fact-coat">
         {coat ? <><span className="size-[40px] flex-none rounded-[4px] shadow-[0_0_0_3px_#fff]" style={{ background: coat.color }} /><FitText>{h.coat}</FitText></> : dash}
       </Fact>
-      <Fact i={2} label="BORN IN" testId="fact-born">{place(h.bornIn)}</Fact>
-      <Fact i={3} label="TRAINED IN" testId="fact-trained">{place(h.trainedIn)}</Fact>
-      <Fact i={4} label="OWNER" testId="fact-owner">
+      <Fact i={3} label="BORN IN" testId="fact-born">{place(h.bornIn)}</Fact>
+      <Fact i={4} label="TRAINED IN" testId="fact-trained">{place(h.trainedIn)}</Fact>
+      <Fact i={5} label="OWNER" testId="fact-owner">
         {/* the uploaded picture (PNG or SVG) or else the silks drawn by the app, whole on a light tile */}
         {(silks || h.silks) && (
           <span data-testid="silks" className="grid h-[72px] w-[116px] flex-none place-items-center overflow-hidden rounded-[8px] bg-white p-1 shadow-[0_0_0_3px_rgb(255_255_255/.35)]">
@@ -130,9 +146,9 @@ function Profile({ h }: { h: Horse }) {
         )}
         {h.owner ? <FitText>{h.owner}</FitText> : dash}
       </Fact>
-      <Fact i={5} label="TRAINER" testId="fact-trainer">{h.trainer ? <FitText>{h.trainer}</FitText> : dash}</Fact>
-      <Fact i={6} label="RECORD" testId="fact-record">{recordText(h.record)}</Fact>
-      <Fact i={7} label="EARNINGS" testId="fact-earnings">
+      <Fact i={6} label="TRAINER" testId="fact-trainer">{h.trainer ? <FitText>{h.trainer}</FitText> : dash}</Fact>
+      <Fact i={7} label="RECORD" testId="fact-record">{recordText(h.record)}</Fact>
+      <Fact i={8} label="EARNINGS" testId="fact-earnings">
         {money ? <FitText>{money.converted && <span className="text-white/60">≈ </span>}{moneyText(money.amount, money.currency)}</FitText> : dash}
       </Fact>
     </div>
@@ -159,7 +175,8 @@ function CareerRow({ r, i }: { r: CareerRace; i: number }) {
         <span className="font-display text-[22px] leading-none font-semibold text-white/70">{[r.surface, r.distanceM ? `${r.distanceM}m` : ""].filter(Boolean).join(" ")}</span>
       </span>
       <span className={cx(td, "justify-center")}>{r.fav ?? "–"}</span>
-      <span data-testid="career-pos" className={cx(td, "justify-center font-bold", r.finish === 1 && "bg-yellow text-navy")}>{posText(r)}</span>
+      <span data-testid="career-pos" data-medal={r.finish && MEDAL[r.finish] ? r.finish : undefined} className={cx(td, "justify-center font-bold")}
+        style={r.finish && !r.outcome ? MEDAL[r.finish] : undefined}>{posText(r)}</span>
       <span className={cx(td, "justify-center")}>{r.time || "–"}</span>
       <span data-testid="career-winner" className={cx(td, "uppercase")}><FitText>{winner || "–"}</FitText></span>
     </motion.div>
@@ -180,8 +197,52 @@ function Career({ h, page }: { h: Horse; page: number }) {
   );
 }
 
+/** Pedigree box sizes and columns: the horse, its parents, its grandparents (left to right). */
+const BOX_W = 340, BOX_H = 112, COL_X = [0, 410, 820], PED_H = 640;
+type PedBox = { col: number; y: number; label: string; name: string; sex: Horse["sex"]; id: string };
+
+/** Three generations as a knockout bracket: each pair on the right joins with a line into the one it comes from. */
+function Pedigree({ h }: { h: Horse }) {
+  const ys4 = [0, 1, 2, 3].map((k) => (PED_H / 4) * (k + 0.5));
+  const ys2 = [(ys4[0] + ys4[1]) / 2, (ys4[2] + ys4[3]) / 2];
+  const boxes: PedBox[] = [
+    { col: 0, y: (ys2[0] + ys2[1]) / 2, label: "", name: h.name, sex: h.sex, id: "self" },
+    { col: 1, y: ys2[0], label: "SIRE", name: h.sire, sex: "M", id: "sire" },
+    { col: 1, y: ys2[1], label: "DAM", name: h.dam, sex: "F", id: "dam" },
+    { col: 2, y: ys4[0], label: "SIRE'S SIRE", name: h.sireSire, sex: "M", id: "sireSire" },
+    { col: 2, y: ys4[1], label: "SIRE'S DAM", name: h.sireDam, sex: "F", id: "sireDam" },
+    { col: 2, y: ys4[2], label: "DAM'S SIRE", name: h.bms, sex: "M", id: "damSire" },
+    { col: 2, y: ys4[3], label: "DAM'S DAM", name: h.damDam, sex: "F", id: "damDam" },
+  ];
+  /** The bracket from a pair (y1, y2) in column `col` into the box at y in the column before. */
+  const join = (col: number, y1: number, y2: number, y: number) => {
+    const xr = COL_X[col], xl = COL_X[col - 1] + BOX_W, xm = (xl + xr) / 2;
+    return `M${xr} ${y1} H${xm} V${y2} H${xr} M${xm} ${y} H${xl}`;
+  };
+  const lines = [join(1, ys2[0], ys2[1], boxes[0].y), join(2, ys4[0], ys4[1], ys2[0]), join(2, ys4[2], ys4[3], ys2[1])];
+  return (
+    <div data-testid="horse-pedigree" className="relative" style={{ height: PED_H }}>
+      <svg className="absolute inset-0 overflow-visible" width={W} height={PED_H} aria-hidden="true">
+        {lines.map((d, i) => (
+          <motion.path key={i} d={d} fill="none" stroke="#FFFFFF" strokeWidth={5} strokeLinejoin="miter"
+            initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ duration: 0.6, delay: 0.3 + i * 0.1, ease: "easeInOut" }} />
+        ))}
+      </svg>
+      {boxes.map((b, i) => (
+        <motion.div key={b.id} {...rowMotion(i)} data-testid={`ped-${b.id}`} data-sex={b.sex ?? undefined}
+          className="absolute grid content-center gap-0.5 rounded-[6px] px-5 text-navy shadow-[0_6px_18px_rgb(0_0_0/.35)]"
+          style={{ left: COL_X[b.col], top: b.y - BOX_H / 2, width: BOX_W, height: BOX_H, background: sexBg(b.sex) }}>
+          {b.label && <span className="font-display text-[20px] leading-none font-bold tracking-[.08em] text-navy/60">{b.label}</span>}
+          <FitText className={cx("font-display leading-[1.1] font-bold uppercase", b.col === 0 ? "text-[42px]" : "text-[36px]")}>{b.name || "–"}</FitText>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 export function HorseScene({ horse: h }: { horse: Horse }) {
   const { page, count } = useHorsePage(h);
+  const kind = horsePageKinds(h)[page]?.kind ?? "profile";
   return (
     <div className="absolute inset-0 overflow-hidden bg-scene" data-testid="horse" data-horse={h.id} data-page={page + 1}>
       <HorsePhoto h={h} />
@@ -189,7 +250,7 @@ export function HorseScene({ horse: h }: { horse: Horse }) {
       <div className="absolute" style={{ left: LEFT, top: CONTENT_TOP, width: W }}>
         <AnimatePresence initial={false} mode="popLayout">
           <motion.div key={page} exit={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-            {page === 0 ? <Profile h={h} /> : <Career h={h} page={page} />}
+            {kind === "profile" ? <Profile h={h} /> : kind === "pedigree" ? <Pedigree h={h} /> : <Career h={h} page={page} />}
           </motion.div>
         </AnimatePresence>
       </div>

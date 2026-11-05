@@ -405,14 +405,27 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   // the dock picks the prize money currency for every horse
   await dock.getByTestId("horse-currency").selectOption("USD");
   await expect(scene.getByTestId("fact-earnings")).toContainText("≈ $5,361,477");
-  // page 2: the newest 7 races; a win shows the runner-up in brackets
+  // the sex after the name and between foaled and colour
+  await expect(scene.getByTestId("horse-sex")).toHaveText("COLT");
+  await expect(scene.getByTestId("fact-sex")).toContainText("COLT");
+  // page 2: the pedigree, three generations, male side light blue, female side light red
   await dock.getByTestId("horse-auto").click();
   await dock.getByRole("button", { name: "หน้า 2" }).click();
   await expect(scene).toHaveAttribute("data-page", "2");
+  await expect(scene.getByTestId("ped-sire")).toContainText("Example Sire");
+  await expect(scene.getByTestId("ped-sire")).toHaveAttribute("data-sex", "M");
+  await expect(scene.getByTestId("ped-damDam")).toContainText("Paper Queen");
+  await expect(scene.getByTestId("ped-damDam")).toHaveAttribute("data-sex", "F");
+  await expect(scene.getByTestId("ped-damSire")).toContainText("Old Champion");
+  // page 3: the newest 7 races; a win shows the runner-up in brackets, 1st/2nd/3rd in gold/silver/bronze
+  await dock.getByRole("button", { name: "หน้า 3" }).click();
   await expect(scene.getByTestId("career-row")).toHaveCount(7);
   await expect(scene.getByTestId("career-pos").first()).toHaveText("1/18");
+  await expect(scene.getByTestId("career-pos").first()).toHaveAttribute("data-medal", "1");
+  await expect(scene.getByTestId("career-pos").nth(2)).toHaveAttribute("data-medal", "2");
+  await expect(scene.getByTestId("career-pos").nth(3)).toHaveAttribute("data-medal", "3");
   await expect(scene.getByTestId("career-winner").first()).toHaveText("(Morning Gallop)");
-  await dock.getByRole("button", { name: "หน้า 3" }).click();
+  await dock.getByRole("button", { name: "หน้า 4" }).click();
   await expect(scene.getByTestId("career-row")).toHaveCount(3);
   // a new horse; deleting the Active horse puts the home page back
   await dock.getByRole("button", { name: "+ เพิ่มม้า" }).click();

@@ -45,7 +45,12 @@ export function getData(): AppData {
   // data saved before the horse tab
   data.horses ??= [];
   data.horseSettings = { ...newHorseSettings(), ...data.horseSettings };
-  for (const h of data.horses) { h.view = { ...newHorseView(), ...h.view }; h.silks ??= null; }
+  for (const h of data.horses) {
+    h.view = { ...newHorseView(), ...h.view };
+    h.silks ??= null;
+    h.sex ??= null;
+    h.sireSire ??= ""; h.sireDam ??= ""; h.damDam ??= "";
+  }
   if (!activeExists(data.active, data.races, data.horses)) data.active = HOME;
   data.home.page ??= 0;
   // data saved before results existed

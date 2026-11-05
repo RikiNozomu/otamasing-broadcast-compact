@@ -18,26 +18,48 @@ export const CAREER_ROWS = 7;
 /** Races newest first. */
 export const careerNewestFirst = (h: Pick<Horse, "races">) => [...h.races].sort((a, b) => b.date.localeCompare(a.date));
 
-/** Pages of the scene: the profile, then the races CAREER_ROWS at a time. */
-export const horsePages = (h: Pick<Horse, "races">) => 1 + Math.ceil(h.races.length / CAREER_ROWS);
+/** The pedigree page is shown when a parent is known. */
+export const hasPedigree = (h: Pick<Horse, "sire" | "dam">) => !!(h.sire || h.dam);
 
-/** The races on page `page` (page 0 is the profile: no races). */
-export function careerPage(h: Pick<Horse, "races">, page: number) {
-  return page < 1 ? [] : paginate(careerNewestFirst(h), CAREER_ROWS, page - 1).rows;
+/** What each page of the scene shows: the profile, the pedigree (when known), then the races CAREER_ROWS at a time. */
+export type HorsePageKind = { kind: "profile" } | { kind: "pedigree" } | { kind: "races"; n: number };
+export function horsePageKinds(h: Pick<Horse, "races" | "sire" | "dam">): HorsePageKind[] {
+  const out: HorsePageKind[] = [{ kind: "profile" }];
+  if (hasPedigree(h)) out.push({ kind: "pedigree" });
+  for (let n = 0; n < Math.ceil(h.races.length / CAREER_ROWS); n++) out.push({ kind: "races", n });
+  return out;
+}
+export const horsePages = (h: Pick<Horse, "races" | "sire" | "dam">) => horsePageKinds(h).length;
+
+/** The races on page `page` (none on the profile and pedigree pages). */
+export function careerPage(h: Pick<Horse, "races" | "sire" | "dam">, page: number) {
+  const k = horsePageKinds(h)[page];
+  return k?.kind === "races" ? paginate(careerNewestFirst(h), CAREER_ROWS, k.n).rows : [];
+}
+
+/** Racing age: years since the year of birth (everyone ages on 1 January). */
+export const ageOf = (foaled: string, now = new Date()) => (foaled ? now.getFullYear() - +foaled.slice(0, 4) : null);
+/** COLT / HORSE (5 and up), FILLY / MARE, GELDING. */
+export function sexText(h: Pick<Horse, "sex" | "foaled">, now = new Date()): string {
+  if (!h.sex) return "";
+  if (h.sex === "G") return "GELDING";
+  const age = ageOf(h.foaled, now);
+  const old = age != null && age >= 5;
+  return h.sex === "M" ? (old ? "HORSE" : "COLT") : old ? "MARE" : "FILLY";
 }
 
 const asCycle = (h: Pick<Horse, "view">) => ({ ...h.view, index: h.view.page });
-export const shownHorsePage = (h: Pick<Horse, "view" | "races">, now = Date.now()) => cycleAt(asCycle(h), horsePages(h), now);
-export function showHorsePage(h: Pick<Horse, "view" | "races">, i: number, now = Date.now()): HorseView {
+export const shownHorsePage = (h: Pick<Horse, "view" | "races" | "sire" | "dam">, now = Date.now()) => cycleAt(asCycle(h), horsePages(h), now);
+export function showHorsePage(h: Pick<Horse, "view" | "races" | "sire" | "dam">, i: number, now = Date.now()): HorseView {
   const c = cycleTo(asCycle(h), i, horsePages(h), now);
   return { ...h.view, page: c.index, since: c.since };
 }
-export function setHorseAuto(h: Pick<Horse, "view" | "races">, patch: Partial<Pick<HorseView, "auto" | "seconds">>, now = Date.now()): HorseView {
+export function setHorseAuto(h: Pick<Horse, "view" | "races" | "sire" | "dam">, patch: Partial<Pick<HorseView, "auto" | "seconds">>, now = Date.now()): HorseView {
   const { index, auto, seconds, since } = cycleSet(asCycle(h), patch, horsePages(h), now);
   return { ...h.view, page: index, auto, seconds, since };
 }
 /** The page on screen, re-rendering when auto turns it. */
-export function useHorsePage(h: Pick<Horse, "view" | "races">) {
+export function useHorsePage(h: Pick<Horse, "view" | "races" | "sire" | "dam">) {
   const count = horsePages(h);
   return { page: Math.max(0, useCycle(asCycle(h), count)), count };
 }

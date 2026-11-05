@@ -67,9 +67,9 @@ function HorsePages({ h }: { h: Horse }) {
             <input id="horse-sec" className={cx(inputClass, "w-20 text-center")} type="number" min={1} max={600} step={1} value={h.view.seconds}
               onChange={(e) => { const v = Math.round(+e.target.value); if (v >= 1 && v <= 600) set({ seconds: v }); }} />
           </label>
-          <span className={hintClass}>หน้า 1 คือข้อมูลม้า หน้าต่อไปคือผลงาน 7 รายการต่อหน้า เรียงจากใหม่ไปเก่า</span>
+          <span className={hintClass}>หน้า 1 คือข้อมูลม้า หน้า 2 คือ Pedigree (ถ้าใส่พ่อแม่) หน้าต่อไปคือผลงาน 7 รายการต่อหน้า เรียงจากใหม่ไปเก่า</span>
         </>
-      ) : <span className={hintClass}>ยังไม่มีผลงาน แสดงหน้าข้อมูลหน้าเดียว</span>}
+      ) : <span className={hintClass}>ยังไม่มีผลงานและ Pedigree แสดงหน้าข้อมูลหน้าเดียว</span>}
     </Section>
   );
 }
@@ -246,7 +246,7 @@ export function HorsesTab() {
 
   const isAct = a.horseId === h.id;
   const set = (patch: Partial<Horse>) => updateHorse(h.id, (x) => ({ ...x, ...patch }));
-  const text = (k: "name" | "sire" | "dam" | "bms" | "owner" | "trainer", label: string, extra: Record<string, string> = {}) => (
+  const text = (k: "name" | "sire" | "dam" | "bms" | "sireSire" | "sireDam" | "damDam" | "owner" | "trainer", label: string, extra: Record<string, string> = {}) => (
     <Field id={`h-${k}`} label={label}>
       <input className={inputClass} id={`h-${k}`} value={h[k]} {...extra} onChange={(e) => set({ [k]: e.target.value })} />
     </Field>
@@ -315,6 +315,14 @@ export function HorsesTab() {
         <Field id="h-foaled" label="วันเกิด">
           <input className={inputClass} id="h-foaled" type="date" value={h.foaled} onChange={(e) => set({ foaled: e.target.value })} />
         </Field>
+        <Field id="h-sex" label="เพศ">
+          <select id="h-sex" className={inputClass} value={h.sex ?? ""} onChange={(e) => set({ sex: (e.target.value || null) as Horse["sex"] })}>
+            <option value="">ไม่ระบุ</option>
+            <option value="M">ผู้ (Colt / Horse)</option>
+            <option value="F">เมีย (Filly / Mare)</option>
+            <option value="G">ตอน (Gelding)</option>
+          </select>
+        </Field>
         <Field id="h-coat" label="สีขน">
           <span className="flex items-center gap-1.5">
             <span className="size-5 flex-none border border-white" style={{ background: h.coat ? COATS[h.coat].color : "transparent" }} />
@@ -324,11 +332,17 @@ export function HorsesTab() {
             </select>
           </span>
         </Field>
-        {text("sire", "พ่อพันธุ์ (Sire)")}
-        {text("dam", "แม่พันธุ์ (Dam)")}
-        {text("bms", "พ่อของแม่ (BMS)")}
         {text("owner", "เจ้าของ")}
         {text("trainer", "เทรนเนอร์")}
+      </Section>
+      <Section title="Pedigree (3 รุ่น)">
+        {text("sire", "พ่อพันธุ์ (Sire)")}
+        {text("sireSire", "พ่อของพ่อ")}
+        {text("sireDam", "แม่ของพ่อ")}
+        {text("dam", "แม่พันธุ์ (Dam)")}
+        {text("bms", "พ่อของแม่ (BMS)")}
+        {text("damDam", "แม่ของแม่")}
+        <span className={hintClass}>ใส่พ่อหรือแม่แล้วจะมีหน้า Pedigree ต่อจากหน้าข้อมูลม้า ฝั่งผู้พื้นฟ้าอ่อน ฝั่งเมียพื้นแดงอ่อน</span>
       </Section>
       <Section title={`สถิติ ${recordText(h.record)}`}>
         <div className="grid grid-cols-4 gap-1.5">
