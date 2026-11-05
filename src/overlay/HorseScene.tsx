@@ -249,7 +249,9 @@ function Pedigree({ h }: { h: Horse }) {
       <svg className="absolute inset-0 overflow-visible" width={W} height={PED_H} aria-hidden="true">
         {lines.map((d, i) => (
           <motion.path key={i} d={d} fill="none" stroke="#FFFFFF" strokeWidth={5} strokeLinejoin="miter"
-            initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ duration: 0.6, delay: 0.3 + i * 0.1, ease: "easeInOut" }} />
+            initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1, transition: { duration: 0.6, delay: 0.3 + i * 0.1, ease: "easeInOut" } }}
+            // on a page change the lines go with the boxes (without this they stayed until the old page was dropped)
+            exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeOut" } }} />
         ))}
       </svg>
       {boxes.map((b, i) => (
