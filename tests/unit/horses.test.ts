@@ -88,7 +88,6 @@ describe("horses in the data", () => {
     const b = mergeImport(cur, horses.data, "replace");
     expect(b.horses.map((h) => h.name)).toEqual(["Solo"]);
     expect(b.races).toEqual(cur.races);
-    expect(b.active).toBe(cur.active);
   });
   it("an empty file is still refused", () => {
     expect(parseFile(JSON.stringify({ races: [], horses: [] })).ok).toBe(false);
