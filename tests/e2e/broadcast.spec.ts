@@ -125,8 +125,11 @@ test("import JSON (append / replace), reject a bad file, delete with confirm", a
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list]")).toBeVisible();
 
   await dock.getByTestId("import-file").setInputFiles(file);
-  await dock.getByRole("button", { name: "แทนที่ทั้งหมด" }).click();
+  // a file of races replaces the races only: the horses stay
+  await dock.getByRole("button", { name: "แทนที่รายการแข่งทั้งหมด" }).click();
   await expect(dock.getByTestId("race-row")).toHaveCount(1);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await expect(dock.getByRole("tab", { name: "Sample Star" })).toBeVisible();
 });
 
 test("export inside OBS: copy the JSON and paste it back in", async ({ context }) => {
@@ -196,6 +199,9 @@ test("a save that leaves an empty file is reported, and an empty file is named o
 test("a name too long for its box is squeezed sideways, not cut with an ellipsis", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  // keep horse 1 on screen: stop the racecard turning its pages
+  await dock.getByTestId("card-auto").click();
+  await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 1" }).click();
   await dock.getByLabel("ชื่อม้าเบอร์ 1", { exact: true }).fill("Onesmoothoperator Extraordinaire Of The Northern Lantern Valley");
   const cell = overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse]");
   const text = cell.locator("[data-fit]");

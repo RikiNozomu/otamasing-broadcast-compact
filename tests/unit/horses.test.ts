@@ -77,6 +77,19 @@ describe("horses in the data", () => {
     expect(next.horses[0].id).toBe(cur.horses[0].id);
     expect(next.races).toHaveLength(cur.races.length);
   });
+  it("replace only swaps what the file holds", () => {
+    const cur = sampleData();
+    const races = parseFile(JSON.stringify({ races: [{ date: "2026-12-06", name: "Only", round: "1R", runners: [{ number: 1, name: "A" }, { number: 2, name: "B" }] }] }));
+    const horses = parseFile(JSON.stringify({ horses: [{ name: "Solo" }] }));
+    if (!races.ok || !horses.ok) throw new Error("bad file");
+    const a = mergeImport(cur, races.data, "replace");
+    expect(a.races.map((r) => r.name)).toEqual(["Only"]);
+    expect(a.horses).toEqual(cur.horses);
+    const b = mergeImport(cur, horses.data, "replace");
+    expect(b.horses.map((h) => h.name)).toEqual(["Solo"]);
+    expect(b.races).toEqual(cur.races);
+    expect(b.active).toBe(cur.active);
+  });
   it("an empty file is still refused", () => {
     expect(parseFile(JSON.stringify({ races: [], horses: [] })).ok).toBe(false);
   });
