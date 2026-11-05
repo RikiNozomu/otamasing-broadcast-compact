@@ -49,13 +49,19 @@ describe("mergeImport", () => {
     const r = next.races.find((x) => x.round === "11R")!;
     expect(r.name).toBe("Renamed");
     expect(r.id).toBe("sample-11");
-    expect(next.active).toBe("sample-11");
+  });
+  it("after an import the screen goes to the home page, or stays blank if the blank page was on", () => {
+    expect(mergeImport(cur, file("11R", "Renamed"), "append").active).toBe("home");
+    expect(mergeImport({ ...cur, active: "home" }, file("9R", "New"), "append").active).toBe("home");
+    expect(mergeImport({ ...cur, active: "blank" }, file("9R", "New"), "append").active).toBe("blank");
+    expect(mergeImport({ ...cur, active: "sample-11:result" }, file("1R", "Only"), "replace").active).toBe("home");
+    expect(mergeImport({ ...cur, active: "blank" }, file("1R", "Only"), "replace").active).toBe("blank");
   });
   it("append adds new races at the end", () => {
     const next = mergeImport(cur, file("9R", "New"), "append");
     expect(next.races.map((x) => x.round)).toEqual(["10R", "11R", "12R", "9R"]);
   });
-  it("replace swaps the whole list and falls back to home when Active is gone", () => {
+  it("replace swaps the whole list", () => {
     const next = mergeImport(cur, file("1R", "Only"), "replace");
     expect(next.races).toHaveLength(1);
     expect(next.active).toBe("home");
@@ -66,7 +72,6 @@ describe("mergeImport", () => {
     if (!res.ok) return;
     const next = mergeImport({ ...cur, races: [] }, res.data, "replace");
     expect(next.races).toEqual(cur.races);
-    expect(next.active).toBe(cur.active);
     expect(next.home).toEqual(cur.home);
   });
 });

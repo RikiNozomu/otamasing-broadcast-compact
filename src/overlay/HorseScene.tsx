@@ -32,8 +32,8 @@ const ROW_H = 86;
 const REGION = new Intl.DisplayNames(["en"], { type: "region" });
 const countryName = (c: string) => { try { return REGION.of(c) ?? c; } catch { return c; } };
 
-/** Colour of a grade pill: "Jpn1" like G1, anything else (OP, L…) a muted blue unless known. */
-const gradeColor = (g: string) => GRADE_COLOR[g.replace(/^Jpn/i, "G").toUpperCase()] ?? "#4A5590";
+/** Colour of a grade pill: "Jpn1" and the jump grade "JG-1" like G1, anything else (OP…) a muted blue unless known. */
+const gradeColor = (g: string) => GRADE_COLOR[g.replace(/^(Jpn|JG-?)/i, "G").toUpperCase()] ?? "#4A5590";
 
 /** Light blue for the male side, light red for the female side. */
 export const MALE_BG = "#CDE6FF", FEMALE_BG = "#FFD3DA";
@@ -249,7 +249,9 @@ function Pedigree({ h }: { h: Horse }) {
       <svg className="absolute inset-0 overflow-visible" width={W} height={PED_H} aria-hidden="true">
         {lines.map((d, i) => (
           <motion.path key={i} d={d} fill="none" stroke="#FFFFFF" strokeWidth={5} strokeLinejoin="miter"
-            initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ duration: 0.6, delay: 0.3 + i * 0.1, ease: "easeInOut" }} />
+            initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1, transition: { duration: 0.6, delay: 0.3 + i * 0.1, ease: "easeInOut" } }}
+            // on a page change the lines go with the boxes (without this they stayed until the old page was dropped)
+            exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeOut" } }} />
         ))}
       </svg>
       {boxes.map((b, i) => (

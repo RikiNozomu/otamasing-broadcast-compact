@@ -17,6 +17,8 @@ export const silksModeOf = (h: Pick<Horse, "silks" | "silksMode">): SilksMode =>
 
 /** Past races per page of the scene. */
 export const CAREER_ROWS = 7;
+/** Grades offered in the dock for a past race ("" = none); JG-n are jump grades. */
+export const CAREER_GRADES = ["G1", "G2", "G3", "L", "JG-1", "JG-2", "JG-3"] as const;
 
 /** Races newest first. */
 export const careerNewestFirst = (h: Pick<Horse, "races">) => [...h.races].sort((a, b) => b.date.localeCompare(a.date));

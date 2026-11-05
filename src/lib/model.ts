@@ -240,8 +240,10 @@ export function parseFile(text: string): ParseResult {
  * "append": add, replacing races with the same date+course+round (keeping their id, so Active stays).
  * "replace": what the file holds becomes the whole list (its races replace all races, its horses all horses;
  * a file without races keeps the races, one without horses keeps the horses).
+ * Either way the screen goes to the home page afterwards, unless the blank page was on (it stays blank).
  */
 export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mode: "append" | "replace"): AppData {
+  const active = cur.active === BLANK ? BLANK : HOME;
   const incoming: Race[] = file.races.map((r) => ({ ...r, id: r.id ?? newId() }));
   const incomingHorses: Horse[] = file.horses.map((h) => ({ ...h, id: h.id ?? newId() }));
   if (mode === "replace") {
@@ -249,7 +251,6 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
     const hasRaces = incoming.length > 0, hasHorses = incomingHorses.length > 0;
     const races = hasRaces ? incoming : cur.races;
     const horses = hasHorses ? incomingHorses : cur.horses;
-    const active = file.active && activeExists(file.active, races, horses) ? file.active : activeExists(cur.active, races, horses) ? cur.active : HOME;
     return {
       ...cur,
       races,
@@ -274,7 +275,7 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
     if (i >= 0) horses[i] = { ...h, id: horses[i].id };
     else horses.push(h);
   }
-  return { ...cur, races, horses };
+  return { ...cur, races, horses, active };
 }
 
 export function exportFile(data: AppData, only?: string): FileInput {
