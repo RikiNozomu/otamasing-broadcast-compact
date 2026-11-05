@@ -4,6 +4,7 @@
  * The import schema fills defaults, so a hand-written file only needs the race facts and runners.
  */
 import { z } from "zod";
+import { HorseSchema, HorseSettingsSchema, type Horse, type HorseSettings } from "./horseSchema.ts";
 
 export const MAX_RUNNERS = 30;
 export const MIN_RUNNERS = 2;
@@ -155,20 +156,25 @@ export const HomeSchema = z.object({
 });
 export type Home = z.infer<typeof HomeSchema>;
 
-/** A whole export, or a file written by hand / by Claude: only `races` is required. */
+/** A whole export, or a file written by hand / by Claude: `races` or `horses` (or both). */
 export const FileSchema = z.object({
   version: z.literal(1).default(1),
-  races: z.array(RaceSchema).min(1, "ต้องมีอย่างน้อย 1 รายการ"),
+  races: z.array(RaceSchema).default([]),
+  horses: z.array(HorseSchema).default([]),
+  horseSettings: HorseSettingsSchema.optional(),
   home: HomeSchema.optional(),
   active: z.string().optional(),
   transition: z.enum(TRANSITIONS).optional(),
-});
+}).refine((f) => f.races.length + f.horses.length > 0, { message: "ต้องมีอย่างน้อย 1 รายการหรือม้า 1 ตัว", path: ["races"] });
 export type FileInput = z.input<typeof FileSchema>;
 
 export interface AppData {
   version: 1;
   races: Race[];
-  /** "home" (the race list page), "blank" (nothing), a race id (its racecard) or `<race id>:result` (its result page). */
+  /** Horse profiles (the ม้า tab) and their settings. */
+  horses: Horse[];
+  horseSettings: HorseSettings;
+  /** "home" (the race list page), "blank" (nothing), a race id (its racecard), `<race id>:result` (its result page) or `horse:<id>`. */
   active: string;
   transition: Transition;
   home: Home;
@@ -180,16 +186,24 @@ export const HOME = "home";
 /** Active value for an empty (transparent) screen. */
 export const BLANK = "blank";
 const RESULT = ":result";
+const HORSE = "horse:";
+/** The Active value that shows a horse's profile. */
+export const horseOf = (horseId: string) => HORSE + horseId;
 /** The Active value that shows a race's result page. */
 export const resultOf = (raceId: string) => raceId + RESULT;
 /** What an Active value points at. */
-export function parseActive(active: string): { view: "home" | "blank"; raceId?: undefined } | { view: "card" | "result"; raceId: string } {
+export function parseActive(active: string):
+  | { view: "home" | "blank"; raceId?: undefined; horseId?: undefined }
+  | { view: "card" | "result"; raceId: string; horseId?: undefined }
+  | { view: "horse"; raceId?: undefined; horseId: string } {
   if (active === HOME || active === BLANK) return { view: active };
+  if (active.startsWith(HORSE)) return { view: "horse", horseId: active.slice(HORSE.length) };
   return active.endsWith(RESULT) ? { view: "result", raceId: active.slice(0, -RESULT.length) } : { view: "card", raceId: active };
 }
-/** An Active value is valid when it is home or points at a race in the list. */
-export function activeExists(active: string, races: Pick<Race, "id">[]): boolean {
+/** An Active value is valid when it is home or blank, or points at a race or a horse in the lists. */
+export function activeExists(active: string, races: Pick<Race, "id">[], horses: Pick<Horse, "id">[] = []): boolean {
   const a = parseActive(active);
+  if (a.view === "horse") return horses.some((h) => h.id === a.horseId);
   return a.view === "home" || a.view === "blank" || races.some((r) => r.id === a.raceId);
 }
 
@@ -228,11 +242,14 @@ export function parseFile(text: string): ParseResult {
  */
 export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mode: "append" | "replace"): AppData {
   const incoming: Race[] = file.races.map((r) => ({ ...r, id: r.id ?? newId() }));
+  const incomingHorses: Horse[] = file.horses.map((h) => ({ ...h, id: h.id ?? newId() }));
   if (mode === "replace") {
-    const active = file.active && activeExists(file.active, incoming) ? file.active : HOME;
+    const active = file.active && activeExists(file.active, incoming, incomingHorses) ? file.active : HOME;
     return {
       ...cur,
       races: incoming,
+      horses: incomingHorses,
+      horseSettings: file.horseSettings ?? cur.horseSettings,
       active,
       transition: file.transition ?? cur.transition,
       home: file.home ?? cur.home,
@@ -244,12 +261,23 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
     if (i >= 0) races[i] = { ...r, id: races[i].id };
     else races.push(r);
   }
-  return { ...cur, races };
+  // same horse = same name (case-insensitive) or same id; importing it again replaces it
+  const horses = [...cur.horses];
+  const hk = (h: Pick<Horse, "name">) => h.name.trim().toLowerCase();
+  for (const h of incomingHorses) {
+    const i = horses.findIndex((x) => hk(x) === hk(h) || x.id === h.id);
+    if (i >= 0) horses[i] = { ...h, id: horses[i].id };
+    else horses.push(h);
+  }
+  return { ...cur, races, horses };
 }
 
 export function exportFile(data: AppData, only?: string): FileInput {
   const races = only ? data.races.filter((r) => r.id === only) : data.races;
   return only
     ? { version: 1, races }
-    : { version: 1, races, home: data.home, active: data.active, transition: data.transition };
+    : { version: 1, races, horses: data.horses, horseSettings: data.horseSettings, home: data.home, active: data.active, transition: data.transition };
 }
+
+/** A file with just one horse (from the ม้า tab). */
+export const exportHorse = (data: AppData, id: string): FileInput => ({ version: 1, horses: data.horses.filter((h) => h.id === id) });

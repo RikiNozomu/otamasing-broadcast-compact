@@ -1,0 +1,68 @@
+import { describe, expect, it } from "vitest";
+import { careerPage, earningsIn, horsePages, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
+import { activeExists, exportHorse, horseOf, mergeImport, parseActive, parseFile } from "../../src/lib/model";
+import { sampleData, sampleHorse } from "../../src/lib/sample";
+
+const horse = (o: Record<string, unknown> = {}): Horse => ({ ...HorseSchema.parse({ name: "Test", ...o }), id: "h1" });
+const race = (date: string, finish: number | null, extra = {}) => ({ date, name: `R ${date}`, finish, ...extra });
+
+describe("horse profile", () => {
+  it("record text counts the unplaced runs", () => {
+    expect(recordText({ starts: 12, first: 5, second: 3, third: 1 })).toBe("12 (5-3-1-3)");
+    expect(recordText({ starts: 0, first: 0, second: 0, third: 0 })).toBe("0 (0-0-0-0)");
+  });
+  it("record can be counted from the races", () => {
+    const h = horse({ races: [race("2026-01-01", 1), race("2026-02-01", 3), race("2026-03-01", 1), race("2026-04-01", null, { outcome: "dnf" })] });
+    expect(recordFromRaces(h)).toEqual({ starts: 4, first: 2, second: 0, third: 1 });
+  });
+  it("pages: the profile, then 7 races a page newest first", () => {
+    const races = Array.from({ length: 9 }, (_, i) => race(`2026-0${i + 1}-01`, i + 1));
+    const h = horse({ races });
+    expect(horsePages(h)).toBe(3);
+    expect(careerPage(h, 0)).toEqual([]);
+    expect(careerPage(h, 1).map((r) => r.date)[0]).toBe("2026-09-01");
+    expect(careerPage(h, 1)).toHaveLength(7);
+    expect(careerPage(h, 2).map((r) => r.date)).toEqual(["2026-02-01", "2026-01-01"]);
+    expect(horsePages(horse())).toBe(1);
+  });
+  it("position text", () => {
+    const [a, b, c] = horse({ races: [race("2026-01-01", 1, { field: 18 }), race("2026-01-02", null, { outcome: "dq" }), race("2026-01-03", null)] }).races;
+    expect([posText(a), posText(b), posText(c)]).toEqual(["1/18", "DQ", "–"]);
+  });
+  it("prize money in the horse's own currency or converted", () => {
+    const h = horse({ earnings: 1_000_000, currency: "JPY" });
+    const s = newHorseSettings();
+    expect(earningsIn(h, s)).toEqual({ amount: 1_000_000, currency: "JPY", converted: false });
+    const usd = earningsIn(h, { ...s, currency: "USD", rates: { JPY: 0.01 } })!;
+    expect(usd).toEqual({ amount: 10_000, currency: "USD", converted: true });
+    expect(moneyText(usd.amount, usd.currency)).toBe("$10,000");
+    expect(earningsIn(horse(), s)).toBeNull();
+  });
+});
+
+describe("horses in the data", () => {
+  it("Active can point at a horse", () => {
+    expect(parseActive(horseOf("h1"))).toEqual({ view: "horse", horseId: "h1" });
+    expect(activeExists(horseOf("h1"), [], [{ id: "h1" }])).toBe(true);
+    expect(activeExists(horseOf("gone"), [], [{ id: "h1" }])).toBe(false);
+  });
+  it("a file with only horses imports; append replaces a horse with the same name", () => {
+    const res = parseFile(JSON.stringify({ horses: [{ name: "sample star", earnings: 5, currency: "USD" }, { name: "Other" }] }));
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const cur = sampleData();
+    const next = mergeImport(cur, res.data, "append");
+    expect(next.horses.map((h) => h.name)).toEqual(["sample star", "Other"]);
+    expect(next.horses[0].id).toBe(cur.horses[0].id);
+    expect(next.races).toHaveLength(cur.races.length);
+  });
+  it("an empty file is still refused", () => {
+    expect(parseFile(JSON.stringify({ races: [], horses: [] })).ok).toBe(false);
+  });
+  it("one horse exports and imports back the same", () => {
+    const d = sampleData();
+    const res = parseFile(JSON.stringify(exportHorse(d, sampleHorse().id)));
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.data.horses[0]).toMatchObject({ name: "Sample Star", races: d.horses[0].races });
+  });
+});

@@ -1,4 +1,5 @@
 /** Sample data written on first open, so every page shows something straight away. Names are made up. */
+import { newHorseSettings, newHorseView, type Horse } from "./horses";
 import { HOME, newPhotos, newCard, newResult, newStyle, type AppData, type Race, type Runner } from "./model";
 
 const NAMES = ["Morning Gallop", "Silver Paddock", "Northern Lantern", "Checkered Flag", "Royal Furlong", "Paper Owner", "Gate Seven", "Blue Silks", "Final Furlong", "Yellow Draw", "Navy Plate", "Turf Comet", "Night Rally", "Rising Second", "Cream Headline", "Long Stretch", "Photo Finish", "Last Corner"];
@@ -35,7 +36,32 @@ export function sampleData(): AppData {
   r10.style.drawScheme = "us";
   r10.style.numberScheme = "us";
   r10.style.show.draw = false;
-  return { version: 1, races: [r10, r11, r12], active: r11.id, transition: "wipe", home: { title: "Tokyo Races", subtitle: "2026.11.29", highlight: null, page: 0 }, images: {} };
+  return { version: 1, races: [r10, r11, r12], horses: [sampleHorse()], horseSettings: newHorseSettings(), active: r11.id, transition: "wipe", home: { title: "Tokyo Races", subtitle: "2026.11.29", highlight: null, page: 0 }, images: {} };
 }
 
 export { HOME };
+
+/** A made-up horse with ten past races (two pages of races after the profile). */
+export function sampleHorse(): Horse {
+  const r = (date: string, name: string, grade: string, course: string, surface: "Turf" | "Dirt", distanceM: number, fav: number, finish: number, field: number, time: string, other: string) =>
+    ({ date, name, grade, course, surface, distanceM, fav, finish, outcome: null, field, time, other });
+  return {
+    id: "sample-horse", name: "Sample Star", trainedIn: "JP", bornIn: "JP", foaled: "2022-03-14", coat: "Dark Bay",
+    sire: "Example Sire", dam: "Paper Princess", bms: "Old Champion", owner: "Otamasing Racing", trainer: "T. Example",
+    silks: { body: "#000000", pattern: "cross", accent: "#E30613", sleeves: "#000000", sleevePattern: "stripes", sleeveAccent: "#FFE600" },
+    record: { starts: 10, first: 5, second: 2, third: 1 }, earnings: 812_345_000, currency: "JPY",
+    races: [
+      r("2026-10-26", "Sample Autumn Cup", "G1", "Tokyo", "Turf", 2000, 2, 1, 18, "1:57.4", "Morning Gallop"),
+      r("2026-09-28", "Example Stakes", "G2", "Nakayama", "Turf", 2200, 1, 1, 12, "2:12.1", "Silver Paddock"),
+      r("2026-06-01", "Derby Sample", "G1", "Tokyo", "Turf", 2400, 3, 2, 18, "2:23.8", "Northern Lantern"),
+      r("2026-04-19", "Classic Trial", "G1", "Nakayama", "Turf", 2000, 1, 3, 18, "1:58.9", "Gate Seven"),
+      r("2026-03-08", "Spring Trial", "G2", "Nakayama", "Turf", 2000, 1, 1, 11, "2:00.2", "Blue Silks"),
+      r("2026-02-08", "Winter Stakes", "G3", "Tokyo", "Turf", 1800, 2, 4, 14, "1:46.5", "Final Furlong"),
+      r("2025-12-27", "Juvenile Sample", "G1", "Nakayama", "Turf", 2000, 4, 2, 16, "2:01.0", "Yellow Draw"),
+      r("2025-11-22", "Autumn Juvenile", "", "Tokyo", "Turf", 1800, 1, 1, 9, "1:47.3", "Navy Plate"),
+      r("2025-10-11", "Maiden Sample", "", "Tokyo", "Turf", 1800, 1, 1, 12, "1:48.1", "Turf Comet"),
+      r("2025-09-07", "Debut Sample", "", "Nakayama", "Dirt", 1800, 2, 5, 14, "1:55.0", "Night Rally"),
+    ],
+    view: newHorseView(),
+  };
+}

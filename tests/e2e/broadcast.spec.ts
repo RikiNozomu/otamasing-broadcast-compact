@@ -14,7 +14,7 @@ async function open(context: BrowserContext): Promise<{ dock: Page; overlay: Pag
 test("first open seeds the sample and the overlay shows the Active race", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await expect(dock.getByTestId("active-tag")).toHaveText("Active: 11R");
-  await expect(dock.getByRole("tab")).toHaveText(["ภาพรวม", "การแข่งขัน"]);
+  await expect(dock.getByRole("tab")).toHaveText(["ภาพรวม", "การแข่งขัน", "ม้า"]);
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Cup");
   // 18 runners: 10 a page
   await expect(overlay.locator("[data-layer][data-active] [data-no]")).toHaveCount(10);
@@ -382,4 +382,44 @@ test("the home page shows 8 races a page; the dock turns the page", async ({ con
   await dock.locator("[data-lh='sample-11']").click();
   await expect(rows).toHaveCount(8);
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list-row][data-hl=on]")).toHaveAttribute("data-race", "sample-11");
+});
+
+test("horse tab: put a horse on screen, profile then past races newest first, currency choice", async ({ context }) => {
+  const { dock, overlay } = await open(context);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await expect(dock.getByTestId("horse-preview")).toBeVisible();
+  await dock.getByRole("button", { name: "ตั้งเป็น Active" }).click();
+  await expect(dock.getByTestId("active-tag")).toHaveText("Active: Sample Star");
+  const scene = overlay.locator("[data-layer][data-active] [data-testid=horse]");
+  await expect(scene.getByTestId("horse-name")).toHaveText("Sample Star");
+  await expect(scene.getByTestId("pedigree")).toHaveText(/Example Sire – Paper Princess.*\(by Old Champion\)/i);
+  await expect(scene.getByTestId("fact-record")).toContainText("10 (5-2-1-2)");
+  await expect(scene.getByTestId("fact-earnings")).toContainText("¥812,345,000");
+  await expect(scene.getByTestId("fact-born")).toContainText("Japan");
+  // the owner's silks drawn as SVG; turned off in the dock they leave the screen
+  await expect(scene.getByTestId("silks-svg")).toBeVisible();
+  await dock.getByTestId("silks-on").click();
+  await expect(scene.getByTestId("silks")).toHaveCount(0);
+  await dock.getByTestId("silks-on").click();
+  await expect(scene.getByTestId("silks-svg")).toBeVisible();
+  // the dock picks the prize money currency for every horse
+  await dock.getByTestId("horse-currency").selectOption("USD");
+  await expect(scene.getByTestId("fact-earnings")).toContainText("≈ $5,361,477");
+  // page 2: the newest 7 races; a win shows the runner-up in brackets
+  await dock.getByTestId("horse-auto").click();
+  await dock.getByRole("button", { name: "หน้า 2" }).click();
+  await expect(scene).toHaveAttribute("data-page", "2");
+  await expect(scene.getByTestId("career-row")).toHaveCount(7);
+  await expect(scene.getByTestId("career-pos").first()).toHaveText("1/18");
+  await expect(scene.getByTestId("career-winner").first()).toHaveText("(Morning Gallop)");
+  await dock.getByRole("button", { name: "หน้า 3" }).click();
+  await expect(scene.getByTestId("career-row")).toHaveCount(3);
+  // a new horse; deleting the Active horse puts the home page back
+  await dock.getByRole("button", { name: "+ เพิ่มม้า" }).click();
+  await dock.locator("#h-name").fill("Brand New");
+  await expect(dock.getByRole("tab", { name: "Brand New" })).toBeVisible();
+  await dock.getByRole("tab", { name: "Sample Star" }).click();
+  await dock.getByRole("button", { name: "ลบ", exact: true }).click();
+  await dock.getByRole("button", { name: "ลบเลย" }).click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list]")).toBeVisible();
 });

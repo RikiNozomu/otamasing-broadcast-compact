@@ -6,12 +6,17 @@ import { useData } from "../lib/store";
 import { RacecardScene } from "./RacecardScene";
 import { RaceListScene } from "./RaceListScene";
 import { ResultScene } from "./ResultScene";
+import { HorseScene } from "./HorseScene";
 
-/** What one Active value draws. A deleted race falls back to the home page. */
+/** What one Active value draws. A deleted race or horse falls back to the home page. */
 export function Scene({ id }: { id: string }) {
   const d = useData();
   const a = parseActive(id);
   if (a.view === "blank") return <div className="absolute inset-0" data-testid="blank" />;
+  if (a.view === "horse") {
+    const horse = d.horses.find((h) => h.id === a.horseId);
+    return horse ? <HorseScene horse={horse} /> : <RaceListScene />;
+  }
   const race = a.view === "home" ? undefined : d.races.find((r) => r.id === a.raceId);
   if (!race) return <RaceListScene />;
   return a.view === "result" ? <ResultScene race={race} /> : <RacecardScene race={race} />;
