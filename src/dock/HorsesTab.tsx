@@ -144,16 +144,13 @@ function CareerEditor({ h }: { h: Horse }) {
 }
 
 const BODY_LABEL: Record<Silks["pattern"], string> = {
-  plain: "สีพื้น (無地)", hoop1: "แถบขวาง 1 เส้น (一本輪)", hoop2: "แถบขวาง 2 เส้น (二本輪)", hoop3: "แถบขวาง 3 เส้น (三本輪)", belt: "แถบกว้าง (帯)",
-  sash: "สายสะพาย (襷 / Sash)", cross: "กากบาท (Crossbelts)", stripes: "แถบตั้ง (縦縞 / Stripes)", seams: "เส้นกลาง (Seams)", braces: "สายเอี๊ยม (Braces)",
-  halves: "ครึ่งซ้าย-ขวา (Halves)", quartered: "สี่ช่อง (Quartered)", check: "ตาราง (格子 / Check)", harlequin: "ข้าวหลามตัดเต็มตัว (元禄・菱形 / Harlequin)",
-  diamondBand: "ข้าวหลามตัดแถวอก (Diamonds)", chevron: "บั้ง (山形 / Chevron)", bigV: "ตัว V ใหญ่ (Large V)", sawtooth: "ฟันเลื่อย (鋸歯形)", hash: "ตาราง # (井桁)",
-  yoke: "ไหล่ต่างสี (Yoke)", spots: "จุด (銭形 / Spots)", stars: "ดาวกระจาย (星散 / Stars)", star: "ดาวใหญ่ (Star)", ring: "วงแหวน (蛇目 / Ring)", diamond: "ข้าวหลามตัดใหญ่ (Diamond)",
+  plain: "Plain", hoop1: "Hoop", hoop2: "Two hoops", hoop3: "Three hoops", belt: "Belt", sash: "Sash", cross: "Crossbelts", stripes: "Stripes",
+  seams: "Seams", braces: "Braces", halves: "Halves", quartered: "Quartered", check: "Check", harlequin: "Harlequin", diamondBand: "Diamonds",
+  chevron: "Chevron", bigV: "Large V", sawtooth: "Zigzag", hash: "Hash", yoke: "Yoke", spots: "Spots", stars: "Stars", star: "Star", ring: "Ring", diamond: "Diamond",
 };
 const SLEEVE_LABEL: Record<Silks["sleevePattern"], string> = {
-  plain: "สีพื้น", hoop1: "ปลอกแขน 1 เส้น (一本輪)", hoop2: "ปลอกแขน 2 เส้น (二本輪)", hoop3: "ปลอกแขน 3 เส้น (三本輪)", stripes: "แถบ 2 เส้นตามแขน (縦縞)",
-  chevrons: "บั้ง (山形 / Chevrons)", diamonds: "ข้าวหลามตัด (菱形 / Diamonds)", check: "ตาราง (格子 / Check)", spots: "จุด (銭形 / Spots)", stars: "ดาว (星散 / Stars)",
-  cuffs: "ปลายแขน (Cuffs)", halved: "ครึ่งบน-ล่าง (Halved)",
+  plain: "Plain", hoop1: "Armlet", hoop2: "Two armlets", hoop3: "Three armlets", stripes: "Stripes", chevrons: "Chevrons",
+  diamonds: "Diamonds", check: "Check", spots: "Spots", stars: "Stars", cuffs: "Cuffs", halved: "Halved",
 };
 
 /** The owner's silks drawn as SVG: colours and patterns of the body and the sleeves. An uploaded picture takes its place. */
