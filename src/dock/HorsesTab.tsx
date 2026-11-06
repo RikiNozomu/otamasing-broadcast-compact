@@ -229,11 +229,12 @@ const BODY_LABEL: Record<Silks["pattern"], string> = {
   seams: "Seams", braces: "Braces", halves: "Halves", quartered: "Quartered", check: "Check", harlequin: "Harlequin", diamondBand: "Diamonds",
   chevron: "Chevron", bigV: "Large V", sawtooth: "Zigzag", hash: "Hash", yoke: "Yoke", spots: "Spots", stars: "Stars", star: "Star", ring: "Ring", diamond: "Diamond",
   jaggedYoke: "Jagged yoke", zigzag2: "Double zigzag", zigzagBand: "Zigzag band", rings: "Rings", bigCheck: "Large check", bigHarlequin: "Large harlequin", bigDiamondBand: "Large diamonds",
+  disc: "Disc (ball)", fleurDeLys: "Fleur-de-lys", spots3: "Three diagonal spots", triangle: "Triangle", sashReverse: "Sash (reversed)",
 };
 const SLEEVE_LABEL: Record<Silks["sleevePattern"], string> = {
   plain: "Plain", hoop1: "Armlet", hoop2: "Two armlets", hoop3: "Three armlets", stripes: "Stripes", chevrons: "Chevrons",
   diamonds: "Diamonds", check: "Check", spots: "Spots", stars: "Stars", cuffs: "Cuffs", halved: "Halved",
-  hoop4: "Four armlets", hoop5: "Five armlets", stripesDense: "Fine stripes", zigzagBand: "Zigzag band",
+  hoop4: "Four armlets", hoop5: "Five armlets", stripesDense: "Fine stripes", zigzagBand: "Zigzag band", blocks: "Blocks",
 };
 
 const MODE_LABEL: Record<SilksMode, string> = { upload: "Upload", pattern: "Pattern", none: "ไม่มี" };
@@ -279,6 +280,10 @@ function SilksSection({ h }: { h: Horse }) {
           </div>
           <div className="grid grid-cols-4 gap-1.5">
             {color("body", "ตัว")}{color("accent", "ลายตัว")}{color("sleeves", "แขน")}{color("sleeveAccent", "ลายแขน")}
+          </div>
+          <div className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-1.5"><input type="checkbox" aria-label="บ่า (yoke) อีกสี" checked={s.yoke != null} onChange={(e) => set({ yoke: e.target.checked ? "#FFE600" : null })} />บ่า (yoke) อีกสี</label>
+            {s.yoke != null && <input type="color" aria-label="สีเสื้อ บ่า" className="h-7 w-16 cursor-pointer border border-line bg-transparent p-0" value={s.yoke} onChange={(e) => set({ yoke: e.target.value.toUpperCase() })} />}
           </div>
           <span className={hintClass}>วาดเป็น SVG · สีและลายอยู่ในไฟล์ JSON ด้วย</span>
         </>
