@@ -687,6 +687,13 @@
                   "none"
                 ]
               },
+              "silksImage": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "default": null
+              },
               "photos": {
                 "type": "object",
                 "properties": {
@@ -977,6 +984,13 @@
               "type": "integer",
               "minimum": 0,
               "default": 0
+            },
+            "background": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
             }
           },
           "additionalProperties": false

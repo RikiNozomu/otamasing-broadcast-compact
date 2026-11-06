@@ -133,7 +133,7 @@ export const RaceSchema = z
     result: ResultViewSchema.default({}),
     /** Racecard paging (10 horses a page). */
     card: CardViewSchema.default({}),
-    /** Pictures are not in the file (they live in the browser), only their order and slideshow settings. */
+    /** Pictures live in the browser; the file holds their names (image/<date-time>.<ext>), order and slideshow settings. */
     photos: z.object({ card: PhotoSetSchema.default({}), result: PhotoSetSchema.default({}) }).default({}),
     runners: z.array(RunnerSchema).min(MIN_RUNNERS, `ม้าต้องมีอย่างน้อย ${MIN_RUNNERS} ตัว`).max(MAX_RUNNERS, `ม้าได้ไม่เกิน ${MAX_RUNNERS} ตัว`),
   })
@@ -153,6 +153,8 @@ export const HomeSchema = z.object({
   highlight: z.string().nullable().default(null),
   /** Page of the race list on screen (0-based), HOME_ROWS races a page. */
   page: z.number().int().min(0).default(0),
+  /** Name of the background picture stored in the browser (image/<date-time>.<ext>), or none. */
+  background: z.string().nullable().default(null),
 });
 export type Home = z.infer<typeof HomeSchema>;
 
@@ -167,6 +169,7 @@ export const FileSchema = z.object({
   transition: z.enum(TRANSITIONS).optional(),
 }).refine((f) => f.races.length + f.horses.length > 0, { message: "ต้องมีอย่างน้อย 1 รายการหรือม้า 1 ตัว", path: ["races"] });
 export type FileInput = z.input<typeof FileSchema>;
+export type FileOutput = z.output<typeof FileSchema>;
 
 export interface AppData {
   version: 1;

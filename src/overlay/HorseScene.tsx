@@ -7,7 +7,7 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 import { useLayoutEffect, useRef, type ReactNode } from "react";
-import { careerPage, COATS, dotDate, earningsIn, horsePageKinds, silksModeOf, moneyText, posText, recordText, sexText, silksKey, useHorsePage, CAREER_ROWS, type CareerRace, type Horse } from "../lib/horses";
+import { careerPage, COATS, dotDate, earningsIn, horsePageKinds, silksModeOf, moneyText, posText, recordText, sexText, useHorsePage, CAREER_ROWS, type CareerRace, type Horse } from "../lib/horses";
 import { useData } from "../lib/store";
 import { useImage } from "../lib/images";
 import { useShownIndex } from "../lib/photos";
@@ -143,9 +143,8 @@ function Fact({ i, label, testId, span = 3, color, children }: { i: number; labe
 
 function Profile({ h }: { h: Horse }) {
   const d = useData();
-  const sk = silksKey(h.id);
   const mode = silksModeOf(h);
-  const silks = useImage(sk, mode === "upload" ? d.images[sk] : undefined);
+  const silks = useImage(h.silksImage ?? "", mode === "upload" && h.silksImage ? d.images[h.silksImage] : undefined);
   const money = earningsIn(h, d.horseSettings);
   const coat = h.coat ? COATS[h.coat] : null;
   const dash = <span className="text-white/50">–</span>;

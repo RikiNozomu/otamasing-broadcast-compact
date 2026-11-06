@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { parseActive } from "../lib/model";
 import { useData } from "../lib/store";
+import { renameOldImages } from "../lib/imageStore";
 import { cx } from "../lib/cx";
 import { EditTab } from "./EditTab";
 import { RacesTab } from "./RacesTab";
@@ -22,6 +23,8 @@ export function Dock() {
     timer.current = window.setTimeout(() => setToast(null), bad ? 6000 : 2500);
   }, []);
   useEffect(() => { document.body.classList.add("bg-panel"); document.title = "โอตะม้าซิ่ง Broadcast Compact · Dock"; }, []);
+  // pictures saved before they were named image/<date-time>.<ext> get such a name
+  useEffect(() => { renameOldImages().catch(() => {}); }, []);
   const a = parseActive(d.active);
   const race = d.races.find((r) => r.id === a.raceId);
   const horse = a.view === "horse" ? d.horses.find((h) => h.id === a.horseId) : undefined;

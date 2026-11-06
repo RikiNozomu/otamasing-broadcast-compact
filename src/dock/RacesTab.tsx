@@ -2,8 +2,8 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState, type ReactNode } from "react";
 import { BLANK, exportFile, HOME, mergeImport, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
-import { setData, update, updateRace, useData, bumpImage } from "../lib/store";
-import { deleteImage, HOME_BG, putImage } from "../lib/images";
+import { getData, setData, update, updateRace, useData } from "../lib/store";
+import { checkImportImages, clearAllImages, dropUnused, storeImage } from "../lib/imageStore";
 import { sampleRunner } from "../lib/sample";
 import { showPage, useResultPage } from "../lib/results";
 import { HOME_ROWS, paginate } from "../lib/paging";
@@ -59,6 +59,7 @@ function QuickResultPages({ race }: { race: Race }) {
 export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toast: Toast }) {
   const d = useData();
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
   const [pending, setPending] = useState<{ name: string; data: Extract<ParseResult, { ok: true }>["data"] } | null>(null);
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
@@ -83,11 +84,16 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
     setPending({ name: "ข้อความที่วาง", data: res.data });
     setPaste(null);
   };
-  const doImport = (mode: "append" | "replace") => {
+  const doImport = async (mode: "append" | "replace") => {
     if (!pending) return;
-    setData(mergeImport(d, pending.data, mode));
-    toast(`นำเข้า ${importCount(pending.data)}แล้ว`);
     setPending(null);
+    // pictures the file names but this browser doesn't have (or can't open) are taken out of it
+    const { file, found, missing } = await checkImportImages(pending.data);
+    const next = mergeImport(getData(), file, mode);
+    const now = Date.now();
+    setData({ ...next, images: { ...next.images, ...Object.fromEntries(found.filter((k) => !next.images[k]).map((k) => [k, now])) } });
+    if (missing.length) toast(`นำเข้า ${importCount(file)}แล้ว แต่ไม่พบรูปในเครื่องนี้หรือไฟล์รูปเสีย ${missing.length} รูป จึงเอาออกจากข้อมูล: ${missing.join(", ")}`, true);
+    else toast(`นำเข้า ${importCount(file)}แล้ว`);
   };
   const addRace = () => {
     const id = newId();
@@ -105,9 +111,8 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
       races: x.races.filter((r) => r.id !== id),
       active: parseActive(x.active).raceId === id ? HOME : x.active,
       home: { ...x.home, highlight: x.home.highlight === id ? null : x.home.highlight },
-      images: Object.fromEntries(Object.entries(x.images).filter(([k]) => !keys.includes(k))),
     }));
-    for (const k of keys) deleteImage(k).catch(() => {});
+    dropUnused(keys);
     setConfirmDel(null);
   };
   const move = (from: number, to: number) => {
@@ -121,12 +126,19 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
   };
   const setBg = async (f: File | undefined) => {
     if (!f) return;
-    await putImage(HOME_BG, f);
-    bumpImage(HOME_BG);
+    const old = d.home.background, name = await storeImage(f);
+    update((x) => ({ ...x, images: { ...x.images, [name]: Date.now() }, home: { ...x.home, background: name } }));
+    await dropUnused([old]);
   };
   const clearBg = async () => {
-    await deleteImage(HOME_BG).catch(() => {});
-    update((x) => { const images = { ...x.images }; delete images[HOME_BG]; return { ...x, images }; });
+    const old = d.home.background;
+    update((x) => ({ ...x, home: { ...x.home, background: null } }));
+    await dropUnused([old]);
+  };
+  const clearPictures = async () => {
+    setConfirmClear(false);
+    try { await clearAllImages(); toast("ลบรูปทั้งหมดในเครื่องนี้แล้ว"); }
+    catch { toast("ลบรูปไม่สำเร็จ", true); }
   };
   const copy = async () => {
     try { await navigator.clipboard.writeText(overlayUrl); toast("คัดลอก URL แล้ว"); }
@@ -242,7 +254,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
         <div className="flex flex-wrap gap-1.5">
           <label className={buttonClass("primary")} htmlFor="l-bg">เลือก BG…</label>
           <input type="file" id="l-bg" accept="image/*" hidden onChange={(e) => { setBg(e.target.files?.[0]); e.target.value = ""; }} />
-          {d.images[HOME_BG] ? <Button onClick={clearBg}>ไม่ใช้รูป</Button> : null}
+          {d.home.background ? <Button onClick={clearBg}>ไม่ใช้รูป</Button> : null}
         </div>
         <PageButtons label="หน้า" count={home.pageCount} page={home.page} onPick={setHomePage} testId="home-pages" />
         <span className={hintClass}>หน้าละ {HOME_ROWS} รายการ ตามลำดับในรายการด้านบน{home.pageCount > 1 ? ` · ทั้งหมด ${home.pageCount} หน้า` : ""}</span>
@@ -266,6 +278,23 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
           <Button onClick={copy}>คัดลอก</Button>
         </div>
         <span className={hintClass}>ใส่ Browser Source ตัวเดียว ขนาด 1920×1080</span>
+      </Section>
+
+      <Section title="รูปที่เก็บในเครื่องนี้">
+        <span className="text-[13px]" data-testid="stored-count">{Object.keys(d.images).length} รูป</span>
+        {confirmClear ? (
+          <div className="grid gap-1.5 border border-danger-ink p-2.5 text-[13px]" role="alertdialog" aria-label="ยืนยันลบรูปทั้งหมด">
+            <span className="font-semibold text-danger-ink">⚠ ปุ่มอันตราย: รูปทุกรูปที่เก็บไว้ในเครื่องนี้จะหายไปหมด กู้คืนไม่ได้</span>
+            <span>รูปฉากหลัง รูปม้า รูปสีเสื้อที่อัป และ BG หน้าแรกของทุกรายการจะถูกลบ ข้อมูลอื่นยังอยู่ ไฟล์ JSON ที่ส่งออกไว้ก่อนหน้าจะหารูปไม่เจอ</span>
+            <span className="flex flex-wrap gap-1.5">
+              <Button variant="danger" onClick={clearPictures}>ลบรูปทั้งหมดเลย</Button>
+              <Button onClick={() => setConfirmClear(false)}>ยกเลิก</Button>
+            </span>
+          </div>
+        ) : (
+          <Button variant="danger" className="justify-self-start" onClick={() => setConfirmClear(true)}>ลบรูปทั้งหมดในเครื่อง…</Button>
+        )}
+        <span className={hintClass}>ปุ่มอันตราย ใช้เมื่ออยากคืนพื้นที่ รูปทุกรูปที่เก็บไว้จะหายไปหมด</span>
       </Section>
     </div>
   );

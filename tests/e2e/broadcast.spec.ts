@@ -463,3 +463,50 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await dock.getByRole("button", { name: "ลบเลย" }).click();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list]")).toBeVisible();
 });
+
+test("pictures are named image/<date-time>.<ext>, the JSON carries the names, a missing one is reported and taken out", async ({ context }) => {
+  context.addInitScript(() => { (window as unknown as { obsstudio: object }).obsstudio = {}; });
+  const { dock } = await open(context);
+  const stored = () => dock.evaluate(() => new Promise<string[]>((res) => {
+    const req = indexedDB.open("otamasing-broadcast-compact", 1);
+    req.onsuccess = () => { const all = req.result.transaction("images").objectStore("images").getAllKeys(); all.onsuccess = () => res(all.result as string[]); };
+  }));
+  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await dock.getByTestId("add-photos-card").setInputFiles([png("a.png"), png("b.png")]);
+  await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(2);
+  await expect.poll(stored).toHaveLength(2);
+  const names = await stored();
+  for (const n of names) expect(n).toMatch(/^image\/\d{17}\.png$/);
+  // the export names the pictures
+  await dock.getByRole("button", { name: "ส่งออกรายการนี้" }).click();
+  const file = JSON.parse(await dock.getByTestId("export-text").inputValue());
+  expect([...file.races[0].photos.card.keys].sort()).toEqual([...names].sort());
+  await dock.getByTestId("export-panel").getByRole("button", { name: "ปิด" }).click();
+  // removing a picture in the dock deletes it from the browser too
+  await dock.getByRole("button", { name: "ลบรูปที่ 2" }).click();
+  await expect.poll(stored).toHaveLength(1);
+  // importing the earlier JSON: the deleted picture and a made-up one are reported and taken out
+  const kept = (await stored())[0];
+  file.races[0].photos.card.keys.push("image/20990101000000000.jpg");
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
+  await dock.getByRole("button", { name: "วาง JSON" }).click();
+  await dock.getByTestId("paste-text").fill(JSON.stringify(file));
+  await dock.getByRole("button", { name: "นำเข้าข้อความนี้" }).click();
+  await dock.getByRole("button", { name: "เพิ่มต่อ" }).click();
+  const alert = dock.getByRole("alert");
+  await expect(alert).toContainText("ไม่พบรูปในเครื่องนี้หรือไฟล์รูปเสีย 2 รูป");
+  await expect(alert).toContainText("image/20990101000000000.jpg");
+  expect(await alert.textContent()).not.toContain(kept);
+  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(1);
+  // the danger button clears every stored picture, after a warning
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
+  await expect(dock.getByTestId("stored-count")).toHaveText("1 รูป");
+  await dock.getByRole("button", { name: "ลบรูปทั้งหมดในเครื่อง…" }).click();
+  await expect(dock.getByRole("alertdialog")).toContainText("รูปทุกรูปที่เก็บไว้ในเครื่องนี้จะหายไปหมด");
+  await dock.getByRole("button", { name: "ลบรูปทั้งหมดเลย" }).click();
+  await expect.poll(stored).toHaveLength(0);
+  await expect(dock.getByTestId("stored-count")).toHaveText("0 รูป");
+  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await expect(dock.getByTestId("thumbs-card")).toHaveCount(0);
+});

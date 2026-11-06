@@ -2,8 +2,9 @@
  * The left-hand pictures of one scene of a race (racecard or result): add several, remove, pick the one
  * on screen (or step with ◀ ▶), and the automatic slideshow (on/off, every x seconds).
  */
-import { newId, type PhotoSet, type PhotoView, type Race } from "../lib/model";
-import { deleteImage, putImage, useImage } from "../lib/images";
+import { type PhotoSet, type PhotoView, type Race } from "../lib/model";
+import { useImage } from "../lib/images";
+import { dropUnused, storeImage } from "../lib/imageStore";
 import { setAuto, showPhoto, shownIndex, useShownIndex } from "../lib/photos";
 import { update, updateRace, useData } from "../lib/store";
 import { cx } from "../lib/cx";
@@ -37,11 +38,7 @@ export function PhotoSetEditor({ race, view }: { race: Race; view: PhotoView }) 
   const add = async (files: FileList | null) => {
     if (!files?.length) return;
     const keys: string[] = [];
-    for (const f of Array.from(files)) {
-      const k = `photo:${newId()}`;
-      await putImage(k, f);
-      keys.push(k);
-    }
+    for (const f of Array.from(files)) keys.push(await storeImage(f));
     const now = Date.now();
     update((x) => ({
       ...x,
@@ -50,12 +47,9 @@ export function PhotoSetEditor({ race, view }: { race: Race; view: PhotoView }) 
     }));
   };
   const remove = async (k: string) => {
-    await deleteImage(k).catch(() => {});
     update((x) => {
-      const images = { ...x.images };
-      delete images[k];
       return {
-        ...x, images,
+        ...x,
         races: x.races.map((r) => {
           if (r.id !== race.id) return r;
           const s = r.photos[view], at = s.keys.indexOf(k), cur = Math.max(0, shownIndex(s));
@@ -64,6 +58,8 @@ export function PhotoSetEditor({ race, view }: { race: Race; view: PhotoView }) 
         }),
       };
     });
+    // the same picture may be used elsewhere too (an imported copy of the race)
+    await dropUnused([k]);
   };
 
   return (
