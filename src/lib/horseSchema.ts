@@ -80,7 +80,7 @@ export type Silks = z.infer<typeof SilksSchema>;
 export const HorsePhotosSchema = z.object({
   keys: z.array(z.string()).default([]),
   index: z.number().int().min(0).default(0),
-  auto: z.boolean().default(true),
+  auto: z.boolean().default(false),
   seconds: z.number().min(1).max(600).default(5),
   since: z.number().default(0),
 });
@@ -92,7 +92,7 @@ export type SilksMode = (typeof SILKS_MODES)[number];
 /** Which page of the horse scene is on screen; the pages take turns with `auto` like the racecard. */
 export const HorseViewSchema = z.object({
   page: z.number().int().min(0).default(0),
-  auto: z.boolean().default(true),
+  auto: z.boolean().default(false),
   seconds: z.number().min(1).max(600).default(8),
   since: z.number().default(0),
 });
