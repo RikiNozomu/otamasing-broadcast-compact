@@ -39,6 +39,19 @@ const zig = (at: number, other: number, step: number) =>
 const ZIGZAG_BAND = <polyline points={zig(312, 400, 150)} fill="none" strokeWidth={126} strokeLinejoin="miter" strokeMiterlimit={8} />;
 /** A yoke whose lower edge is a row of big teeth, pointing down on the centre line; it covers the tops of the sleeves too. */
 const JAGGED_YOKE = <path d={`M-40 -40 H1320 V200 L${zig(320, 200, 97).split(" ").reverse().join(" L")} L-40 200 Z`} />;
+/** A fleur-de-lys about 220 high, centred on (0, 0). */
+const FLEUR = (
+  <>
+    <path d="M0 -112 C34 -78 44 -36 22 6 L-22 6 C-44 -36 -34 -78 0 -112 Z" />
+    <path d="M18 8 C30 -40 70 -66 100 -46 C124 -30 116 4 92 10 C76 14 64 2 70 -12 C52 -10 44 6 40 24 Z" />
+    <path d="M-18 8 C-30 -40 -70 -66 -100 -46 C-124 -30 -116 4 -92 10 C-76 14 -64 2 -70 -12 C-52 -10 -44 6 -40 24 Z" />
+    <rect x={-58} y={20} width={116} height={22} rx={6} />
+    <path d="M-14 42 L14 42 L8 100 L0 108 L-8 100 Z" />
+    <path d="M18 42 C40 50 64 70 54 100 C48 80 34 66 16 60 Z" />
+    <path d="M-18 42 C-40 50 -64 70 -54 100 C-48 80 -34 66 -16 60 Z" />
+  </>
+);
+
 /** Rows of spots / stars: two columns, three rows (stars: 2-1-2). */
 const GRID_2X3 = [[500, 165], [780, 165], [500, 352], [780, 352], [500, 540], [780, 540]];
 const QUINCUNX = [[487, 220], [793, 220], [640, 376], [487, 540], [793, 540]];
@@ -82,7 +95,7 @@ function bodyPattern(p: Silks["pattern"], c: string): ReactNode {
     case "yoke": return <path d="M0 0 H1280 V200 H922 L640 250 L358 200 H0 Z" fill={c} />;
     case "spots": return <g fill={c}>{GRID_2X3.map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r={64} />)}</g>;
     case "stars": return <g fill={c}>{QUINCUNX.map(([x, y], i) => star(x, y, 80, i))}</g>;
-    case "star": return <g fill={c}>{star(CX, 330, 150)}</g>;
+    case "star": return <g fill={c}>{star(CX, 350, 190)}</g>;
     case "ring": return <circle cx={CX} cy={340} r={130} fill="none" stroke={c} strokeWidth={50} />;
     case "diamond": return <g fill={c}>{diamond(CX, 360, 170, 230)}</g>;
     case "jaggedYoke": return <g fill={c}>{JAGGED_YOKE}</g>;
@@ -99,6 +112,15 @@ function bodyPattern(p: Silks["pattern"], c: string): ReactNode {
       return <g fill={c}>{out}</g>;
     }
     // three big tall diamonds across the middle, touching
+    // a large solid disc ("ball") on the centre of the body
+    case "disc": return <circle cx={CX} cy={340} r={165} fill={c} />;
+    case "fleurDeLys": return <g fill={c} transform={`translate(${CX} 360) scale(2.2)`}>{FLEUR}</g>;
+    // three large spots on a diagonal, upper right to lower left
+    case "spots3": return <g fill={c}>{[[815, 190], [655, 385], [480, 585]].map(([x, y]) => <circle key={x} cx={x} cy={y} r={92} />)}</g>;
+    // a triangle pointing down, under the shoulders
+    case "triangle": return <polygon points={`${CX - 210},205 ${CX + 210},205 ${CX},415`} fill={c} />;
+    // the sash the other way: from the viewer's right shoulder down to the lower left
+    case "sashReverse": return <line x1={980} y1={-40} x2={300} y2={760} stroke={c} strokeWidth={130} />;
     case "bigDiamondBand": return <g fill={c}>{[CX - 225, CX, CX + 225].map((x) => diamond(x, 380, 113, 152, x))}</g>;
     default: return null;
   }
@@ -157,6 +179,8 @@ function sleevePattern(p: Silks["sleevePattern"], c: string): ReactNode {
         </g>
       );
     case "zigzagBand": return <g stroke={c}>{ZIGZAG_BAND}</g>;
+    // large squares in two columns down the sleeve, alternating sides
+    case "blocks": return <g fill={c}>{alongSleeves([0.18, 0.34, 0.5, 0.66, 0.82, 0.98], (i) => <rect x={i % 2 ? 0 : -120} y={-62} width={120} height={124} />)}</g>;
     default: return null;
   }
 }
@@ -177,6 +201,7 @@ export function SilksSvg({ silks: s, className }: { silks: Silks; className?: st
       <g clipPath={`url(#${id}b)`}>
         <rect width={1280} height={720} fill={s.body} />
         {bodyPattern(s.pattern, s.accent)}
+        {s.yoke && <path d="M0 0 H1280 V190 H922 L640 225 L358 190 H0 Z" fill={s.yoke} />}
       </g>
       <g fill="none" stroke="#111" strokeWidth={8} strokeLinejoin="round"><path d={LEFT} /><path d={RIGHT} /><path d={BODY} /></g>
     </svg>

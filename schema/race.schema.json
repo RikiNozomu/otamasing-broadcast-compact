@@ -688,7 +688,12 @@
                           "rings",
                           "bigCheck",
                           "bigHarlequin",
-                          "bigDiamondBand"
+                          "bigDiamondBand",
+                          "disc",
+                          "fleurDeLys",
+                          "spots3",
+                          "triangle",
+                          "sashReverse"
                         ],
                         "default": "plain"
                       },
@@ -720,7 +725,8 @@
                           "hoop4",
                           "hoop5",
                           "stripesDense",
-                          "zigzagBand"
+                          "zigzagBand",
+                          "blocks"
                         ],
                         "default": "plain"
                       },
@@ -728,6 +734,17 @@
                         "type": "string",
                         "pattern": "^#[0-9a-fA-F]{6}$",
                         "default": "#FFE600"
+                      },
+                      "yoke": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^#[0-9a-fA-F]{6}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "additionalProperties": false
