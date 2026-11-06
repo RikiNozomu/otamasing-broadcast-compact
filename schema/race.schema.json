@@ -693,7 +693,8 @@
                           "fleurDeLys",
                           "spots3",
                           "triangle",
-                          "sashReverse"
+                          "sashReverse",
+                          "blockGrid"
                         ],
                         "default": "plain"
                       },
