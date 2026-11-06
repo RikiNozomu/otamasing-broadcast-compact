@@ -78,7 +78,7 @@ export type Style = z.infer<typeof StyleSchema>;
 export const ResultViewSchema = z.object({
   page: z.number().int().min(0).default(0),
   locked: z.array(z.number().int().min(1).max(MAX_RUNNERS)).default([]),
-  auto: z.boolean().default(true),
+  auto: z.boolean().default(false),
   seconds: z.number().min(1).max(600).default(5),
   since: z.number().default(0),
 });
@@ -91,7 +91,7 @@ export const newResult = (): ResultView => ResultViewSchema.parse({});
  */
 export const CardViewSchema = z.object({
   page: z.number().int().min(0).default(0),
-  auto: z.boolean().default(true),
+  auto: z.boolean().default(false),
   seconds: z.number().min(1).max(600).default(5),
   since: z.number().default(0),
 });
@@ -106,7 +106,7 @@ export const newCard = (): CardView => CardViewSchema.parse({});
 export const PhotoSetSchema = z.object({
   keys: z.array(z.string()).default([]),
   index: z.number().int().min(0).default(0),
-  auto: z.boolean().default(true),
+  auto: z.boolean().default(false),
   seconds: z.number().min(1).max(600).default(5),
   since: z.number().default(0),
 });

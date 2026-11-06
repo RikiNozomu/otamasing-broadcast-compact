@@ -57,8 +57,7 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
 test("a moving highlight bar is never hidden behind the row backgrounds", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  // hold page 1 (18 runners turn pages every 5 s; a turn mid-test would replace row 9 instead of moving its bar)
-  await dock.getByTestId("card-auto").click();
+  // page 1 (pages are turned by hand by default)
   await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 1" }).click();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=racecard]")).toHaveAttribute("data-page", "1");
   await expect(overlay.locator("[data-layer][data-active] [data-no='9']")).toHaveAttribute("data-hl", "on");
@@ -199,8 +198,7 @@ test("a save that leaves an empty file is reported, and an empty file is named o
 test("a name too long for its box is squeezed sideways, not cut with an ellipsis", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  // keep horse 1 on screen: stop the racecard turning its pages
-  await dock.getByTestId("card-auto").click();
+  // keep horse 1 on screen (pages are turned by hand by default)
   await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 1" }).click();
   await dock.getByLabel("ชื่อม้าเบอร์ 1", { exact: true }).fill("Onesmoothoperator Extraordinaire Of The Northern Lantern Valley");
   const cell = overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse]");
@@ -222,8 +220,8 @@ test("racecard: 10 horses a page, turned from the dock or by itself, and a highl
   const live = overlay.locator("[data-layer][data-active] [data-testid=racecard]");
   const nos = () => live.locator("[data-no]").evaluateAll((els) => els.map((e) => Number(e.getAttribute("data-no"))));
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  await expect(dock.getByTestId("card-auto")).toHaveAttribute("aria-checked", "true");
-  await dock.getByTestId("card-auto").click();
+  // pages are turned by hand by default
+  await expect(dock.getByTestId("card-auto")).toHaveAttribute("aria-checked", "false");
   await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 2" }).click();
   await expect(live).toHaveAttribute("data-page", "2");
   await expect.poll(nos).toEqual([11, 12, 13, 14, 15, 16, 17, 18]);
@@ -260,8 +258,7 @@ test("result page: 10 rows a page, locked horses stay on top with the yellow bar
   const live = overlay.locator("[data-layer][data-active] [data-testid=result]");
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
   await dock.getByRole("tab", { name: "ผล" }).click();
-  // pages take turns by themselves by default; turn that off to step by hand
-  await dock.getByTestId("result-auto").click();
+  // pages are stepped by hand by default
   await dock.locator("[data-page='1']").click();
   const rows = live.locator("[data-no]");
   await expect(rows).toHaveCount(10);
@@ -307,8 +304,10 @@ test("result pages take turns by themselves every x seconds", async ({ context }
   const first = overlay.locator("[data-layer][data-active] [data-testid=result] [data-testid=pos]").first();
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
   await dock.getByRole("tab", { name: "ผล" }).click();
-  await expect(dock.getByTestId("result-auto")).toHaveAttribute("aria-checked", "true");
+  // off by default; turned on, every second
+  await expect(dock.getByTestId("result-auto")).toHaveAttribute("aria-checked", "false");
   await dock.getByLabel("เปลี่ยนหน้าทุกกี่วินาที").fill("1");
+  await dock.getByTestId("result-auto").click();
   await expect(first).toHaveText("11th", { timeout: 4000 });
   await expect(dock.locator("[data-page='2']")).toHaveAttribute("aria-pressed", "true");
   await expect(first).toHaveText("1st", { timeout: 4000 });
@@ -344,11 +343,12 @@ test("pictures: separate sets for the racecard and the result page, step by hand
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
   await dock.getByTestId("add-photos-card").setInputFiles([png("a.png"), png("b.png")]);
   await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(2);
-  await dock.getByTestId("auto-card").click(); // manual
+  // pictures are changed by hand by default
+  await expect(dock.getByTestId("auto-card")).toHaveAttribute("aria-checked", "false");
   await dock.getByRole("button", { name: "แสดงรูปที่ 1" }).click();
   await expect(dock.getByTestId("photo-pos-card")).toHaveText("1 / 2");
   await expect.poll(shownKey).toBeTruthy();
-  // wait for an earlier picture still fading out (auto was on until just now)
+  // wait for an earlier picture still fading out
   await expect(overlay.locator("[data-layer][data-active] [data-testid=photo]")).toHaveCount(1);
   const first = await shownKey();
   await dock.getByRole("button", { name: "รูปถัดไป" }).click();
@@ -414,7 +414,6 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await expect(scene.getByTestId("silks-svg")).toBeVisible();
   // several horse pictures take turns
   await dock.getByTestId("add-photos-horse").setInputFiles([png("a.png"), png("b.png")]);
-  await dock.getByTestId("auto-horse-photos").click();
   await dock.getByRole("button", { name: "แสดงรูปที่ 1" }).click();
   await expect(dock.getByTestId("photo-pos-horse")).toHaveText("1 / 2");
   await dock.getByRole("button", { name: "รูปม้าถัดไป" }).click();
@@ -428,7 +427,6 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await expect(scene.getByTestId("horse-sex")).toHaveText("COLT");
   await expect(scene.getByTestId("fact-sex")).toContainText("COLT");
   // page 2: the pedigree, three generations, male side light blue, female side light red
-  await dock.getByTestId("horse-auto").click();
   await dock.getByRole("button", { name: "หน้า 2" }).click();
   await expect(scene).toHaveAttribute("data-page", "2");
   await expect(scene.getByTestId("horse-page-title").filter({ hasText: "PEDIGREE" })).toHaveCount(1);
