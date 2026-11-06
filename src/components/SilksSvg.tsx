@@ -21,28 +21,49 @@ function star(x: number, y: number, r: number, key?: string | number) {
 }
 const diamond = (x: number, y: number, w: number, h: number, key?: string | number) =>
   <polygon key={key} points={`${x},${y - h} ${x + w},${y} ${x},${y + h} ${x - w},${y}`} />;
-/** Squares of a checkerboard over the whole picture (clipped to the part). */
-const checks = (size: number) => {
+/** Squares of a checkerboard over the whole picture (clipped to the part); the cell whose corner is (x0, y0) is filled. */
+const checks = (w: number, h = w, x0 = 0, y0 = 0) => {
   const out: ReactNode[] = [];
-  for (let y = 0; y < 720; y += size) for (let x = 0; x < 1280; x += size) if (((x + y) / size) % 2 === 0) out.push(<rect key={`${x}-${y}`} x={x} y={y} width={size} height={size} />);
+  const i0 = Math.ceil(x0 / w), j0 = Math.ceil(y0 / h);
+  for (let j = -j0; y0 + j * h < 720; j++) for (let i = -i0; x0 + i * w < 1280; i++) if ((i + j) % 2 === 0) out.push(<rect key={`${i}-${j}`} x={x0 + i * w} y={y0 + j * h} width={w} height={h} />);
   return out;
 };
 
-/** A zigzag line across the whole picture between heights y1 and y2, one tooth every `step` px. */
-const zig = (y1: number, y2: number, step: number, x0 = 0, x1 = 1280) =>
-  Array.from({ length: Math.floor((x1 - x0) / step) + 1 }, (_, i) => `${x0 + i * step},${i % 2 ? y2 : y1}`).join(" ");
-/** The thick zigzag band shared by the body and the sleeves (so it runs on across both). */
-const ZIGZAG_BAND = zig(300, 400, 80, -40, 1320);
+/**
+ * A zigzag across the whole picture: a point every `step` px, at height `at` on the centre line (x 640) and on
+ * every second point from there, `other` on the points between. Body and sleeves share it, so it runs on across both.
+ */
+const zig = (at: number, other: number, step: number) =>
+  Array.from({ length: 2 * Math.ceil(700 / step) + 1 }, (_, i) => i - Math.ceil(700 / step)).map((k) => `${CX + k * step},${k % 2 ? other : at}`).join(" ");
+/** The thick zigzag band (netkeiba: about three peaks across the body). */
+const ZIGZAG_BAND = <polyline points={zig(312, 400, 150)} fill="none" strokeWidth={126} strokeLinejoin="miter" strokeMiterlimit={8} />;
+/** A yoke whose lower edge is a row of big teeth, pointing down on the centre line; it covers the tops of the sleeves too. */
+const JAGGED_YOKE = <path d={`M-40 -40 H1320 V200 L${zig(320, 200, 97).split(" ").reverse().join(" L")} L-40 200 Z`} />;
+/** Rows of spots / stars: two columns, three rows (stars: 2-1-2). */
+const GRID_2X3 = [[500, 165], [780, 165], [500, 352], [780, 352], [500, 540], [780, 540]];
+const QUINCUNX = [[487, 220], [793, 220], [640, 376], [487, 540], [793, 540]];
+
+/** Hoops as [top, height] pairs, the same on body and sleeves (netkeiba draws them level across both). */
+const HOOPS = {
+  hoop1: [[305, 140]],
+  hoop2: [[252, 84], [432, 84]],
+  hoop3: [[228, 88], [372, 88], [516, 80]],
+  hoop4: [[140, 76], [306, 60], [456, 54], [600, 120]],
+  hoop5: [[120, 56], [240, 56], [360, 56], [480, 56], [600, 56]],
+} as const;
+const hoops = (hs: readonly (readonly [number, number])[], c: string) => <g fill={c}>{hs.map(([y, h]) => <rect key={y} x={0} y={y} width={1280} height={h} />)}</g>;
 
 function bodyPattern(p: Silks["pattern"], c: string): ReactNode {
   switch (p) {
-    case "hoop1": return <rect x={0} y={300} width={1280} height={110} fill={c} />;
-    case "hoop2": return <g fill={c}><rect x={0} y={220} width={1280} height={90} /><rect x={0} y={420} width={1280} height={90} /></g>;
-    case "hoop3": return <g fill={c}>{[150, 350, 550].map((y) => <rect key={y} x={0} y={y} width={1280} height={80} />)}</g>;
+    // hoops sit at the same heights as the sleeve hoops (netkeiba)
+    case "hoop1": return hoops(HOOPS.hoop1, c);
+    case "hoop2": return hoops(HOOPS.hoop2, c);
+    case "hoop3": return hoops(HOOPS.hoop3, c);
     case "belt": return <rect x={0} y={260} width={1280} height={210} fill={c} />;
     case "sash": return <line x1={300} y1={-40} x2={980} y2={760} stroke={c} strokeWidth={130} />;
     case "cross": return <g stroke={c} strokeWidth={120}><line x1={300} y1={-40} x2={980} y2={760} /><line x1={980} y1={-40} x2={300} y2={760} /></g>;
-    case "stripes": return <g fill={c}>{[400, 530, 660, 790].map((x) => <rect key={x} x={x} y={0} width={64} height={720} />)}</g>;
+    // three broad stripes, as wide as the gaps between them, one on the centre line
+    case "stripes": return <g fill={c}>{[CX - 180, CX, CX + 180].map((x) => <rect key={x} x={x - 45} y={0} width={90} height={720} />)}</g>;
     case "seams": return <rect x={CX - 9} y={0} width={18} height={720} fill={c} />;
     case "braces": return <g fill={c}><rect x={470} y={0} width={46} height={720} /><rect x={764} y={0} width={46} height={720} /></g>;
     case "halves": return <rect x={CX} y={0} width={640} height={720} fill={c} />;
@@ -59,23 +80,26 @@ function bodyPattern(p: Silks["pattern"], c: string): ReactNode {
     case "sawtooth": return <polyline points={Array.from({ length: 11 }, (_, i) => `${340 + i * 60},${i % 2 ? 250 : 340}`).join(" ")} fill="none" stroke={c} strokeWidth={60} strokeLinejoin="miter" />;
     case "hash": return <g fill={c}><rect x={500} y={0} width={46} height={720} /><rect x={734} y={0} width={46} height={720} /><rect x={0} y={240} width={1280} height={46} /><rect x={0} y={470} width={1280} height={46} /></g>;
     case "yoke": return <path d="M0 0 H1280 V200 H922 L640 250 L358 200 H0 Z" fill={c} />;
-    case "spots": return <g fill={c}>{[[520, 170], [760, 170], [640, 320], [500, 470], [780, 470], [640, 620]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r={46} />)}</g>;
-    case "stars": return <g fill={c}>{[[520, 170], [760, 170], [640, 320], [500, 470], [780, 470], [640, 620]].map(([x, y], i) => star(x, y, 58, i))}</g>;
+    case "spots": return <g fill={c}>{GRID_2X3.map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r={64} />)}</g>;
+    case "stars": return <g fill={c}>{QUINCUNX.map(([x, y], i) => star(x, y, 80, i))}</g>;
     case "star": return <g fill={c}>{star(CX, 330, 150)}</g>;
     case "ring": return <circle cx={CX} cy={340} r={130} fill="none" stroke={c} strokeWidth={50} />;
     case "diamond": return <g fill={c}>{diamond(CX, 360, 170, 230)}</g>;
-    // a yoke whose lower edge is a row of teeth
-    case "jaggedYoke": return <path d={`M0 0 H1280 V190 L960 190 ${Array.from({ length: 17 }, (_, i) => `L${960 - i * 40} ${i % 2 ? 190 : 270}`).join(" ")} L0 190 Z`} fill={c} />;
-    case "zigzag2": return <g fill="none" stroke={c} strokeWidth={42} strokeLinejoin="miter">{[[230, 300], [400, 470]].map(([a, b]) => <polyline key={a} points={zig(a, b, 60, 300, 1000)} />)}</g>;
-    case "zigzagBand": return <polyline points={ZIGZAG_BAND} fill="none" stroke={c} strokeWidth={80} strokeLinejoin="miter" />;
-    case "rings": return <g fill="none" stroke={c} strokeWidth={24}>{[[520, 170], [760, 170], [640, 320], [500, 470], [780, 470], [640, 620]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r={48} />)}</g>;
-    case "bigCheck": return <g fill={c}>{checks(150)}</g>;
+    case "jaggedYoke": return <g fill={c}>{JAGGED_YOKE}</g>;
+    // two zigzag bands, peaks on the centre line
+    case "zigzag2": return <g fill="none" stroke={c} strokeWidth={100} strokeLinejoin="miter" strokeMiterlimit={8}>{[[300, 356], [478, 536]].map(([a, b]) => <polyline key={a} points={zig(a, b, 121)} />)}</g>;
+    case "zigzagBand": return <g stroke={c}>{ZIGZAG_BAND}</g>;
+    case "rings": return <g fill="none" stroke={c} strokeWidth={30}>{GRID_2X3.map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r={48} />)}</g>;
+    // a column of squares on the centre line, the middle one in the accent colour
+    case "bigCheck": return <g fill={c}>{checks(162, 145, CX - 81, 294)}</g>;
+    // accent diamonds about three across, the body colour's diamonds between them
     case "bigHarlequin": {
       const out: ReactNode[] = [];
-      for (let row = 0; row < 5; row++) for (let col = -1; col < 5; col++) out.push(diamond(340 + col * 150 + (row % 2) * 75, 40 + row * 150, 75, 75, `${row}-${col}`));
+      for (let row = -2; row < 2; row++) for (let col = -3; col < 3; col++) out.push(diamond(CX + 108 + col * 216, 490 + row * 204, 108, 102, `${row}${col}`));
       return <g fill={c}>{out}</g>;
     }
-    case "bigDiamondBand": return <g fill={c}>{[430, 570, 710, 850].map((x) => diamond(x, 430, 70, 110, x))}</g>;
+    // three big tall diamonds across the middle, touching
+    case "bigDiamondBand": return <g fill={c}>{[CX - 225, CX, CX + 225].map((x) => diamond(x, 380, 113, 152, x))}</g>;
     default: return null;
   }
 }
@@ -102,15 +126,15 @@ function alongSleeves(ts: number[], mark: (i: number) => ReactNode) {
 function sleevePattern(p: Silks["sleevePattern"], c: string): ReactNode {
   const bands = (ys: number[], h: number) => <g fill={c}>{ys.map((y) => <rect key={y} x={0} y={y} width={1280} height={h} />)}</g>;
   switch (p) {
-    case "hoop1": return bands([470], 70);
-    case "hoop2": return bands([400, 540], 64);
-    case "hoop3": return bands([330, 460, 590], 60);
+    case "hoop1": return hoops(HOOPS.hoop1, c);
+    case "hoop2": return hoops(HOOPS.hoop2, c);
+    case "hoop3": return hoops(HOOPS.hoop3, c);
     case "cuffs": return bands([640], 80);
     case "halved": return bands([400], 320);
     case "stripes":
       // two bands following the arc of each sleeve
       return (
-        <g fill="none" stroke={c} strokeWidth={38}>
+        <g fill="none" stroke={c} strokeWidth={50}>
           <path d="M268 92 Q100 270 82 720" /><path d="M318 236 Q178 400 164 720" />
           <path d="M1012 92 Q1180 270 1198 720" /><path d="M962 236 Q1102 400 1116 720" />
         </g>
@@ -120,8 +144,8 @@ function sleevePattern(p: Silks["sleevePattern"], c: string): ReactNode {
     case "spots": return <g fill={c}>{alongSleeves([0.25, 0.45, 0.65, 0.85], () => <circle r={34} />)}</g>;
     case "stars": return <g fill={c}>{alongSleeves([0.25, 0.45, 0.65, 0.85], () => star(0, 0, 44))}</g>;
     case "check": return <g fill={c}>{checks(72)}</g>;
-    case "hoop4": return bands([290, 395, 500, 605], 52);
-    case "hoop5": return bands([250, 345, 440, 535, 630], 46);
+    case "hoop4": return hoops(HOOPS.hoop4, c);
+    case "hoop5": return hoops(HOOPS.hoop5, c);
     case "stripesDense":
       // four thin bands following the arc of each sleeve
       return (
@@ -132,7 +156,7 @@ function sleevePattern(p: Silks["sleevePattern"], c: string): ReactNode {
           })}
         </g>
       );
-    case "zigzagBand": return <polyline points={ZIGZAG_BAND} fill="none" stroke={c} strokeWidth={80} strokeLinejoin="miter" />;
+    case "zigzagBand": return <g stroke={c}>{ZIGZAG_BAND}</g>;
     default: return null;
   }
 }
@@ -148,6 +172,7 @@ export function SilksSvg({ silks: s, className }: { silks: Silks; className?: st
       <g clipPath={`url(#${id}s)`}>
         <rect width={1280} height={720} fill={s.sleeves} />
         {sleevePattern(s.sleevePattern, s.sleeveAccent)}
+        {s.pattern === "jaggedYoke" && <g fill={s.accent}>{JAGGED_YOKE}</g>}
       </g>
       <g clipPath={`url(#${id}b)`}>
         <rect width={1280} height={720} fill={s.body} />
