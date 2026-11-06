@@ -1,5 +1,5 @@
 /** Adding, removing and renaming stored pictures, keeping the data's list of pictures (`images`) in step. */
-import { deleteImage, getImage, imageOk, putImage } from "./images";
+import { clearImages, deleteImage, getImage, imageOk, putImage } from "./images";
 import { imageName, imageRefs, isImageName, mapImageRefs } from "./imageRefs";
 import { getData, update } from "./store";
 import type { FileOutput } from "./model";
@@ -56,4 +56,10 @@ export async function renameOldImages() {
     });
     await Promise.all([...map.keys()].map((k) => deleteImage(k).catch(() => {})));
   } finally { migrating = false; }
+}
+
+/** Delete every picture stored in this browser and take all picture names out of the data (cannot be undone). */
+export async function clearAllImages() {
+  await clearImages();
+  update((x) => mapImageRefs({ ...x, images: {} }, () => null));
 }

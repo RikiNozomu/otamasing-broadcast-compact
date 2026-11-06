@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState, type ReactNode } from "react";
 import { BLANK, exportFile, HOME, mergeImport, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
 import { getData, setData, update, updateRace, useData } from "../lib/store";
-import { checkImportImages, dropUnused, storeImage } from "../lib/imageStore";
+import { checkImportImages, clearAllImages, dropUnused, storeImage } from "../lib/imageStore";
 import { sampleRunner } from "../lib/sample";
 import { showPage, useResultPage } from "../lib/results";
 import { HOME_ROWS, paginate } from "../lib/paging";
@@ -59,6 +59,7 @@ function QuickResultPages({ race }: { race: Race }) {
 export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toast: Toast }) {
   const d = useData();
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
   const [pending, setPending] = useState<{ name: string; data: Extract<ParseResult, { ok: true }>["data"] } | null>(null);
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
@@ -133,6 +134,11 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
     const old = d.home.background;
     update((x) => ({ ...x, home: { ...x.home, background: null } }));
     await dropUnused([old]);
+  };
+  const clearPictures = async () => {
+    setConfirmClear(false);
+    try { await clearAllImages(); toast("ลบรูปทั้งหมดในเครื่องนี้แล้ว"); }
+    catch { toast("ลบรูปไม่สำเร็จ", true); }
   };
   const copy = async () => {
     try { await navigator.clipboard.writeText(overlayUrl); toast("คัดลอก URL แล้ว"); }
@@ -272,6 +278,23 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
           <Button onClick={copy}>คัดลอก</Button>
         </div>
         <span className={hintClass}>ใส่ Browser Source ตัวเดียว ขนาด 1920×1080</span>
+      </Section>
+
+      <Section title="รูปที่เก็บในเครื่องนี้">
+        <span className="text-[13px]" data-testid="stored-count">{Object.keys(d.images).length} รูป</span>
+        {confirmClear ? (
+          <div className="grid gap-1.5 border border-danger-ink p-2.5 text-[13px]" role="alertdialog" aria-label="ยืนยันลบรูปทั้งหมด">
+            <span className="font-semibold text-danger-ink">⚠ ปุ่มอันตราย: รูปทุกรูปที่เก็บไว้ในเครื่องนี้จะหายไปหมด กู้คืนไม่ได้</span>
+            <span>รูปฉากหลัง รูปม้า รูปสีเสื้อที่อัป และ BG หน้าแรกของทุกรายการจะถูกลบ ข้อมูลอื่นยังอยู่ ไฟล์ JSON ที่ส่งออกไว้ก่อนหน้าจะหารูปไม่เจอ</span>
+            <span className="flex flex-wrap gap-1.5">
+              <Button variant="danger" onClick={clearPictures}>ลบรูปทั้งหมดเลย</Button>
+              <Button onClick={() => setConfirmClear(false)}>ยกเลิก</Button>
+            </span>
+          </div>
+        ) : (
+          <Button variant="danger" className="justify-self-start" onClick={() => setConfirmClear(true)}>ลบรูปทั้งหมดในเครื่อง…</Button>
+        )}
+        <span className={hintClass}>ปุ่มอันตราย ใช้เมื่ออยากคืนพื้นที่ รูปทุกรูปที่เก็บไว้จะหายไปหมด</span>
       </Section>
     </div>
   );

@@ -27,6 +27,7 @@ async function tx<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBReq
 export const putImage = (key: string, blob: Blob) => tx("readwrite", (s) => s.put(blob, key));
 export const deleteImage = (key: string) => tx("readwrite", (s) => s.delete(key));
 export const getImage = (key: string) => tx<Blob | undefined>("readonly", (s) => s.get(key));
+export const clearImages = () => tx("readwrite", (s) => s.clear());
 
 /** Whether a stored picture is there and opens as a picture (not missing, empty or damaged). */
 export async function imageOk(key: string): Promise<boolean> {

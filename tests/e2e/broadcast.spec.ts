@@ -499,4 +499,14 @@ test("pictures are named image/<date-time>.<ext>, the JSON carries the names, a 
   expect(await alert.textContent()).not.toContain(kept);
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
   await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(1);
+  // the danger button clears every stored picture, after a warning
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
+  await expect(dock.getByTestId("stored-count")).toHaveText("1 รูป");
+  await dock.getByRole("button", { name: "ลบรูปทั้งหมดในเครื่อง…" }).click();
+  await expect(dock.getByRole("alertdialog")).toContainText("รูปทุกรูปที่เก็บไว้ในเครื่องนี้จะหายไปหมด");
+  await dock.getByRole("button", { name: "ลบรูปทั้งหมดเลย" }).click();
+  await expect.poll(stored).toHaveLength(0);
+  await expect(dock.getByTestId("stored-count")).toHaveText("0 รูป");
+  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await expect(dock.getByTestId("thumbs-card")).toHaveCount(0);
 });
