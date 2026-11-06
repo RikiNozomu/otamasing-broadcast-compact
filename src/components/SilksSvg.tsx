@@ -149,6 +149,17 @@ function alongSleeves(ts: number[], mark: (i: number) => ReactNode) {
   });
 }
 
+/** A line parallel to the outer edge of both sleeves, `d` px in from it, starting at `t0` along the edge (0 = shoulder). */
+function alongOuterEdge(d: number, t0: number) {
+  const [x0, y0, cx, cy, x1, y1] = [252, 70, 64, 250, 40, 720];
+  const u = 1 - t0;
+  const sx = u * u * x0 + 2 * u * t0 * cx + t0 * t0 * x1, sy = u * u * y0 + 2 * u * t0 * cy + t0 * t0 * y1;
+  const qx = cx + t0 * (x1 - cx), qy = cy + t0 * (y1 - cy);
+  const left = `M${sx + d} ${sy + d * 0.6} Q${qx + d} ${qy} ${x1 + d} ${y1 + 20}`;
+  const right = `M${1280 - sx - d} ${sy + d * 0.6} Q${1280 - qx - d} ${qy} ${1280 - x1 - d} ${y1 + 20}`;
+  return [<path key={`l${d}`} d={left} />, <path key={`r${d}`} d={right} />];
+}
+
 function sleevePattern(p: Silks["sleevePattern"], c: string): ReactNode {
   const bands = (ys: number[], h: number) => <g fill={c}>{ys.map((y) => <rect key={y} x={0} y={y} width={1280} height={h} />)}</g>;
   switch (p) {
@@ -172,16 +183,10 @@ function sleevePattern(p: Silks["sleevePattern"], c: string): ReactNode {
     case "check": return <g fill={c}>{checks(72)}</g>;
     case "hoop4": return hoops(HOOPS.hoop4, c);
     case "hoop5": return hoops(HOOPS.hoop5, c);
-    case "stripesDense":
-      // four thin bands following the arc of each sleeve
-      return (
-        <g fill="none" stroke={c} strokeWidth={22}>
-          {[0, 1, 2, 3].map((i) => {
-            const [x0, y0, cx, cy, x1] = [262 + i * 18, 92 + i * 48, 96 + i * 26, 280 + i * 40, 66 + i * 34];
-            return [<path key={`l${i}`} d={`M${x0} ${y0} Q${cx} ${cy} ${x1} 720`} />, <path key={`r${i}`} d={`M${1280 - x0} ${y0} Q${1280 - cx} ${cy} ${1280 - x1} 720`} />];
-          })}
-        </g>
-      );
+    // four thin stripes packed together on the outer side of each sleeve, shoulder to cuff
+    case "stripesDense": return <g fill="none" stroke={c} strokeWidth={19}>{[28, 56, 84, 112].map((d) => alongOuterEdge(d, 0))}</g>;
+    // one broad stripe on the outer side of each sleeve, from just below the shoulder to the cuff
+    case "stripe1": return <g fill="none" stroke={c} strokeWidth={50}>{alongOuterEdge(50, 0.15)}</g>;
     case "zigzagBand": return <g stroke={c}>{ZIGZAG_BAND}</g>;
     // large squares in two columns down the sleeve, alternating sides
     case "blocks": return <g fill={c}>{alongSleeves([0.18, 0.34, 0.5, 0.66, 0.82, 0.98], (i) => <rect x={i % 2 ? 0 : -120} y={-62} width={120} height={124} />)}</g>;
