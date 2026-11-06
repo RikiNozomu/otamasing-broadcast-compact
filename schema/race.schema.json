@@ -633,7 +633,14 @@
                           "stars",
                           "star",
                           "ring",
-                          "diamond"
+                          "diamond",
+                          "jaggedYoke",
+                          "zigzag2",
+                          "zigzagBand",
+                          "rings",
+                          "bigCheck",
+                          "bigHarlequin",
+                          "bigDiamondBand"
                         ],
                         "default": "plain"
                       },
@@ -661,7 +668,11 @@
                           "spots",
                           "stars",
                           "cuffs",
-                          "halved"
+                          "halved",
+                          "hoop4",
+                          "hoop5",
+                          "stripesDense",
+                          "zigzagBand"
                         ],
                         "default": "plain"
                       },
