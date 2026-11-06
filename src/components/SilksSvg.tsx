@@ -68,7 +68,7 @@ function bodyPattern(p: Silks["pattern"], c: string): ReactNode {
     case "jaggedYoke": return <path d={`M0 0 H1280 V190 L960 190 ${Array.from({ length: 17 }, (_, i) => `L${960 - i * 40} ${i % 2 ? 190 : 270}`).join(" ")} L0 190 Z`} fill={c} />;
     case "zigzag2": return <g fill="none" stroke={c} strokeWidth={42} strokeLinejoin="miter">{[[230, 300], [400, 470]].map(([a, b]) => <polyline key={a} points={zig(a, b, 60, 300, 1000)} />)}</g>;
     case "zigzagBand": return <polyline points={ZIGZAG_BAND} fill="none" stroke={c} strokeWidth={80} strokeLinejoin="miter" />;
-    case "rings": return <g fill="none" stroke={c} strokeWidth={20}>{[[520, 170], [760, 170], [640, 320], [500, 470], [780, 470], [640, 620]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r={42} />)}</g>;
+    case "rings": return <g fill="none" stroke={c} strokeWidth={24}>{[[520, 170], [760, 170], [640, 320], [500, 470], [780, 470], [640, 620]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r={48} />)}</g>;
     case "bigCheck": return <g fill={c}>{checks(150)}</g>;
     case "bigHarlequin": {
       const out: ReactNode[] = [];
