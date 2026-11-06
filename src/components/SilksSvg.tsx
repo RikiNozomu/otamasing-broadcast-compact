@@ -41,15 +41,19 @@ const ZIGZAG_BAND = <polyline points={zig(312, 400, 150)} fill="none" strokeWidt
 const JAGGED_YOKE = <path d={`M-40 -40 H1320 V200 L${zig(320, 200, 97).split(" ").reverse().join(" L")} L-40 200 Z`} />;
 /** A fleur-de-lys about 220 high, centred on (0, 0). */
 const FLEUR = (
-  <>
-    <path d="M0 -112 C34 -78 44 -36 22 6 L-22 6 C-44 -36 -34 -78 0 -112 Z" />
-    <path d="M18 8 C30 -40 70 -66 100 -46 C124 -30 116 4 92 10 C76 14 64 2 70 -12 C52 -10 44 6 40 24 Z" />
-    <path d="M-18 8 C-30 -40 -70 -66 -100 -46 C-124 -30 -116 4 -92 10 C-76 14 -64 2 -70 -12 C-52 -10 -44 6 -40 24 Z" />
-    <rect x={-58} y={20} width={116} height={22} rx={6} />
-    <path d="M-14 42 L14 42 L8 100 L0 108 L-8 100 Z" />
-    <path d="M18 42 C40 50 64 70 54 100 C48 80 34 66 16 60 Z" />
-    <path d="M-18 42 C-40 50 -64 70 -54 100 C-48 80 -34 66 -16 60 Z" />
-  </>
+  <>{[
+    // central petal: pointed tip, widest in the middle, narrowing into the band
+    "M0 -122 C26 -96 42 -62 38 -30 C36 -6 26 8 20 14 L-20 14 C-26 8 -36 -6 -38 -30 C-42 -62 -26 -96 0 -122 Z",
+    // side petals: thick arcs up and out from the band, drooping into a curl
+    "M16 14 C14 -40 66 -78 104 -52 C130 -32 120 6 94 8 C78 9 74 -8 88 -14 C98 -19 100 -32 88 -38 C70 -46 46 -24 50 14 Z",
+    "M-16 14 C-14 -40 -66 -78 -104 -52 C-130 -32 -120 6 -94 8 C-78 9 -74 -8 -88 -14 C-98 -19 -100 -32 -88 -38 C-70 -46 -46 -24 -50 14 Z",
+    // the band
+    "M-48 12 H48 V38 H-48 Z",
+    // under the band: a short stem with two small tails flaring out
+    "M-14 38 H14 L9 80 L0 94 L-9 80 Z",
+    "M8 38 C40 38 72 56 66 86 C62 100 44 98 46 86 C48 78 56 80 54 72 C48 62 28 62 8 68 Z",
+    "M-8 38 C-40 38 -72 56 -66 86 C-62 100 -44 98 -46 86 C-48 78 -56 80 -54 72 C-48 62 -28 62 -8 68 Z",
+  ].map((d) => <path key={d} d={d} />)}</>
 );
 
 /** Rows of spots / stars: two columns, three rows (stars: 2-1-2). */
@@ -161,9 +165,9 @@ function sleevePattern(p: Silks["sleevePattern"], c: string): ReactNode {
           <path d="M1012 92 Q1180 270 1198 720" /><path d="M962 236 Q1102 400 1116 720" />
         </g>
       );
-    case "chevrons": return <g fill="none" stroke={c} strokeWidth={30}>{alongSleeves([0.3, 0.5, 0.7, 0.9], () => <polyline points="-60,-30 0,20 60,-30" />)}</g>;
+    case "chevrons": return <g fill="none" stroke={c} strokeWidth={64} strokeLinejoin="miter">{alongSleeves([0.36, 0.62, 0.88], () => <polyline points="-150,-60 0,30 150,-60" />)}</g>;
     case "diamonds": return <g fill={c}>{alongSleeves([0.22, 0.4, 0.58, 0.76, 0.94], () => diamond(0, 0, 44, 52))}</g>;
-    case "spots": return <g fill={c}>{alongSleeves([0.25, 0.45, 0.65, 0.85], () => <circle r={34} />)}</g>;
+    case "spots": return <g fill={c}>{alongSleeves([0.48, 0.63, 0.78, 0.93], () => <circle cx={-18} r={30} />)}</g>;
     case "stars": return <g fill={c}>{alongSleeves([0.25, 0.45, 0.65, 0.85], () => star(0, 0, 44))}</g>;
     case "check": return <g fill={c}>{checks(72)}</g>;
     case "hoop4": return hoops(HOOPS.hoop4, c);
