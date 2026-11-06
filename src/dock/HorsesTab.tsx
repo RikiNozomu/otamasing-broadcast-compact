@@ -228,10 +228,12 @@ const BODY_LABEL: Record<Silks["pattern"], string> = {
   plain: "Plain", hoop1: "Hoop", hoop2: "Two hoops", hoop3: "Three hoops", belt: "Belt", sash: "Sash", cross: "Crossbelts", stripes: "Stripes",
   seams: "Seams", braces: "Braces", halves: "Halves", quartered: "Quartered", check: "Check", harlequin: "Harlequin", diamondBand: "Diamonds",
   chevron: "Chevron", bigV: "Large V", sawtooth: "Zigzag", hash: "Hash", yoke: "Yoke", spots: "Spots", stars: "Stars", star: "Star", ring: "Ring", diamond: "Diamond",
+  jaggedYoke: "Jagged yoke", zigzag2: "Double zigzag", zigzagBand: "Zigzag band", rings: "Rings", bigCheck: "Large check", bigHarlequin: "Large harlequin", bigDiamondBand: "Large diamonds",
 };
 const SLEEVE_LABEL: Record<Silks["sleevePattern"], string> = {
   plain: "Plain", hoop1: "Armlet", hoop2: "Two armlets", hoop3: "Three armlets", stripes: "Stripes", chevrons: "Chevrons",
   diamonds: "Diamonds", check: "Check", spots: "Spots", stars: "Stars", cuffs: "Cuffs", halved: "Halved",
+  hoop4: "Four armlets", hoop5: "Five armlets", stripesDense: "Fine stripes", zigzagBand: "Zigzag band",
 };
 
 const MODE_LABEL: Record<SilksMode, string> = { upload: "Upload", pattern: "Pattern", none: "ไม่มี" };
