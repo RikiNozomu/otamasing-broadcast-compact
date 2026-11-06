@@ -429,6 +429,16 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await expect(dock.getByTestId("photo-pos-horse")).toHaveText("2 / 2");
   await expect(scene.getByTestId("horse-photo")).toHaveAttribute("data-has", "");
   await expect(scene.getByTestId("horse-page-title").filter({ hasText: "PROFILE" })).toHaveCount(1);
+  // a very long owner stays on one line (squeezed) and never reaches the PROFILE heading; the trainer stays on one line too
+  await dock.locator("#h-owner").fill("OGMA Investments LLC, Al Otaibi, Saleh, TCC Stables LLC, YNG Stables LLC, High Step Racing and JR Ranch");
+  await dock.locator("#h-trainer").fill("Gustavo Delgado");
+  await expect(scene.getByTestId("owner").locator("[data-fit]")).toHaveCount(1);
+  const box = async (id: string) => (await scene.getByTestId(id).first().boundingBox())!;
+  const [owner, trainer, title] = [await box("owner"), await box("trainer"), await box("horse-page-title")];
+  expect(owner.height).toBeLessThan(60);
+  expect(trainer.height).toBeLessThan(60);
+  expect(owner.y + owner.height).toBeLessThan(title.y);
+  expect(owner.x + owner.width).toBeLessThanOrEqual(trainer.x);
   // the dock picks the prize money currency for every horse
   await dock.getByTestId("horse-currency").selectOption("USD");
   await expect(scene.getByTestId("fact-earnings")).toContainText("≈ $5,361,477");
