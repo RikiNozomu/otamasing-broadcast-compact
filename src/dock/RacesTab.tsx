@@ -14,6 +14,7 @@ import { cx } from "../lib/cx";
 import { Button, buttonClass } from "../components/Button";
 import { Field, inputClass } from "../components/Field";
 import { Section, hintClass } from "../components/Section";
+import { Switch } from "../components/Switch";
 import type { Toast } from "./Dock";
 
 const TRANSITION_LABEL: Record<Transition, string> = { wipe: "Wipe (แถบเหลืองกวาดจากซ้าย)", slide: "Slide (เลื่อนเข้าจากขวา)", fade: "Fade (จางเข้า)", none: "ไม่มี (ตัดทันที)" };
@@ -256,6 +257,8 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
           <input type="file" id="l-bg" accept="image/*" hidden onChange={(e) => { setBg(e.target.files?.[0]); e.target.value = ""; }} />
           {d.home.background ? <Button onClick={clearBg}>ไม่ใช้รูป</Button> : null}
         </div>
+        <Switch on={d.home.showDate} label="คอลัมน์วันที่" testId="home-show-date" onToggle={() => update((x) => ({ ...x, home: { ...x.home, showDate: !x.home.showDate } }))} />
+        <Switch on={d.home.showCourse} label="คอลัมน์สนาม" testId="home-show-course" onToggle={() => update((x) => ({ ...x, home: { ...x.home, showCourse: !x.home.showCourse } }))} />
         <PageButtons label="หน้า" count={home.pageCount} page={home.page} onPick={setHomePage} testId="home-pages" />
         <span className={hintClass}>หน้าละ {HOME_ROWS} รายการ ตามลำดับในรายการด้านบน{home.pageCount > 1 ? ` · ทั้งหมด ${home.pageCount} หน้า` : ""}</span>
         <span className={hintClass}>ไฮไลต์รายการบนหน้าแรก (แยกจาก Active, กดซ้ำเพื่อเอาออก, ถ้าอยู่หน้าอื่นจะเปลี่ยนไปหน้านั้นให้)</span>
