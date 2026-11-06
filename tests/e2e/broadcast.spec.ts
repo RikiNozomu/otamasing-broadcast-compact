@@ -51,7 +51,7 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
   await expect(overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse] img")).toHaveAttribute("alt", "NZ");
   await dock.getByRole("tab", { name: "สไตล์" }).click();
   await dock.getByTestId("show-draw").click();
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=table-head] span")).toHaveText(["NO.", "HORSE", "JOCKEY"]);
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=table-head] span")).toHaveText(["NO.", "HORSE", "HORSE WT.", "JOCKEY", "WEIGHT"]);
 });
 
 test("a moving highlight bar is never hidden behind the row backgrounds", async ({ context }) => {
