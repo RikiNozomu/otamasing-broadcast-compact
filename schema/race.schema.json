@@ -231,7 +231,7 @@
                   },
                   "auto": {
                     "type": "boolean",
-                    "default": true
+                    "default": false
                   },
                   "seconds": {
                     "type": "number",
@@ -257,7 +257,7 @@
                   },
                   "auto": {
                     "type": "boolean",
-                    "default": true
+                    "default": false
                   },
                   "seconds": {
                     "type": "number",
@@ -293,7 +293,7 @@
                       },
                       "auto": {
                         "type": "boolean",
-                        "default": true
+                        "default": false
                       },
                       "seconds": {
                         "type": "number",
@@ -326,7 +326,7 @@
                       },
                       "auto": {
                         "type": "boolean",
-                        "default": true
+                        "default": false
                       },
                       "seconds": {
                         "type": "number",
@@ -711,7 +711,7 @@
                   },
                   "auto": {
                     "type": "boolean",
-                    "default": true
+                    "default": false
                   },
                   "seconds": {
                     "type": "number",
@@ -901,7 +901,7 @@
                   },
                   "auto": {
                     "type": "boolean",
-                    "default": true
+                    "default": false
                   },
                   "seconds": {
                     "type": "number",

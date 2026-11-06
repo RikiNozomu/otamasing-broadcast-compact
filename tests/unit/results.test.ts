@@ -9,10 +9,11 @@ const nos = (rows: { number: number }[]) => rows.map((h) => h.number);
 const pos = (r: Race, rows: { number: number }[]) => rows.map((h) => { const x = r.runners.find((y) => y.number === h.number)!; return resultMark(x) ?? x.finish; });
 
 describe("result pages taking turns", () => {
-  it("turn every 5 seconds by default and wrap around", () => {
+  it("are turned by hand by default; with auto on they turn every 5 seconds and wrap around", () => {
     const r = race(); // 2 pages
-    expect(r.result).toMatchObject({ auto: true, seconds: 5 });
-    r.result = { ...r.result, page: 0, since: 1000 };
+    expect(r.result).toMatchObject({ auto: false, seconds: 5 });
+    expect(shownPage(r, 99_000)).toBe(0);
+    r.result = { ...r.result, auto: true, page: 0, since: 1000 };
     expect(shownPage(r, 5999)).toBe(0);
     expect(shownPage(r, 6000)).toBe(1);
     expect(shownPage(r, 11000)).toBe(0);
@@ -27,6 +28,7 @@ describe("result pages taking turns", () => {
   });
   it("picking a page restarts the timer from it; changing auto or speed keeps the page on screen", () => {
     const r = race();
+    r.result = { ...r.result, auto: true };
     r.result = showPage(r, 1, 500);
     expect(r.result).toMatchObject({ page: 1, since: 500 });
     expect(shownPage(r, 5499)).toBe(1);
