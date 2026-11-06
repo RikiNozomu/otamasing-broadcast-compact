@@ -6,7 +6,7 @@
 import { useSyncExternalStore } from "react";
 import { activeExists, HOME, newPhotos, newCard, newResult, type AppData } from "./model";
 import { sampleData } from "./sample";
-import { raceImageKey } from "./images";
+import { HOME_BG, raceImageKey } from "./images";
 import { horsePhotoKey, newHorseSettings, newHorseView, silksKey } from "./horses";
 
 // own keys: this site shares the rikinozomu.github.io origin (and so its storage) with otamasing-broadcast
@@ -54,9 +54,13 @@ export function getData(): AppData {
     if (!h.photos) h.photos = { keys: data.images[horsePhotoKey(h.id)] ? [horsePhotoKey(h.id)] : [], index: 0, auto: true, seconds: 5, since: 0 };
     // an uploaded silks picture used to win over the drawn one
     if (!h.silksMode && data.images[silksKey(h.id)]) h.silksMode = "upload";
+    // the uploaded silks used to be found by the horse's id; now the horse names its picture
+    if (h.silksImage === undefined) h.silksImage = data.images[silksKey(h.id)] ? silksKey(h.id) : null;
   }
   if (!activeExists(data.active, data.races, data.horses)) data.active = HOME;
   data.home.page ??= 0;
+  // the home background used to be one fixed picture; now the home page names its picture
+  if (data.home.background === undefined) data.home.background = data.images[HOME_BG] ? HOME_BG : null;
   // data saved before results existed
   for (const r of data.races) {
     // and before the result pages could turn by themselves

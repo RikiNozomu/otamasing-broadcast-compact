@@ -5,7 +5,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { GRADE_COLOR } from "../lib/colors";
 import { gradeLabel } from "../lib/labels";
-import { HOME_BG, useImage } from "../lib/images";
+import { useImage } from "../lib/images";
 import { useData } from "../lib/store";
 import { HOME_ROWS, paginate } from "../lib/paging";
 import { cx } from "../lib/cx";
@@ -20,7 +20,7 @@ const ROW_H = 78;
 
 export function RaceListScene() {
   const d = useData();
-  const bg = useImage(HOME_BG, d.images[HOME_BG]);
+  const bg = useImage(d.home.background ?? "", d.home.background ? d.images[d.home.background] : undefined);
   const { rows: races } = paginate(d.races, HOME_ROWS, d.home.page);
   // the round column fits the longest round of ALL races, so it doesn't change width between pages
   const roundW = Math.max(110, ...d.races.map((x) => 44 + 24 * x.round.length));

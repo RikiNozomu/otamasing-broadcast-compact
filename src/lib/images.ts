@@ -1,4 +1,7 @@
-/** Pictures (race photo, home background) are Blobs in IndexedDB: localStorage only holds ~5 MB of text. */
+/**
+ * Pictures are Blobs in this browser's IndexedDB (localStorage only holds ~5 MB of text), under names like
+ * `image/20261106031451123.png` (see imageRefs.ts); the data refers to them by name.
+ */
 import { useEffect, useState } from "react";
 
 const DB = "otamasing-broadcast-compact", STORE = "images";
@@ -25,6 +28,23 @@ export const putImage = (key: string, blob: Blob) => tx("readwrite", (s) => s.pu
 export const deleteImage = (key: string) => tx("readwrite", (s) => s.delete(key));
 export const getImage = (key: string) => tx<Blob | undefined>("readonly", (s) => s.get(key));
 
+/** Whether a stored picture is there and opens as a picture (not missing, empty or damaged). */
+export async function imageOk(key: string): Promise<boolean> {
+  let b: Blob | undefined;
+  try { b = await getImage(key); } catch { return false; }
+  if (!b || !b.size) return false;
+  const url = URL.createObjectURL(b);
+  try {
+    return await new Promise<boolean>((res) => {
+      const img = new Image();
+      img.onload = () => res(true);
+      img.onerror = () => res(false);
+      img.src = url;
+    });
+  } finally { URL.revokeObjectURL(url); }
+}
+
+/** Old names, from before pictures were named image/<date-time>.<ext>; renamed on the dock's first open (imageStore.ts). */
 /** Key of a race's one picture from before the slideshow (kept as the racecard's first picture). New pictures are `photo:<id>`. */
 export const raceImageKey = (id: string) => `race:${id}`;
 export const HOME_BG = "home";

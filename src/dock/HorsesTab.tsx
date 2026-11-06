@@ -4,13 +4,14 @@
  */
 import { AnimatePresence } from "motion/react";
 import { useState, type ReactNode } from "react";
-import { exportHorse, horseOf, HOME, newId, parseActive } from "../lib/model";
+import { exportHorse, horseOf, HOME, newId, parseActive, type AppData } from "../lib/model";
 import {
-  COATS, CURRENCIES, HorseSchema, careerNewestFirst, horsePhotoKey, posText, rateOf, recordFromRaces, recordText, setHorseAuto, showHorsePage, silksKey, useHorsePage, dotDate,
+  COATS, CURRENCIES, HorseSchema, careerNewestFirst, posText, rateOf, recordFromRaces, recordText, setHorseAuto, showHorsePage, useHorsePage, dotDate,
   CAREER_GRADES, CareerRaceSchema, SilksSchema, SILKS_BODY, SILKS_MODES, SILKS_SLEEVES, silksModeOf, type CareerRace, type SilksMode, type Silks, type Coat, type Currency, type Horse,
 } from "../lib/horses";
-import { bumpImage, update, useData } from "../lib/store";
-import { deleteImage, putImage, useImage } from "../lib/images";
+import { update, useData } from "../lib/store";
+import { useImage } from "../lib/images";
+import { dropUnused, storeImage } from "../lib/imageStore";
 import { cx } from "../lib/cx";
 import { Button, buttonClass } from "../components/Button";
 import { Field, inputClass } from "../components/Field";
@@ -30,14 +31,19 @@ const num = (v: string) => (v === "" ? null : Math.max(0, Math.round(+v)));
 
 const updateHorse = (id: string, fn: (h: Horse) => Horse) => update((d) => ({ ...d, horses: d.horses.map((h) => (h.id === id ? fn(h) : h)) }));
 
-/** One picture of the horse (its photo or the owner's silks): upload, replace, remove. */
-function PictureField({ k, label, testId, contain, light }: { k: string; label: string; testId: string; contain?: boolean; light?: boolean }) {
+/** One picture (the owner's silks): upload, replace, remove. `value` is the stored picture's name; `onChange` puts a new name (or null) in the data. */
+function PictureField({ value, onChange, label, testId, contain, light }: { value: string | null; onChange: (x: AppData, name: string | null) => AppData; label: string; testId: string; contain?: boolean; light?: boolean }) {
   const d = useData();
-  const url = useImage(k, d.images[k]);
-  const put = async (f: File | undefined) => { if (!f) return; await putImage(k, f); bumpImage(k); };
+  const url = useImage(value ?? "", value ? d.images[value] : undefined);
+  const put = async (f: File | undefined) => {
+    if (!f) return;
+    const name = await storeImage(f);
+    update((x) => onChange({ ...x, images: { ...x.images, [name]: Date.now() } }, name));
+    await dropUnused([value]);
+  };
   const remove = async () => {
-    await deleteImage(k).catch(() => {});
-    update((x) => { const images = { ...x.images }; delete images[k]; return { ...x, images }; });
+    update((x) => onChange(x, null));
+    await dropUnused([value]);
   };
   return (
     <div className="grid gap-1.5 text-[13px]">
@@ -67,11 +73,7 @@ function HorsePhotosSection({ h }: { h: Horse }) {
   const add = async (files: FileList | null) => {
     if (!files?.length) return;
     const keys: string[] = [];
-    for (const f of Array.from(files)) {
-      const k = `photo:${newId()}`;
-      await putImage(k, f);
-      keys.push(k);
-    }
+    for (const f of Array.from(files)) keys.push(await storeImage(f));
     const now = Date.now();
     update((x) => ({
       ...x,
@@ -80,12 +82,9 @@ function HorsePhotosSection({ h }: { h: Horse }) {
     }));
   };
   const remove = async (k: string) => {
-    await deleteImage(k).catch(() => {});
     update((x) => {
-      const images = { ...x.images };
-      delete images[k];
       return {
-        ...x, images,
+        ...x,
         horses: x.horses.map((y) => {
           if (y.id !== h.id) return y;
           const s = y.photos, at = s.keys.indexOf(k), cur = Math.max(0, shownIndex(s));
@@ -94,6 +93,7 @@ function HorsePhotosSection({ h }: { h: Horse }) {
         }),
       };
     });
+    await dropUnused([k]);
   };
   return (
     <Section title="รูปม้า (ซ้ายจอ)">
@@ -257,8 +257,9 @@ function SilksSection({ h }: { h: Horse }) {
       </div>
       {mode === "upload" && (
         <>
-          <PictureField k={silksKey(h.id)} label="รูปสีเสื้อ (PNG หรือ .svg ทรงเสื้อมีแขน)" testId="silks-file" contain light />
-          <span className={hintClass}>บนจอจะอยู่ในกรอบสีขาว · รูปเก็บในเครื่องนี้ ไม่อยู่ในไฟล์ JSON</span>
+          <PictureField value={h.silksImage} onChange={(x, name) => ({ ...x, horses: x.horses.map((y: Horse) => (y.id === h.id ? { ...y, silksImage: name } : y)) })}
+            label="รูปสีเสื้อ (PNG หรือ .svg ทรงเสื้อมีแขน)" testId="silks-file" contain light />
+          <span className={hintClass}>บนจอจะอยู่ในกรอบสีขาว · รูปเก็บในเครื่องนี้ ไฟล์ JSON เก็บแค่ชื่อรูป{h.silksImage ? ` (${h.silksImage})` : ""}</span>
         </>
       )}
       {mode === "pattern" && (
@@ -358,13 +359,9 @@ export function HorsesTab() {
     </Field>
   );
   const remove = async () => {
-    const keys = [...h.photos.keys, horsePhotoKey(h.id), silksKey(h.id)];
-    await Promise.all(keys.map((k) => deleteImage(k).catch(() => {})));
-    update((x) => {
-      const images = { ...x.images };
-      for (const k of keys) delete images[k];
-      return { ...x, images, horses: x.horses.filter((y) => y.id !== h.id), active: x.active === horseOf(h.id) ? HOME : x.active };
-    });
+    const keys = [...h.photos.keys, h.silksImage];
+    update((x) => ({ ...x, horses: x.horses.filter((y) => y.id !== h.id), active: x.active === horseOf(h.id) ? HOME : x.active }));
+    dropUnused(keys);
     setConfirmDel(false);
     setSel(null);
   };

@@ -36,7 +36,7 @@ export function sampleData(): AppData {
   r10.style.drawScheme = "us";
   r10.style.numberScheme = "us";
   r10.style.show.draw = false;
-  return { version: 1, races: [r10, r11, r12], horses: [sampleHorse()], horseSettings: newHorseSettings(), active: r11.id, transition: "wipe", home: { title: "Tokyo Races", subtitle: "2026.11.29", highlight: null, page: 0 }, images: {} };
+  return { version: 1, races: [r10, r11, r12], horses: [sampleHorse()], horseSettings: newHorseSettings(), active: r11.id, transition: "wipe", home: { title: "Tokyo Races", subtitle: "2026.11.29", highlight: null, page: 0, background: null }, images: {} };
 }
 
 export { HOME };
@@ -49,7 +49,7 @@ export function sampleHorse(): Horse {
     id: "sample-horse", name: "Sample Star", trainedIn: "JP", bornIn: "JP", foaled: "2022-03-14", coat: "Dark Bay",
     sex: "M",
     sire: "Example Sire", dam: "Paper Princess", bms: "Old Champion", sireSire: "Grand Example", sireDam: "Model Mare", damDam: "Paper Queen", owner: "Otamasing Racing", trainer: "T. Example",
-    silksMode: "pattern", photos: { keys: [], index: 0, auto: true, seconds: 5, since: 0 },
+    silksMode: "pattern", silksImage: null, photos: { keys: [], index: 0, auto: true, seconds: 5, since: 0 },
     silks: { body: "#000000", pattern: "cross", accent: "#E30613", sleeves: "#000000", sleevePattern: "stripes", sleeveAccent: "#FFE600" },
     record: { starts: 10, first: 5, second: 2, third: 1 }, earnings: 812_345_000, currency: "JPY",
     races: [

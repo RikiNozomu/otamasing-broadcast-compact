@@ -76,7 +76,7 @@ export const SilksSchema = z.object({
 });
 export type Silks = z.infer<typeof SilksSchema>;
 
-/** The horse's pictures (IndexedDB keys) and their slideshow; same shape as a race's PhotoSet. */
+/** The horse's pictures (names of pictures stored in the browser) and their slideshow; same shape as a race's PhotoSet. */
 export const HorsePhotosSchema = z.object({
   keys: z.array(z.string()).default([]),
   index: z.number().int().min(0).default(0),
@@ -122,6 +122,8 @@ export const HorseSchema = z.object({
   silks: SilksSchema.nullable().default(null),
   /** Which silks are shown; left out = the drawn pattern when `silks` is set, otherwise none. */
   silksMode: z.enum(SILKS_MODES).optional(),
+  /** Name of the uploaded silks picture stored in the browser (image/<date-time>.<ext>), or none. */
+  silksImage: z.string().nullable().default(null),
   /** The horse's pictures on the left of the scene, taking turns. */
   photos: HorsePhotosSchema.default({}),
   /** Career record: starts and 1st / 2nd / 3rd (4th or worse = the rest). */
