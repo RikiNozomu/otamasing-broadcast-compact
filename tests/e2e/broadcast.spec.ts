@@ -29,6 +29,15 @@ test("setting home or another race Active switches the overlay with a transition
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list]")).toBeVisible();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list-row]")).toHaveCount(3);
   await expect(overlay.locator("[data-layer]")).toHaveCount(1, { timeout: 3000 });
+  // the course column, switched off and on again in the dock
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-course]").first()).toHaveText("TOKYO");
+  await dock.getByTestId("home-show-course").click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-course]")).toHaveCount(0);
+  await dock.getByTestId("home-show-course").click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-course]")).toHaveCount(3);
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-date]").first()).toHaveText("2026.11.29");
+  await dock.getByTestId("home-show-date").click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-date]")).toHaveCount(0);
   await dock.getByLabel("ทรานซิชัน").selectOption("none");
   await dock.getByRole("button", { name: /ตั้ง 12R .* เป็น Active/ }).click();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Juvenile");

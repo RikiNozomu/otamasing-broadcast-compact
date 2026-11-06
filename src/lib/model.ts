@@ -162,6 +162,10 @@ export const HomeSchema = z.object({
   page: z.number().int().min(0).default(0),
   /** Name of the background picture stored in the browser (image/<date-time>.<ext>), or none. */
   background: z.string().nullable().default(null),
+  /** Show each race's course (racecourse) in its own column. */
+  showCourse: z.boolean().default(true),
+  /** Show each race's date (YYYY.MM.DD) in its own column. */
+  showDate: z.boolean().default(true),
 });
 export type Home = z.infer<typeof HomeSchema>;
 
