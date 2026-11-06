@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { PhotoSetSchema } from "../../src/lib/model";
 import { setAuto, showPhoto, shownIndex } from "../../src/lib/photos";
 
-const set = (patch = {}) => PhotoSetSchema.parse({ keys: ["a", "b", "c"], ...patch });
+const set = (patch = {}) => PhotoSetSchema.parse({ keys: ["a", "b", "c"], auto: true, ...patch });
 
 describe("photo slideshow", () => {
-  it("defaults to an automatic slideshow every 5 seconds", () => {
-    expect(PhotoSetSchema.parse({})).toMatchObject({ keys: [], auto: true, seconds: 5 });
+  it("defaults to changing pictures by hand (auto off, 5 seconds when turned on)", () => {
+    expect(PhotoSetSchema.parse({})).toMatchObject({ keys: [], auto: false, seconds: 5 });
   });
   it("auto moves on every `seconds` from `since` and wraps around", () => {
     const s = set({ since: 1000, index: 1 });
