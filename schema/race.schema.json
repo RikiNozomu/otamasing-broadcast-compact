@@ -726,7 +726,8 @@
                           "hoop5",
                           "stripesDense",
                           "zigzagBand",
-                          "blocks"
+                          "blocks",
+                          "stripe1"
                         ],
                         "default": "plain"
                       },
