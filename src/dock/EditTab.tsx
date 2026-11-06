@@ -143,11 +143,18 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
                   {S.autoDraw ? <span /> : <input className={cx(inputClass, "px-0.5 text-center")} type="number" min={1} max={MAX_RUNNERS} aria-label={`ซองเบอร์ ${h.number}`} title="ซอง" placeholder="ซอง" value={h.draw ?? ""} onChange={(e) => setRunner(i, { draw: e.target.value ? Math.round(+e.target.value) : null })} />}
                   <input className={inputClass} aria-label={`จ็อกกี้เบอร์ ${h.number}`} placeholder="จ็อกกี้" value={h.jockey} onChange={(e) => setRunner(i, { jockey: e.target.value })} />
                   <FlagPicker label={`ธงจ็อกกี้เบอร์ ${h.number}`} value={h.jockeyCountry} onChange={(c) => setRunner(i, { jockeyCountry: c })} />
+                  <input className={cx(inputClass, "px-0.5 text-center")} type="number" min={30} max={80} step={0.5} aria-label={`น้ำหนักจ็อกกี้เบอร์ ${h.number}`} title="น้ำหนักจ็อกกี้ (กก.)" placeholder="กก." value={h.weight ?? ""} onChange={(e) => setRunner(i, { weight: e.target.value ? Math.round(+e.target.value * 2) / 2 : null })} />
+                  <span />
+                  <span className="text-center text-[10px] text-ink-muted">ตัวม้า</span>
+                  <div className="col-span-4 flex items-center gap-1">
+                    <input className={cx(inputClass, "w-20")} type="number" min={200} max={800} aria-label={`น้ำหนักตัวม้าเบอร์ ${h.number}`} title="น้ำหนักตัวม้า (กก.)" placeholder="น้ำหนักตัว กก." value={h.horseWeight ?? ""} onChange={(e) => setRunner(i, { horseWeight: e.target.value ? Math.round(+e.target.value) : null })} />
+                    <input className={cx(inputClass, "w-16")} type="number" min={-99} max={99} aria-label={`น้ำหนักตัวม้าเปลี่ยนเบอร์ ${h.number}`} title="เพิ่ม/ลดจากครั้งก่อน (กก.)" placeholder="+/-" value={h.horseWeightChange ?? ""} onChange={(e) => setRunner(i, { horseWeightChange: e.target.value ? Math.round(+e.target.value) : null })} />
+                  </div>
                 </div>
               ))}
             </div>
             <div className="flex flex-wrap gap-1.5">
-              <Button disabled={n >= MAX_RUNNERS} onClick={() => updateRace(race.id, (r) => ({ ...r, runners: [...r.runners, { number: Math.max(...r.runners.map((x) => x.number)) + 1, draw: null, name: "", jockey: "", horseCountry: "", jockeyCountry: "", fav: null, scratched: false, finish: null, outcome: null, time: "", margin: "" }] }))}>+ เพิ่มม้า</Button>
+              <Button disabled={n >= MAX_RUNNERS} onClick={() => updateRace(race.id, (r) => ({ ...r, runners: [...r.runners, { number: Math.max(...r.runners.map((x) => x.number)) + 1, draw: null, name: "", jockey: "", horseCountry: "", jockeyCountry: "", fav: null, horseWeight: null, horseWeightChange: null, weight: null, scratched: false, finish: null, outcome: null, time: "", margin: "" }] }))}>+ เพิ่มม้า</Button>
               <Button disabled={n <= MIN_RUNNERS} onClick={() => updateRace(race.id, (r) => { const runners = r.runners.slice(0, -1); return { ...r, runners, highlight: runners.some((x) => x.number === r.highlight) ? r.highlight : null }; })}>− ลบตัวท้าย</Button>
             </div>
           </Section>
@@ -198,7 +205,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             </select>
           </Section>
           <Section title="แสดงบนการ์ด">
-            {([["draw", "ช่อง DRAW (ซอง)"], ["grade", "ป้ายเกรด"], ["class", "ป้าย Class"], ["fav", "ป้าย Fav (อันดับตัวเต็ง)"], ["horseFlag", "ธงชาติม้า"], ["jockeyFlag", "ธงชาติจ็อกกี้"]] as const).map(([k, label]) => (
+            {([["draw", "ช่อง DRAW (ซอง)"], ["grade", "ป้ายเกรด"], ["class", "ป้าย Class"], ["fav", "ป้าย Fav (อันดับตัวเต็ง)"], ["horseFlag", "ธงชาติม้า"], ["jockeyFlag", "ธงชาติจ็อกกี้"], ["horseWeight", "น้ำหนักตัวม้า"], ["weight", "น้ำหนักจ็อกกี้ (ที่ม้าแบก)"]] as const).map(([k, label]) => (
               <Switch key={k} on={S.show[k]} label={label} testId={`show-${k}`} onToggle={() => setStyle((s) => ({ ...s, show: { ...s.show, [k]: !s.show[k] } }))} />
             ))}
           </Section>

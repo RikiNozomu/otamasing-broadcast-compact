@@ -10,6 +10,7 @@ const HC: Record<number, string> = { 2: "GB", 4: "US", 6: "FR", 9: "AU", 13: "IE
 export const sampleRunner = (i: number): Runner => ({
   number: i + 1, draw: null, name: NAMES[i % NAMES.length], jockey: JOCKEYS[i % 18][0],
   horseCountry: HC[i] ?? "JP", jockeyCountry: JOCKEYS[i % 18][1], fav: FAVS[i] ?? null, scratched: false,
+  horseWeight: 440 + ((i * 37) % 90), horseWeightChange: ((i * 5) % 17) - 8, weight: 54 + ((i * 3) % 7) * 0.5,
   finish: null, outcome: null, time: "", margin: "",
 });
 
