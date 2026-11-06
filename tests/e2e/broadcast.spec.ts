@@ -16,11 +16,7 @@ test("first open seeds the sample and the overlay shows the Active race", async 
   await expect(dock.getByTestId("active-tag")).toHaveText("Active: 11R");
   await expect(dock.getByRole("tab")).toHaveText(["ภาพรวม", "การแข่งขัน", "ม้า"]);
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Cup");
-  // 18 runners: 10 a page (hold page 1: a page turn mid-check shows both pages' rows while they swap)
-  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  await dock.getByTestId("card-auto").click();
-  await dock.getByTestId("card-pages").getByRole("button", { name: "หน้า 1" }).click();
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=racecard]")).toHaveAttribute("data-page", "1");
+  // 18 runners: 10 a page (pages are turned by hand by default, so page 1 stays)
   await expect(overlay.locator("[data-layer][data-active] [data-no]")).toHaveCount(10);
   await expect(overlay.locator("[data-layer][data-active] [data-no][data-hl=on]")).toHaveAttribute("data-no", "9");
   // the title is on top: name with the grade badge after it, then date · round · course · distance
