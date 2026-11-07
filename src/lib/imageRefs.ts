@@ -15,6 +15,13 @@ const MIME_EXT: Record<string, string> = {
   "image/jpeg": "jpg", "image/png": "png", "image/gif": "gif", "image/webp": "webp", "image/svg+xml": "svg", "image/avif": "avif", "image/bmp": "bmp",
 };
 
+/** Type of a picture from its name's extension (svg needs the right type to show). */
+export function mimeOf(name: string): string {
+  const ext = /\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase();
+  if (ext === "jpeg") return "image/jpeg";
+  return Object.entries(MIME_EXT).find(([, e]) => e === ext)?.[0] ?? "application/octet-stream";
+}
+
 /** Extension of a picture file: from its name, else from its type, else png. */
 export function extOf(f: { name?: string; type?: string }): string {
   const m = /\.([a-z0-9]{1,5})$/i.exec(f.name ?? "");
