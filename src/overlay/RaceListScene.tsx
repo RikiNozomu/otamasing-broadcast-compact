@@ -26,6 +26,10 @@ export function RaceListScene() {
   const roundW = Math.max(110, ...d.races.map((x) => 44 + 24 * x.round.length));
   const cur = d.home.highlight && d.races.some((r) => r.id === d.home.highlight) ? d.home.highlight : null;
   const highlightOf = useHighlight(cur);
+  // the course column shows when it is switched on and some race has a course
+  const showCourse = d.home.showCourse && d.races.some((x) => x.course.trim());
+  const showDate = d.home.showDate && d.races.some((x) => x.date);
+  const cols = [`${roundW}px`, showDate ? "230px" : null, "150px", showCourse ? "260px" : null, "minmax(0,1fr)", "330px"].filter(Boolean).join(" ");
   return (
     <div className="absolute inset-0 bg-scene" data-testid="race-list">
       {bg && (
@@ -47,10 +51,20 @@ export function RaceListScene() {
               initial={{ opacity: 0, x: 90 }}
               animate={{ opacity: 1, x: 0, transition: { duration: 0.32, ease: EASE, delay: 0.25 + i * 0.05 } }}
               exit={{ opacity: 0, x: -90, transition: { duration: 0.25, ease: EASE, delay: i * 0.04 } }}
-              style={{ height: ROW_H, gridTemplateColumns: `${roundW}px 150px minmax(0,1fr) 330px` }}>
+              style={{ height: ROW_H, gridTemplateColumns: cols }}>
               <HighlightBar on={hl.on} className="inset-y-0 right-0" style={{ left: roundW + 10 }} />
               <motion.span initial={false} {...hl.cell} className={cx(box, "justify-center bg-scene shadow-[inset_0_0_0_3px_#fff]")}>{x.round}</motion.span>
+              {showDate && (
+                <motion.span data-testid="race-date" initial={false} {...hl.ink(false)} className={cx(cell, "justify-center text-[34px] font-semibold tabular-nums")}>
+                  <span className="relative">{x.date.replaceAll("-", ".")}</span>
+                </motion.span>
+              )}
               <motion.span initial={false} {...hl.ink(false)} className={cx(cell, "justify-center tabular-nums")}><span className="relative">{x.postTime}</span></motion.span>
+              {showCourse && (
+                <motion.span data-testid="race-course" initial={false} {...hl.ink(false)} className={cx(cell, "text-[34px] font-semibold uppercase")}>
+                  <FitText className="relative" grow={false}>{x.course.toUpperCase()}</FitText>
+                </motion.span>
+              )}
               <motion.span initial={false} {...hl.ink(false)} className={cell}>
                 <FitText className="relative" grow={false}>{x.name.toUpperCase()}</FitText>
                 {x.grade && x.style.show.grade ? (

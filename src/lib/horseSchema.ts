@@ -63,10 +63,11 @@ const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "สีต้องเป็�
  * yoke, spots 銭形, stars 星散, large star, ring 蛇目, large diamond.
  */
 export const SILKS_BODY = ["plain", "hoop1", "hoop2", "hoop3", "belt", "sash", "cross", "stripes", "seams", "braces", "halves", "quartered", "check", "harlequin", "diamondBand", "chevron", "bigV", "sawtooth", "hash", "yoke", "spots", "stars", "star", "ring", "diamond",
-  "jaggedYoke", "zigzag2", "zigzagBand", "rings", "bigCheck", "bigHarlequin", "bigDiamondBand"] as const;
+  "jaggedYoke", "zigzag2", "zigzagBand", "rings", "bigCheck", "bigHarlequin", "bigDiamondBand",
+  "disc", "fleurDeLys", "spots3", "triangle", "sashReverse", "blockGrid"] as const;
 /** Sleeve patterns: armlets (one to five), stripes along the arm (two, or four dense ones), a thick zigzag band (with the body's zigzagBand), chevrons, diamonds, check, spots, stars, cuffs, halved (top/bottom). */
 export const SILKS_SLEEVES = ["plain", "hoop1", "hoop2", "hoop3", "stripes", "chevrons", "diamonds", "check", "spots", "stars", "cuffs", "halved",
-  "hoop4", "hoop5", "stripesDense", "zigzagBand"] as const;
+  "hoop4", "hoop5", "stripesDense", "zigzagBand", "blocks", "stripe1"] as const;
 /** The owner's silks drawn as an SVG jersey with sleeves: body colour, a pattern in a second colour, sleeves. */
 export const SilksSchema = z.object({
   body: hex.default("#000000"),
@@ -75,6 +76,8 @@ export const SilksSchema = z.object({
   sleeves: hex.default("#000000"),
   sleevePattern: z.enum(SILKS_SLEEVES).default("plain"),
   sleeveAccent: hex.default("#FFE600"),
+  /** A yoke over the shoulders in this colour, drawn on top of the body pattern (e.g. with "triangle"); null = none. */
+  yoke: hex.nullable().optional(),
 });
 export type Silks = z.infer<typeof SilksSchema>;
 

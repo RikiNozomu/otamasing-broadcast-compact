@@ -29,6 +29,15 @@ test("setting home or another race Active switches the overlay with a transition
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list]")).toBeVisible();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list-row]")).toHaveCount(3);
   await expect(overlay.locator("[data-layer]")).toHaveCount(1, { timeout: 3000 });
+  // the course column, switched off and on again in the dock
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-course]").first()).toHaveText("TOKYO");
+  await dock.getByTestId("home-show-course").click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-course]")).toHaveCount(0);
+  await dock.getByTestId("home-show-course").click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-course]")).toHaveCount(3);
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-date]").first()).toHaveText("2026.11.29");
+  await dock.getByTestId("home-show-date").click();
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-date]")).toHaveCount(0);
   await dock.getByLabel("ทรานซิชัน").selectOption("none");
   await dock.getByRole("button", { name: /ตั้ง 12R .* เป็น Active/ }).click();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Juvenile");
@@ -51,7 +60,7 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
   await expect(overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse] img")).toHaveAttribute("alt", "NZ");
   await dock.getByRole("tab", { name: "สไตล์" }).click();
   await dock.getByTestId("show-draw").click();
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=table-head] span")).toHaveText(["NO.", "HORSE", "JOCKEY"]);
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=table-head] span")).toHaveText(["NO.", "HORSE", "HORSE WT.", "JOCKEY", "WEIGHT"]);
 });
 
 test("a moving highlight bar is never hidden behind the row backgrounds", async ({ context }) => {
@@ -420,6 +429,16 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await expect(dock.getByTestId("photo-pos-horse")).toHaveText("2 / 2");
   await expect(scene.getByTestId("horse-photo")).toHaveAttribute("data-has", "");
   await expect(scene.getByTestId("horse-page-title").filter({ hasText: "PROFILE" })).toHaveCount(1);
+  // a very long owner stays on one line (squeezed) and never reaches the PROFILE heading; the trainer stays on one line too
+  await dock.locator("#h-owner").fill("OGMA Investments LLC, Al Otaibi, Saleh, TCC Stables LLC, YNG Stables LLC, High Step Racing and JR Ranch");
+  await dock.locator("#h-trainer").fill("Gustavo Delgado");
+  await expect(scene.getByTestId("owner").locator("[data-fit]")).toHaveCount(1);
+  const box = async (id: string) => (await scene.getByTestId(id).first().boundingBox())!;
+  const [owner, trainer, title] = [await box("owner"), await box("trainer"), await box("horse-page-title")];
+  expect(owner.height).toBeLessThan(60);
+  expect(trainer.height).toBeLessThan(60);
+  expect(owner.y + owner.height).toBeLessThan(title.y);
+  expect(owner.x + owner.width).toBeLessThanOrEqual(trainer.x);
   // the dock picks the prize money currency for every horse
   await dock.getByTestId("horse-currency").selectOption("USD");
   await expect(scene.getByTestId("fact-earnings")).toContainText("≈ $5,361,477");

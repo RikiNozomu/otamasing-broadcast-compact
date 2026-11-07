@@ -178,6 +178,14 @@
                         "type": "boolean",
                         "default": true
                       },
+                      "horseWeight": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "weight": {
+                        "type": "boolean",
+                        "default": true
+                      },
                       "jpName": {
                         "type": "boolean",
                         "default": true
@@ -416,6 +424,46 @@
                       ],
                       "default": null
                     },
+                    "horseWeight": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 200,
+                          "maximum": 800
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "horseWeightChange": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -99,
+                          "maximum": 99
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "weight": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 30,
+                          "maximum": 80,
+                          "multipleOf": 0.5
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
                     "scratched": {
                       "type": "boolean",
                       "default": false
@@ -640,7 +688,13 @@
                           "rings",
                           "bigCheck",
                           "bigHarlequin",
-                          "bigDiamondBand"
+                          "bigDiamondBand",
+                          "disc",
+                          "fleurDeLys",
+                          "spots3",
+                          "triangle",
+                          "sashReverse",
+                          "blockGrid"
                         ],
                         "default": "plain"
                       },
@@ -672,7 +726,9 @@
                           "hoop4",
                           "hoop5",
                           "stripesDense",
-                          "zigzagBand"
+                          "zigzagBand",
+                          "blocks",
+                          "stripe1"
                         ],
                         "default": "plain"
                       },
@@ -680,6 +736,17 @@
                         "type": "string",
                         "pattern": "^#[0-9a-fA-F]{6}$",
                         "default": "#FFE600"
+                      },
+                      "yoke": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^#[0-9a-fA-F]{6}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "additionalProperties": false
@@ -1002,6 +1069,14 @@
                 "null"
               ],
               "default": null
+            },
+            "showCourse": {
+              "type": "boolean",
+              "default": true
+            },
+            "showDate": {
+              "type": "boolean",
+              "default": true
             }
           },
           "additionalProperties": false

@@ -44,11 +44,19 @@ export function NumberBox({ colors, value, hl }: { colors: readonly [string, str
   );
 }
 
+/** A number cell (horse weight, weight carried): centred on the same dark band. */
+const numCell = cx(cell, "justify-center gap-1.5 whitespace-nowrap bg-band px-2 font-display text-[36px] font-bold");
+/** "+4", "0", "-2" */
+const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
+
 export function RacecardScene({ race }: { race: Race }) {
   const S = race.style, show = S.show, n = race.runners.length;
   const { rows, page, pageCount } = useCardPage(race);
-  const cols = [show.draw ? `${BOX_W}px` : null, `${BOX_W}px`, "minmax(0,1.3fr)", "minmax(0,1fr)"].filter(Boolean).join(" ");
-  // the bar covers HORSE and JOCKEY
+  // a weight column shows only when it is switched on and some horse of the race has the value
+  const showHorseWeight = show.horseWeight && race.runners.some((h) => h.horseWeight != null);
+  const showWeight = show.weight && race.runners.some((h) => h.weight != null);
+  const cols = [show.draw ? `${BOX_W}px` : null, `${BOX_W}px`, "minmax(0,1.3fr)", showHorseWeight ? "200px" : null, "minmax(0,1fr)", showWeight ? "130px" : null].filter(Boolean).join(" ");
+  // the bar covers HORSE to the end of the row
   const barLeft = (show.draw ? BOX_W + GAP : 0) + BOX_W + GAP, barWidth = TABLE_W - barLeft;
   const highlightOf = useHighlight(race.highlight);
 
@@ -68,10 +76,21 @@ export function RacecardScene({ race }: { race: Race }) {
           <FitText className="relative" strike={h.scratched}>{h.name.toUpperCase()}</FitText>
           {show.fav && h.fav && !h.scratched ? <span className={cx(pill, "relative h-8 flex-none px-3 text-[24px] text-scene")} style={{ background: favColor(h.fav) }}>{ordinal(h.fav)}</span> : null}
         </motion.span>
+        {showHorseWeight && (
+          <motion.span data-testid="horse-weight" initial={false} {...hl.ink(true)} className={numCell}>
+            {h.horseWeight != null && <span className="relative">{h.horseWeight}</span>}
+            {h.horseWeight != null && h.horseWeightChange != null && <span className="relative text-[26px] font-medium">({signed(h.horseWeightChange)})</span>}
+          </motion.span>
+        )}
         <motion.span data-testid="jockey" initial={false} {...hl.ink(true)} className={cx(band, "font-medium")}>
           {show.jockeyFlag && <Flag code={h.jockeyCountry} className="relative h-[26px] w-[39px]" />}
           <FitText className="relative" strike={h.scratched}>{h.jockey.toUpperCase()}</FitText>
         </motion.span>
+        {showWeight && (
+          <motion.span data-testid="weight" initial={false} {...hl.ink(true)} className={numCell}>
+            {h.weight != null && <span className="relative">{h.weight.toFixed(1)}</span>}
+          </motion.span>
+        )}
       </motion.div>
     );
   };
@@ -81,7 +100,7 @@ export function RacecardScene({ race }: { race: Race }) {
       <RaceTitle race={race} />
       <div className="absolute grid content-start" style={{ left: SIDE, top: TABLE_TOP, width: TABLE_W }}>
         <div data-testid="table-head" className={headClass} style={{ gridTemplateColumns: cols }}>
-          {show.draw && <span>DRAW</span>}<span>NO.</span><span className={headLeft}>HORSE</span><span className={headLeft}>JOCKEY</span>
+          {show.draw && <span>DRAW</span>}<span>NO.</span><span className={headLeft}>HORSE</span>{showHorseWeight && <span>HORSE WT.</span>}<span className={headLeft}>JOCKEY</span>{showWeight && <span>WEIGHT</span>}
         </div>
         <div className="relative grid content-start" data-testid="runner-rows">
           <AnimatePresence initial={false} mode="popLayout">
