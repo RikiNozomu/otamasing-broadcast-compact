@@ -421,6 +421,8 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await expect(scene.locator("[data-testid=silks] img")).toBeVisible();
   await dock.getByTestId("silks-mode-pattern").click();
   await expect(scene.getByTestId("silks-svg")).toBeVisible();
+  // no picture: the text takes the whole screen
+  await expect(scene).toHaveAttribute("data-full", "");
   // several horse pictures take turns
   await dock.getByTestId("add-photos-horse").setInputFiles([png("a.png"), png("b.png")]);
   await dock.getByRole("button", { name: "แสดงรูปที่ 1" }).click();
@@ -428,6 +430,7 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await dock.getByRole("button", { name: "รูปม้าถัดไป" }).click();
   await expect(dock.getByTestId("photo-pos-horse")).toHaveText("2 / 2");
   await expect(scene.getByTestId("horse-photo")).toHaveAttribute("data-has", "");
+  await expect(scene).not.toHaveAttribute("data-full", "");
   await expect(scene.getByTestId("horse-page-title").filter({ hasText: "PROFILE" })).toHaveCount(1);
   // a very long owner stays on one line (squeezed) and never reaches the PROFILE heading; the trainer stays on one line too
   await dock.locator("#h-owner").fill("OGMA Investments LLC, Al Otaibi, Saleh, TCC Stables LLC, YNG Stables LLC, High Step Racing and JR Ranch");

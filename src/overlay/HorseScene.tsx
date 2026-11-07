@@ -6,7 +6,7 @@
  * the past races newest first. With auto on, the pages take turns.
  */
 import { AnimatePresence, motion } from "motion/react";
-import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { createContext, useContext, useLayoutEffect, useRef, type ReactNode } from "react";
 import { careerPage, COATS, dotDate, earningsIn, horsePageKinds, silksModeOf, moneyText, posText, recordText, sexText, useHorsePage, CAREER_ROWS, type CareerRace, type Horse } from "../lib/horses";
 import { useData } from "../lib/store";
 import { useImage } from "../lib/images";
@@ -23,7 +23,14 @@ import { cell, headClass, headLeft, rowMotion } from "./RacecardScene";
 /** Width of the picture on the left (a third of the screen). */
 export const PHOTO_W = 640;
 /** Where the text on the right starts, and its width up to the right margin. */
-const LEFT = PHOTO_W + 60, RIGHT = 60, W = 1920 - LEFT - RIGHT;
+const RIGHT = 60;
+/** Where the text starts and how wide it is: beside the picture, or the whole screen when the horse has no picture. */
+type Area = { left: number; w: number };
+const BESIDE_PHOTO: Area = { left: PHOTO_W + 60, w: 1920 - PHOTO_W - 60 - RIGHT };
+const FULL: Area = { left: 60, w: 1920 - 60 - RIGHT };
+const AreaCtx = createContext<Area>(BESIDE_PHOTO);
+/** The text area moves smoothly when a picture is added or removed. */
+const areaMove = "transition-[left,width] duration-500 ease-in-out";
 /** The page heading (PROFILE, PEDIGREE, RACE RECORD) and the page under it. */
 const HEADING_TOP = 270, CONTENT_TOP = 340;
 const ROW_H = 86;
@@ -75,6 +82,13 @@ function HorsePhoto({ h }: { h: Horse }) {
   const set = { ...h.photos, keys: h.photos.keys.filter((k) => d.images[k]) };
   const i = useShownIndex(set);
   const key = i >= 0 ? set.keys[i] : null;
+  // no picture: the navy fills the screen and the text takes the whole width
+  if (!set.keys.length) return (
+    <>
+      <div data-testid="horse-photo" className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_21_125/.9)_0%,rgb(0_21_125/.8)_45%,rgb(0_10_70/.94)_100%)]" />
+      <Logo className="absolute top-[34px] right-[60px] w-40" />
+    </>
+  );
   return (
     <>
       <AnimatePresence initial={false}>
@@ -99,6 +113,7 @@ function HorsePhoto({ h }: { h: Horse }) {
 
 /** Name, pedigree, connections. The name shrinks until it fits beside the logo. */
 function Header({ h }: { h: Horse }) {
+  const { left, w: W } = useContext(AreaCtx);
   const nameRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
   const maxWidth = W - 160 - 40;
@@ -111,7 +126,7 @@ function Header({ h }: { h: Horse }) {
   }, [h.name, h.trainedIn, h.sex, maxWidth]);
   const pedigree = [h.sire, h.dam].filter(Boolean).join(" – ");
   return (
-    <div className="absolute grid gap-2 text-white [text-shadow:0_2px_14px_rgb(0_0_0/.45)]" style={{ left: LEFT, top: 44, width: W }}>
+    <div className={cx("absolute grid gap-2 text-white [text-shadow:0_2px_14px_rgb(0_0_0/.45)]", areaMove)} style={{ left, top: 44, width: W }}>
       <div ref={lineRef} className="flex w-max items-center gap-5">
         <Flag code={h.trainedIn} className="h-[60px] w-[90px] rounded-[5px]" />
         <div ref={nameRef} data-testid="horse-name" className="font-display text-[112px] leading-[.95] font-bold whitespace-nowrap uppercase">{h.name}</div>
@@ -225,11 +240,14 @@ function Career({ h, page }: { h: Horse; page: number }) {
 }
 
 /** Pedigree box sizes and columns: the horse, its parents, its grandparents (left to right). */
-const BOX_W = 340, BOX_H = 112, COL_X = [0, 410, 820], PED_H = 640;
+const BOX_H = 112, PED_GAP = 70, PED_H = 640;
 type PedBox = { col: number; y: number; label: string; name: string; sex: Horse["sex"]; id: string };
 
 /** Three generations as a knockout bracket: each pair on the right joins with a line into the one it comes from. */
 function Pedigree({ h }: { h: Horse }) {
+  // three columns share the width (340 px boxes beside a picture, wider on the whole screen)
+  const { w: W } = useContext(AreaCtx);
+  const BOX_W = (W - 2 * PED_GAP) / 3, COL_X = [0, 1, 2].map((c) => c * (BOX_W + PED_GAP));
   const ys4 = [0, 1, 2, 3].map((k) => (PED_H / 4) * (k + 0.5));
   const ys2 = [(ys4[0] + ys4[1]) / 2, (ys4[2] + ys4[3]) / 2];
   const boxes: PedBox[] = [
@@ -275,12 +293,16 @@ export function HorseScene({ horse: h }: { horse: Horse }) {
   const k = kinds[page] ?? kinds[0];
   const kind = k.kind;
   const racePages = kinds.filter((x) => x.kind === "races").length;
+  const d = useData();
+  const area = h.photos.keys.some((key) => d.images[key]) ? BESIDE_PHOTO : FULL;
+  const { left, w: W } = area;
   const heading = kind === "profile" ? "PROFILE" : kind === "pedigree" ? "PEDIGREE" : `RACE RECORD${racePages > 1 && k.kind === "races" ? ` ${k.n + 1}/${racePages}` : ""}`;
   return (
-    <div className="absolute inset-0 overflow-hidden bg-scene" data-testid="horse" data-horse={h.id} data-page={page + 1}>
+    <AreaCtx.Provider value={area}>
+    <div className="absolute inset-0 overflow-hidden bg-scene" data-testid="horse" data-horse={h.id} data-page={page + 1} data-full={area === FULL ? "" : undefined}>
       <HorsePhoto h={h} />
       <Header h={h} />
-      <div className="absolute flex items-center gap-4" style={{ left: LEFT, top: HEADING_TOP, width: W }}>
+      <div className={cx("absolute flex items-center gap-4", areaMove)} style={{ left, top: HEADING_TOP, width: W }}>
         <AnimatePresence initial={false} mode="popLayout">
           <motion.span key={heading} data-testid="horse-page-title"
             className="bg-yellow px-4 py-1.5 font-display text-[30px] leading-none font-bold tracking-[.08em] text-navy"
@@ -290,7 +312,7 @@ export function HorseScene({ horse: h }: { horse: Horse }) {
         </AnimatePresence>
         <span className="h-[3px] flex-1 bg-[linear-gradient(90deg,rgb(255_255_255/.5),transparent)]" />
       </div>
-      <div className="absolute" style={{ left: LEFT, top: CONTENT_TOP, width: W }}>
+      <div className={cx("absolute", areaMove)} style={{ left, top: CONTENT_TOP, width: W }}>
         <AnimatePresence initial={false} mode="popLayout">
           <motion.div key={page} exit={{ opacity: 1 }} transition={{ duration: 0.4 }}>
             {kind === "profile" ? <Profile h={h} /> : kind === "pedigree" ? <Pedigree h={h} /> : <Career h={h} page={page} />}
@@ -299,5 +321,6 @@ export function HorseScene({ horse: h }: { horse: Horse }) {
       </div>
       <PageCount page={page} count={count} />
     </div>
+    </AreaCtx.Provider>
   );
 }
