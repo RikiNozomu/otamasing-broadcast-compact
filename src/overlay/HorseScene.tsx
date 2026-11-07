@@ -122,9 +122,10 @@ function Header({ h }: { h: Horse }) {
           {pedigree}{h.bms && <span className="text-white/70">{pedigree ? " " : ""}(by {h.bms})</span>}
         </div>
       )}
-      <div className="mt-1 flex items-center gap-8 font-display text-[34px] font-semibold uppercase">
-        {h.owner && <span data-testid="owner" className="flex min-w-0 items-center gap-3"><Badge letter="O" />{h.owner}</span>}
-        {h.trainer && <span data-testid="trainer" className="flex min-w-0 items-center gap-3"><Badge letter="T" />{h.trainer}</span>}
+      <div className="mt-1 flex min-w-0 items-center gap-8 font-display text-[34px] font-semibold uppercase">
+        {/* one line each: a long owner is squeezed to fit, the trainer keeps its width */}
+        {h.owner && <span data-testid="owner" className="flex min-w-0 items-center gap-3"><Badge letter="O" /><FitText grow={false}>{h.owner}</FitText></span>}
+        {h.trainer && <span data-testid="trainer" className="flex flex-none items-center gap-3 whitespace-nowrap"><Badge letter="T" />{h.trainer}</span>}
       </div>
     </div>
   );
@@ -167,7 +168,10 @@ function Profile({ h }: { h: Horse }) {
             {silks ? <img src={silks} alt="" className="h-full w-full object-contain" /> : <SilksSvg silks={h.silks!} className="h-full w-full" />}
           </span>
         )}
-        {h.owner ? <FitText>{h.owner}</FitText> : dash}
+        {/* a long owner (several partners) wraps onto up to three smaller lines instead of being squeezed thin */}
+        {!h.owner ? dash : h.owner.length > 40
+          ? <span data-testid="owner-wrap" className="line-clamp-3 min-w-0 flex-1 text-[24px] leading-[1.05] whitespace-normal">{h.owner}</span>
+          : <FitText>{h.owner}</FitText>}
       </Fact>
       <Fact i={6} label="TRAINER" testId="fact-trainer">{h.trainer ? <FitText>{h.trainer}</FitText> : dash}</Fact>
       <Fact i={7} label="RECORD" testId="fact-record">{recordText(h.record)}</Fact>
