@@ -16,7 +16,7 @@ test("first open seeds the sample and the overlay shows the Active race", async 
   await expect(dock.getByTestId("active-tag")).toHaveText("Active: 11R");
   await expect(dock.getByRole("tab")).toHaveText(["ภาพรวม", "การแข่งขัน", "ม้า"]);
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Cup");
-  // 18 runners: 10 a page
+  // 18 runners: 10 a page (pages are turned by hand by default, so page 1 stays)
   await expect(overlay.locator("[data-layer][data-active] [data-no]")).toHaveCount(10);
   await expect(overlay.locator("[data-layer][data-active] [data-no][data-hl=on]")).toHaveAttribute("data-no", "9");
   // the title is on top: name with the grade badge after it, then date · round · course · distance
@@ -529,4 +529,36 @@ test("pictures are named image/<date-time>.<ext>, the JSON carries the names, a 
   await expect(dock.getByTestId("stored-count")).toHaveText("0 รูป");
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
   await expect(dock.getByTestId("thumbs-card")).toHaveCount(0);
+});
+
+test("a .zip with the JSON and its pictures moves pictures to another browser (e.g. into OBS)", async ({ browser, baseURL }) => {
+  // Chrome: no "Save as" dialog here, so the .zip is downloaded
+  const chrome = await browser.newContext({ baseURL });
+  await chrome.addInitScript(() => { delete (window as unknown as { showSaveFilePicker?: unknown }).showSaveFilePicker; });
+  const { dock } = await open(chrome);
+  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await dock.getByTestId("add-photos-card").setInputFiles([png("a.png")]);
+  await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(1);
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
+  await dock.getByRole("button", { name: "ส่งออก", exact: true }).click();
+  const [download] = await Promise.all([dock.waitForEvent("download"), dock.getByRole("button", { name: "บันทึก .zip พร้อมรูป…" }).click()]);
+  expect(download.suggestedFilename()).toMatch(/\.zip$/);
+  await expect(dock.getByTestId("export-panel").getByRole("status")).toContainText("พร้อมรูป 1 รูป");
+  const zipPath = test.info().outputPath("bundle.zip");
+  await download.saveAs(zipPath);
+  await chrome.close();
+
+  // OBS: its own storage, no pictures until the .zip comes in
+  const obs = await browser.newContext({ baseURL });
+  const o = await open(obs);
+  await o.dock.getByTestId("import-file").setInputFiles(zipPath);
+  await expect(o.dock.getByText(/รูป 1 รูป/)).toBeVisible();
+  await o.dock.getByRole("button", { name: "แทนที่ทั้งหมด" }).click();
+  await expect(o.dock.getByRole("status")).toContainText("นำเข้า 3 รายการ");
+  await expect(o.dock.getByRole("alert")).toHaveCount(0);
+  await o.dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await expect(o.dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(1);
+  // after an import the home page is on screen, so look at the race's preview in the dock
+  await expect(o.dock.getByTestId("preview").locator("[data-testid=photo]")).toHaveCount(1);
+  await obs.close();
 });

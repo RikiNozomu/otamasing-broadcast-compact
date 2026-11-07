@@ -4,6 +4,9 @@ import { useRef, useState, type ReactNode } from "react";
 import { BLANK, exportFile, HOME, mergeImport, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
 import { getData, setData, update, updateRace, useData } from "../lib/store";
 import { checkImportImages, clearAllImages, dropUnused, storeImage } from "../lib/imageStore";
+import { isZip, readBundle } from "../lib/bundle";
+import { imageRefs } from "../lib/imageRefs";
+import { putImage } from "../lib/images";
 import { sampleRunner } from "../lib/sample";
 import { showPage, useResultPage } from "../lib/results";
 import { HOME_ROWS, paginate } from "../lib/paging";
@@ -61,7 +64,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
   const d = useData();
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
-  const [pending, setPending] = useState<{ name: string; data: Extract<ParseResult, { ok: true }>["data"] } | null>(null);
+  const [pending, setPending] = useState<{ name: string; data: Extract<ParseResult, { ok: true }>["data"]; images?: Record<string, Blob> } | null>(null);
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
   const [exportName, setExportName] = useState<string | null>(null);
@@ -75,7 +78,16 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
   const setActive = (id: string) => update((x) => ({ ...x, active: id }));
   const pickFile = async (f: File | undefined) => {
     if (!f) return;
-    const res = parseFile(await f.text());
+    const bytes = new Uint8Array(await f.arrayBuffer());
+    // a .zip from "บันทึก .zip พร้อมรูป": the JSON plus its pictures
+    if (isZip(bytes)) {
+      const z = readBundle(bytes);
+      if (!z.ok) return toast(`นำเข้าไม่ได้: ${z.error}`, true);
+      const res = parseFile(z.text);
+      if (!res.ok) return toast(`นำเข้าไม่ได้: ${res.error}`, true);
+      return setPending({ name: f.name, data: res.data, images: z.images });
+    }
+    const res = parseFile(new TextDecoder().decode(bytes));
     if (!res.ok) return toast(`นำเข้าไม่ได้: ${res.error}`, true);
     setPending({ name: f.name, data: res.data });
   };
@@ -88,6 +100,9 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
   const doImport = async (mode: "append" | "replace") => {
     if (!pending) return;
     setPending(null);
+    // pictures that came in the .zip are stored first (only those the data names)
+    const wanted = new Set(imageRefs(pending.data));
+    for (const [k, b] of Object.entries(pending.images ?? {})) if (wanted.has(k)) await putImage(k, b);
     // pictures the file names but this browser doesn't have (or can't open) are taken out of it
     const { file, found, missing } = await checkImportImages(pending.data);
     const next = mergeImport(getData(), file, mode);
@@ -149,8 +164,8 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
   return (
     <div className="grid content-start gap-3 p-3" role="tabpanel" id="p-races" aria-labelledby="tab-races">
       <div className="flex flex-wrap gap-1.5">
-        <Button variant="primary" onClick={() => fileRef.current?.click()}>นำเข้า JSON</Button>
-        <input ref={fileRef} type="file" accept="application/json,.json" hidden data-testid="import-file" onChange={(e) => { pickFile(e.target.files?.[0]); e.target.value = ""; }} />
+        <Button variant="primary" onClick={() => fileRef.current?.click()}>นำเข้า JSON / .zip</Button>
+        <input ref={fileRef} type="file" accept="application/json,.json,application/zip,.zip" hidden data-testid="import-file" onChange={(e) => { pickFile(e.target.files?.[0]); e.target.value = ""; }} />
         <Button onClick={() => { setPending(null); setPaste((p) => (p == null ? "" : null)); }} aria-expanded={paste != null}>วาง JSON</Button>
         <Button onClick={() => setExportName((x) => (x ? null : `otamasing-broadcast-compact-${stamp()}.json`))} aria-expanded={!!exportName}>ส่งออก</Button>
         <Button onClick={addRace}>+ เพิ่มเอง</Button>
@@ -175,7 +190,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
         {pending && (
           <motion.div role="alertdialog" aria-label="ยืนยันการนำเข้า" className="flex flex-wrap items-center justify-between gap-1.5 overflow-hidden border border-yellow px-2.5 py-2 text-[13px]"
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-            <span>{pending.name}: {importCount(pending.data)}</span>
+            <span>{pending.name}: {importCount(pending.data)}{pending.images ? ` · รูป ${Object.keys(pending.images).length} รูป` : ""}</span>
             <span className="flex flex-wrap gap-1.5">
               <Button variant="primary" onClick={() => doImport("append")}>เพิ่มต่อ</Button>
               <Button onClick={() => doImport("replace")}>{replaceLabel(pending.data)}</Button>
