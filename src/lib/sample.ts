@@ -50,7 +50,7 @@ export function sampleHorse(): Horse {
     id: "sample-horse", name: "Sample Star", trainedIn: "JP", bornIn: "JP", foaled: "2022-03-14", coat: "Dark Bay",
     sex: "M",
     sire: "Example Sire", dam: "Paper Princess", bms: "Old Champion", sireSire: "Grand Example", sireDam: "Model Mare", damDam: "Paper Queen", owner: "Otamasing Racing", trainer: "T. Example",
-    silksMode: "pattern", silksImage: null, photos: { keys: [], index: 0, auto: false, seconds: 5, since: 0 },
+    silksMode: "pattern", silksImage: null, photos: { keys: [], frames: {}, index: 0, auto: false, seconds: 5, since: 0 },
     silks: { body: "#000000", pattern: "cross", accent: "#E30613", sleeves: "#000000", sleevePattern: "stripes", sleeveAccent: "#FFE600" },
     record: { starts: 10, first: 5, second: 2, third: 1 }, earnings: 812_345_000, currency: "JPY",
     races: [

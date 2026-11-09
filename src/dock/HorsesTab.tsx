@@ -24,6 +24,8 @@ import { HorseScene } from "../overlay/HorseScene";
 import { FlagPicker } from "./FlagPicker";
 import { ExportPanel } from "./ExportPanel";
 import { Thumb } from "./PhotoSetEditor";
+import { PhotoFrameEditor } from "./PhotoFrameEditor";
+import { frameOf, withFrame } from "../lib/photoFrame";
 import { setAuto, showPhoto, shownIndex, useShownIndex } from "../lib/photos";
 
 const CODES = Object.keys(CURRENCIES) as Currency[];
@@ -69,6 +71,8 @@ function HorsePhotosSection({ h }: { h: Horse }) {
   const set = h.photos;
   const shown = useShownIndex(set);
   const n = set.keys.length;
+  /** The picture on screen, which the position box below edits. */
+  const cur = shown >= 0 ? set.keys[shown] : undefined;
   const save = (fn: (s: PhotoSet) => PhotoSet) => updateHorse(h.id, (x) => ({ ...x, photos: fn(x.photos) }));
   const add = async (files: FileList | null) => {
     if (!files?.length) return;
@@ -89,7 +93,8 @@ function HorsePhotosSection({ h }: { h: Horse }) {
           if (y.id !== h.id) return y;
           const s = y.photos, at = s.keys.indexOf(k), cur = Math.max(0, shownIndex(s));
           const keys = s.keys.filter((z) => z !== k);
-          return { ...y, photos: showPhoto({ ...s, keys }, cur > at ? cur - 1 : cur) };
+          const { [k]: _gone, ...frames } = s.frames;
+          return { ...y, photos: showPhoto({ ...s, keys, frames }, cur > at ? cur - 1 : cur) };
         }),
       };
     });
@@ -102,6 +107,7 @@ function HorsePhotosSection({ h }: { h: Horse }) {
           {set.keys.map((k, i) => <Thumb key={k} k={k} rev={d.images[k]} n={i + 1} on={i === shown} onShow={() => save((s) => showPhoto(s, i))} onRemove={() => remove(k)} />)}
         </div>
       )}
+      {cur && <PhotoFrameEditor key={cur} k={cur} rev={d.images[cur]} n={shown + 1} frame={frameOf(set.frames, cur)} onChange={(f) => save((s) => ({ ...s, frames: withFrame(s.frames, cur, f) }))} />}
       <div className="flex flex-wrap items-center gap-1.5">
         <label className={buttonClass("primary")} htmlFor="horse-photos">เพิ่มรูป…</label>
         <input type="file" id="horse-photos" data-testid="add-photos-horse" accept="image/*" multiple hidden onChange={(e) => { const f = e.target.files; add(f).finally(() => { e.target.value = ""; }); }} />
@@ -123,7 +129,7 @@ function HorsePhotosSection({ h }: { h: Horse }) {
           </label>
         </>
       )}
-      <span className={hintClass}>เลือกได้หลายรูปพร้อมกัน · รูปแนวตั้งจะชัดที่สุด (ช่องรูปกว้าง 1/3 ของจอ) · กดรูปเล็กเพื่อขึ้นจอรูปนั้น · รูปเก็บในเครื่องนี้ ไม่อยู่ในไฟล์ JSON</span>
+      <span className={hintClass}>เลือกได้หลายรูปพร้อมกัน · รูปแนวตั้งจะชัดที่สุด (ช่องรูปกว้าง 1/3 ของจอ) · กดรูปเล็กเพื่อขึ้นจอรูปนั้น · ลากรูปในกรอบเหลืองเพื่อเลื่อน เลื่อนลูกกลิ้งเพื่อซูม (ตั้งแยกทีละรูป) · รูปเก็บในเครื่องนี้ ไม่อยู่ในไฟล์ JSON</span>
     </Section>
   );
 }

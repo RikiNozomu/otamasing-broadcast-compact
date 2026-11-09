@@ -11,6 +11,8 @@ import { careerPage, COATS, dotDate, earningsIn, horsePageKinds, silksModeOf, mo
 import { useData } from "../lib/store";
 import { useImage } from "../lib/images";
 import { useShownIndex } from "../lib/photos";
+import { frameOf, frameStyle } from "../lib/photoFrame";
+import type { PhotoFrame } from "../lib/horseSchema";
 import { GRADE_COLOR } from "../lib/colors";
 import { cx } from "../lib/cx";
 import { Flag } from "../components/Flag";
@@ -63,14 +65,16 @@ function Badge({ letter }: { letter: string }) {
   return <span className="grid size-[44px] flex-none place-items-center rounded-[6px] bg-yellow font-display text-[30px] font-bold text-navy [text-shadow:none]">{letter}</span>;
 }
 
-/** One picture of the slideshow: sharp on the left third, and faintly across the whole screen behind. Fades in once loaded. */
-function HorsePicture({ k, rev }: { k: string; rev: number | undefined }) {
+/** One picture of the slideshow: sharp on the left third (moved and zoomed as set in the dock), and faintly across the whole screen behind. Fades in once loaded. */
+function HorsePicture({ k, rev, frame }: { k: string; rev: number | undefined; frame: PhotoFrame }) {
   const url = useImage(k, rev);
   const fade = { initial: { opacity: 0 }, animate: { opacity: url ? 1 : 0 }, exit: { opacity: 0 }, transition: { duration: 0.8, ease: "easeInOut" } } as const;
   return (
     <>
       <motion.div {...fade} animate={{ opacity: url ? 0.35 : 0 }} className="absolute inset-0 scale-110 bg-cover bg-center blur-[18px]" style={{ backgroundImage: url ? `url("${url}")` : undefined }} />
-      <motion.div {...fade} data-testid="horse-photo-img" data-key={k} className="absolute inset-y-0 left-0 bg-cover bg-center" style={{ width: PHOTO_W, backgroundImage: url ? `url("${url}")` : undefined }} />
+      <motion.div {...fade} data-testid="horse-photo-img" data-key={k} data-frame={`${frame.x} ${frame.y} ${frame.zoom}`} className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: PHOTO_W }}>
+        {url && <img src={url} alt="" draggable={false} className="absolute inset-0 size-full transition-[object-position,transform] duration-300 ease-out" style={frameStyle(frame)} />}
+      </motion.div>
     </>
   );
 }
@@ -92,7 +96,7 @@ function HorsePhoto({ h }: { h: Horse }) {
   return (
     <>
       <AnimatePresence initial={false}>
-        {key && <HorsePicture key={key} k={key} rev={d.images[key]} />}
+        {key && <HorsePicture key={key} k={key} rev={d.images[key]} frame={frameOf(h.photos.frames, key)} />}
       </AnimatePresence>
       {/* the navy over the right of the screen (the blurred picture shows through) */}
       <div className="absolute inset-y-0 right-0 bg-[linear-gradient(180deg,rgb(0_21_125/.9)_0%,rgb(0_21_125/.8)_45%,rgb(0_10_70/.94)_100%)]" style={{ left: PHOTO_W }} />

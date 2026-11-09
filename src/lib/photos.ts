@@ -6,10 +6,10 @@ import type { PhotoSet } from "./model";
 export const shownIndex = (set: PhotoSet, now = Date.now()) => cycleAt(set, set.keys.length, now);
 
 /** Show picture `i` from now on (an auto slideshow carries on from it). */
-export const showPhoto = (set: PhotoSet, i: number, now = Date.now()) => cycleTo(set, i, set.keys.length, now);
+export const showPhoto = <S extends PhotoSet>(set: S, i: number, now = Date.now()): S => cycleTo(set, i, set.keys.length, now);
 
 /** Turn the slideshow on or off, or change its speed, without jumping to another picture. */
-export const setAuto = (set: PhotoSet, patch: Partial<Pick<PhotoSet, "auto" | "seconds">>, now = Date.now()) => cycleSet(set, patch, set.keys.length, now);
+export const setAuto = <S extends PhotoSet>(set: S, patch: Partial<Pick<PhotoSet, "auto" | "seconds">>, now = Date.now()): S => cycleSet(set, patch, set.keys.length, now);
 
 /** The index on screen, re-rendering when an auto slideshow moves on. */
 export const useShownIndex = (set: PhotoSet) => useCycle(set, set.keys.length);

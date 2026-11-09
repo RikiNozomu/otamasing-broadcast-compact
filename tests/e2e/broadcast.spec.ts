@@ -595,3 +595,45 @@ test("a .zip with the JSON and its pictures moves pictures to another browser (e
   await expect(o.dock.getByTestId("preview").locator("[data-testid=photo]")).toHaveCount(1);
   await obs.close();
 });
+
+/** A wide picture (1600x900), so it hangs over the side of the horse picture's slot and can be moved left and right. */
+const WIDE = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><rect width="800" height="900" fill="#c33"/><rect x="800" width="800" height="900" fill="#36c"/></svg>`);
+
+test("horse tab: each horse picture is moved and zoomed in the dock, and the broadcast follows", async ({ context }) => {
+  const { dock, overlay } = await open(context);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await dock.getByRole("button", { name: "ตั้งเป็น Active" }).click();
+  const scene = overlay.locator("[data-layer][data-active] [data-testid=horse]");
+  await dock.getByTestId("add-photos-horse").setInputFiles([
+    { name: "wide1.svg", mimeType: "image/svg+xml", buffer: WIDE },
+    { name: "wide2.svg", mimeType: "image/svg+xml", buffer: WIDE },
+  ]);
+  await dock.getByRole("button", { name: "แสดงรูปที่ 1" }).click();
+  const shown = scene.getByTestId("horse-photo-img").last();
+  await expect(shown).toHaveAttribute("data-frame", "50 50 1");
+  // drag the picture left in the box: more of its right side shows, on the broadcast too
+  const box = (await dock.getByTestId("photo-frame-box").boundingBox())!;
+  await dock.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await dock.mouse.down();
+  await dock.mouse.move(box.x + box.width / 2 - 40, box.y + box.height / 2, { steps: 5 });
+  await dock.mouse.up();
+  await expect.poll(async () => +(await shown.getAttribute("data-frame"))!.split(" ")[0]).toBeGreaterThan(55);
+  // zoom with the slider; the overlay's picture is scaled from the same point
+  await dock.getByTestId("photo-zoom").fill("200");
+  await expect(dock.getByTestId("photo-zoom-value")).toHaveText("200%");
+  await expect(shown).toHaveAttribute("data-frame", / 2$/);
+  await expect(shown.locator("img")).toHaveCSS("transform", "matrix(2, 0, 0, 2, 0, 0)");
+  // buttons nudge it: picture up = more of its bottom shows
+  await dock.getByRole("button", { name: "ขยับรูปขึ้น" }).click();
+  await expect(shown).toHaveAttribute("data-frame", /^\S+ 55 2$/);
+  // the second picture keeps its own frame (centred)
+  await dock.getByRole("button", { name: "แสดงรูปที่ 2" }).click();
+  await expect(dock.getByTestId("photo-frame")).toContainText("จัดตำแหน่งรูปที่ 2");
+  await expect(scene.getByTestId("horse-photo-img").last()).toHaveAttribute("data-frame", "50 50 1");
+  // back on picture 1, reset puts it back in the middle
+  await dock.getByRole("button", { name: "แสดงรูปที่ 1" }).click();
+  await expect(scene.getByTestId("horse-photo-img").last()).toHaveAttribute("data-frame", /^\S+ 55 2$/);
+  await dock.getByRole("button", { name: "กลับไปตรงกลาง" }).click();
+  await expect(scene.getByTestId("horse-photo-img").last()).toHaveAttribute("data-frame", "50 50 1");
+  await expect(dock.getByRole("button", { name: "กลับไปตรงกลาง" })).toBeDisabled();
+});
