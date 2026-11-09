@@ -104,3 +104,9 @@ export function posText(r: CareerRace): string {
   if (r.finish == null) return "–";
   return r.field ? `${r.finish}/${r.field}` : String(r.finish);
 }
+
+/** Text folded for the dock's name search: lower case, accents and everything but letters/digits dropped ("Café  Pharoah" → "cafepharoah"). */
+const fold = (s: string) => s.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+
+/** Whether a horse's name holds the search text (case, spaces, dots and accents ignored); an empty search matches every horse. */
+export const nameMatches = (name: string, query: string) => fold(name).includes(fold(query));
