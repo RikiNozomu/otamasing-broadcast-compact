@@ -1,10 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { careerPage, silksModeOf, earningsIn, horsePageKinds, horsePages, sexText, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
+import { careerPage, nameMatches, silksModeOf, earningsIn, horsePageKinds, horsePages, sexText, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
 import { activeExists, exportHorse, horseOf, mergeImport, parseActive, parseFile } from "../../src/lib/model";
 import { sampleData, sampleHorse } from "../../src/lib/sample";
 
 const horse = (o: Record<string, unknown> = {}): Horse => ({ ...HorseSchema.parse({ name: "Test", ...o }), id: "h1" });
 const race = (date: string, finish: number | null, extra = {}) => ({ date, name: `R ${date}`, finish, ...extra });
+
+describe("horse name search", () => {
+  it("matches part of the name, ignoring case, spaces, dots and accents", () => {
+    expect(nameMatches("Cosmo Kuranda", "kura")).toBe(true);
+    expect(nameMatches("Cosmo Kuranda", "COSMOKUR")).toBe(true);
+    expect(nameMatches("Café Pharoah", "cafe ph")).toBe(true);
+    expect(nameMatches("T.O. Keynes", "tokey")).toBe(true);
+    expect(nameMatches("Do Deuce", "equinox")).toBe(false);
+  });
+  it("an empty search matches every horse", () => {
+    expect(nameMatches("Do Deuce", "")).toBe(true);
+    expect(nameMatches("Do Deuce", "  ")).toBe(true);
+  });
+});
 
 describe("horse profile", () => {
   it("record text counts the unplaced runs", () => {

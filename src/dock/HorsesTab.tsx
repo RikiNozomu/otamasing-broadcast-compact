@@ -6,7 +6,7 @@ import { AnimatePresence } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { exportHorse, horseOf, HOME, newId, parseActive, type AppData } from "../lib/model";
 import {
-  COATS, CURRENCIES, HorseSchema, careerNewestFirst, posText, rateOf, recordFromRaces, recordText, setHorseAuto, showHorsePage, useHorsePage, dotDate,
+  COATS, CURRENCIES, HorseSchema, nameMatches, careerNewestFirst, posText, rateOf, recordFromRaces, recordText, setHorseAuto, showHorsePage, useHorsePage, dotDate,
   CAREER_GRADES, CareerRaceSchema, SilksSchema, SILKS_BODY, SILKS_MODES, SILKS_SLEEVES, silksModeOf, type CareerRace, type SilksMode, type Silks, type Coat, type Currency, type Horse,
 } from "../lib/horses";
 import { update, useData } from "../lib/store";
@@ -325,19 +325,38 @@ export function HorsesTab() {
   const [sel, setSel] = useState<string | null>(a.horseId ?? d.horses[0]?.id ?? null);
   const [confirmDel, setConfirmDel] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [query, setQuery] = useState("");
   const h = d.horses.find((x) => x.id === sel) ?? d.horses[0];
+  const found = d.horses.filter((x) => nameMatches(x.name, query));
+  const searching = query.trim() !== "";
+  const pick = (id: string) => { setSel(id); setConfirmDel(false); setExporting(false); };
 
   const add = () => {
     const id = newId();
     update((x) => ({ ...x, horses: [...x.horses, { ...HorseSchema.parse({ name: "New Horse" }), id }] }));
     setSel(id);
   };
+  // the search box shows once there are a few horses; Enter picks the first match, Esc clears
+  const search = d.horses.length > 1 && (
+    <div className="grid gap-1">
+      <span className="relative flex items-center">
+        <input type="text" className={cx(inputClass, "pr-8")} placeholder="ค้นหาชื่อม้า…" aria-label="ค้นหาชื่อม้า" data-testid="horse-search" value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && found[0]) pick(found[0].id);
+            if (e.key === "Escape") setQuery("");
+          }} />
+        {searching && <button type="button" aria-label="ล้างคำค้นหา" onClick={() => setQuery("")} className="absolute right-1.5 px-1.5 text-ink-muted">✕</button>}
+      </span>
+      {searching && <span className={hintClass} data-testid="horse-search-count">{found.length ? `พบ ${found.length} จาก ${d.horses.length} ตัว · กด Enter เลือกตัวแรก` : `ไม่พบม้าชื่อ "${query.trim()}"`}</span>}
+    </div>
+  );
   const list = (
     <div className="flex flex-wrap gap-1" role="tablist" aria-label="เลือกม้า">
-      {d.horses.map((x) => {
+      {found.map((x) => {
         const on = x.id === h?.id;
         return (
-          <button key={x.id} type="button" role="tab" data-horse={x.id} aria-selected={on} onClick={() => { setSel(x.id); setConfirmDel(false); setExporting(false); }}
+          <button key={x.id} type="button" role="tab" data-horse={x.id} aria-selected={on} onClick={() => pick(x.id)}
             className={cx("inline-flex items-center gap-1.5 border px-2.5 py-1 font-display text-base leading-[normal] font-bold uppercase", on ? "border-yellow bg-yellow text-navy" : "border-line bg-studio text-ink-muted")}>
             {a.horseId === x.id && <span className="size-[7px] rounded-full bg-ok" title="Active" />}{x.name}
           </button>
@@ -346,7 +365,7 @@ export function HorsesTab() {
       <button type="button" onClick={add} className="border border-dashed border-line px-2.5 py-1 text-[13px] text-ink-muted">+ เพิ่มม้า</button>
     </div>
   );
-  if (!h) return <div className="grid content-start gap-3 p-3" role="tabpanel" id="p-horses">{list}<p className={hintClass}>ยังไม่มีม้า กด "+ เพิ่มม้า" หรือนำเข้า JSON ที่มี "horses" ได้ที่แท็บภาพรวม</p></div>;
+  if (!h) return <div className="grid content-start gap-3 p-3" role="tabpanel" id="p-horses">{search}{list}<p className={hintClass}>ยังไม่มีม้า กด "+ เพิ่มม้า" หรือนำเข้า JSON ที่มี "horses" ได้ที่แท็บภาพรวม</p></div>;
 
   const isAct = a.horseId === h.id;
   const set = (patch: Partial<Horse>) => updateHorse(h.id, (x) => ({ ...x, ...patch }));
@@ -375,6 +394,7 @@ export function HorsesTab() {
 
   return (
     <div className="grid content-start gap-3 p-3" role="tabpanel" id="p-horses" aria-labelledby="tab-horses">
+      {search}
       {list}
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-muted">
         <span>{isAct ? "ม้าตัวนี้ Active อยู่ แก้แล้วขึ้นจอทันที" : "ม้าตัวนี้ไม่ได้ Active (ดูพรีวิวด้านล่าง)"}</span>

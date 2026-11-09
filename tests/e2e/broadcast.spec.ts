@@ -484,6 +484,39 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-list]")).toBeVisible();
 });
 
+test("horse tab: the name search filters the horse picker", async ({ context }) => {
+  const { dock } = await open(context);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  const picker = dock.getByRole("tablist", { name: "เลือกม้า" }).getByRole("tab");
+  // one horse: no search box yet
+  await expect(dock.getByTestId("horse-search")).toHaveCount(0);
+  for (const name of ["Cosmo Kuranda", "Café Pharoah", "Do Deuce"]) {
+    await dock.getByRole("button", { name: "+ เพิ่มม้า" }).click();
+    await dock.locator("#h-name").fill(name);
+  }
+  await expect(picker).toHaveText(["Sample Star", "Cosmo Kuranda", "Café Pharoah", "Do Deuce"]);
+  const search = dock.getByTestId("horse-search");
+  // part of the name, any case, spaces and accents ignored
+  await search.fill("KURA");
+  await expect(picker).toHaveText(["Cosmo Kuranda"]);
+  await expect(dock.getByTestId("horse-search-count")).toHaveText(/พบ 1 จาก 4 ตัว/);
+  await search.fill("cafe pha");
+  await expect(picker).toHaveText(["Café Pharoah"]);
+  // Enter picks the first match
+  await search.press("Enter");
+  await expect(dock.locator("#h-name")).toHaveValue("Café Pharoah");
+  await search.fill("zzz");
+  await expect(picker).toHaveCount(0);
+  await expect(dock.getByTestId("horse-search-count")).toHaveText('ไม่พบม้าชื่อ "zzz"');
+  // Esc or ✕ brings every horse back
+  await search.press("Escape");
+  await expect(picker).toHaveCount(4);
+  await search.fill("o");
+  await expect(picker).toHaveText(["Cosmo Kuranda", "Café Pharoah", "Do Deuce"]);
+  await dock.getByRole("button", { name: "ล้างคำค้นหา" }).click();
+  await expect(picker).toHaveCount(4);
+});
+
 test("pictures are named image/<date-time>.<ext>, the JSON carries the names, a missing one is reported and taken out", async ({ context }) => {
   context.addInitScript(() => { (window as unknown as { obsstudio: object }).obsstudio = {}; });
   const { dock } = await open(context);
