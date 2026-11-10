@@ -81,9 +81,22 @@ export const SilksSchema = z.object({
 });
 export type Silks = z.infer<typeof SilksSchema>;
 
+/**
+ * How one horse picture sits in its slot on the left of the scene: `x` / `y` = which part of the picture
+ * is kept when it is cropped (0 = left / top edge, 50 = middle, 100 = right / bottom edge), `zoom` = 1 to 4.
+ */
+export const PhotoFrameSchema = z.object({
+  x: z.number().min(0).max(100).default(50),
+  y: z.number().min(0).max(100).default(50),
+  zoom: z.number().min(1).max(4).default(1),
+});
+export type PhotoFrame = z.infer<typeof PhotoFrameSchema>;
+
 /** The horse's pictures (names of pictures stored in the browser) and their slideshow; same shape as a race's PhotoSet. */
 export const HorsePhotosSchema = z.object({
   keys: z.array(z.string()).default([]),
+  /** Position and zoom of each picture, by its name; a picture left out is centred and not zoomed. */
+  frames: z.record(z.string(), PhotoFrameSchema).default({}),
   index: z.number().int().min(0).default(0),
   auto: z.boolean().default(false),
   seconds: z.number().min(1).max(600).default(5),

@@ -782,6 +782,34 @@
                     },
                     "default": []
                   },
+                  "frames": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "default": 50
+                        },
+                        "y": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "default": 50
+                        },
+                        "zoom": {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 4,
+                          "default": 1
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "default": {}
+                  },
                   "index": {
                     "type": "integer",
                     "minimum": 0,

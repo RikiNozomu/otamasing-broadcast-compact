@@ -7,7 +7,7 @@
 /** What holds picture names: races' slideshows, horses' slideshows and uploaded silks, the home page background. */
 type Holder = {
   races?: { photos: { card: { keys: string[] }; result: { keys: string[] } } }[];
-  horses?: { photos: { keys: string[] }; silksImage?: string | null }[];
+  horses?: { photos: { keys: string[]; frames?: Record<string, unknown> }; silksImage?: string | null }[];
   home?: { background?: string | null };
 };
 
@@ -60,10 +60,12 @@ export function imageRefs(d: Holder): string[] {
 export function mapImageRefs<T extends Holder>(d: T, fn: (k: string) => string | null): T {
   const keys = (ks: string[]) => ks.map(fn).filter((k): k is string => !!k);
   const one = (k: string | null | undefined) => (k ? fn(k) : k ?? null);
+  // a picture's position and zoom follow it when it is renamed, and go when it goes
+  const frames = <F,>(fs: Record<string, F>) => Object.fromEntries(Object.entries(fs).flatMap(([k, f]) => { const n = fn(k); return n ? [[n, f]] : []; }));
   return {
     ...d,
     ...(d.races && { races: d.races.map((r) => ({ ...r, photos: { ...r.photos, card: { ...r.photos.card, keys: keys(r.photos.card.keys) }, result: { ...r.photos.result, keys: keys(r.photos.result.keys) } } })) }),
-    ...(d.horses && { horses: d.horses.map((h) => ({ ...h, photos: { ...h.photos, keys: keys(h.photos.keys) }, ...("silksImage" in h && { silksImage: one(h.silksImage) }) })) }),
+    ...(d.horses && { horses: d.horses.map((h) => ({ ...h, photos: { ...h.photos, keys: keys(h.photos.keys), ...(h.photos.frames && { frames: frames(h.photos.frames) }) }, ...("silksImage" in h && { silksImage: one(h.silksImage) }) })) }),
     ...(d.home && { home: { ...d.home, ...("background" in d.home && { background: one(d.home.background) }) } }),
   };
 }
