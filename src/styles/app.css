@@ -35,3 +35,36 @@
   button:not(:disabled), label[for] { cursor: pointer; }
   :where(button, select, input, a, label):focus-visible { @apply outline-2 outline-offset-2 outline-yellow; }
 }
+
+/* Runner rows in the dock's ข้อมูล tab. Wide dock: one line per name with flag, Fav and ถอน beside it.
+   Narrow dock (OBS docks can be ~250px): flag stays beside the name, Fav / jockey kg / ถอน move to their
+   own line, so the horse and jockey names keep most of the width. The dock page is the whole viewport, so
+   a media query is used: a container query on this list made Chrome hang now and then. */
+@layer components {
+  .runner-row, .runner-head {
+    display: grid;
+    align-items: center;
+    gap: 0.25rem;
+    grid-template-columns: 30px minmax(0, 1fr) 46px 44px 22px;
+    grid-template-areas:
+      "no name hflag fav scr"
+      "draw jockey jflag wt ."
+      "hwl hw hw hw hw";
+  }
+  .runner-head { grid-template-areas: "no name hflag fav scr"; }
+  .runner-row .narrow-only { display: none; }
+
+  @media (max-width: 429px) {
+    .runner-row, .runner-head {
+      grid-template-columns: 30px minmax(0, 1fr) minmax(0, 1fr) 46px;
+      grid-template-areas:
+        "no name name hflag"
+        "draw jockey jockey jflag"
+        "hwl hw hw hw"
+        "favl fav wt scr";
+    }
+    .runner-head { grid-template-areas: "no name name hflag"; }
+    .runner-head .wide-only { display: none; }
+    .runner-row .narrow-only { display: inline; }
+  }
+}
