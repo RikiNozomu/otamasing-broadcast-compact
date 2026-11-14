@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { LiveScene } from "./LiveScene";
 import { Stage } from "./Stage";
+import { LowerThird } from "./LowerThird";
 
 export function Overlay() {
   useEffect(() => {
@@ -10,7 +11,7 @@ export function Overlay() {
   }, []);
   return (
     <div className="fixed inset-0 overflow-hidden">
-      <Stage><LiveScene /></Stage>
+      <Stage><LiveScene /><LowerThird /></Stage>
     </div>
   );
 }

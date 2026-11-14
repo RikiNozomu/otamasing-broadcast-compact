@@ -12,6 +12,7 @@ import { showPage, useResultPage } from "../lib/results";
 import { HOME_ROWS, paginate } from "../lib/paging";
 import { PageButtons } from "../components/PageButtons";
 import { ExportPanel } from "./ExportPanel";
+import { LowerThirdSection } from "./LowerThirdSection";
 import { CardPageButtons } from "./CardPagesSection";
 import { cx } from "../lib/cx";
 import { Button, buttonClass } from "../components/Button";
@@ -257,6 +258,8 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
         })}
       </div>
       <p className={hintClass}>กดแถวไหนก็ได้เพื่อตั้งเป็น Active จอจะเปลี่ยนพร้อมทรานซิชัน · กดแถวรายการ = การ์ดรายชื่อม้า, ปุ่ม "ผล" = หน้าผลการแข่งขัน, "หน้าเปล่า" = เอากราฟิกออกจากจอ · ลาก ⠿ (หรือกด ▲) เพื่อเรียงลำดับ หน้าแรกเรียงตามนี้ · ข้อมูลเก็บในเครื่องนี้ ย้ายเครื่องใช้ส่งออก/นำเข้า JSON</p>
+
+      <LowerThirdSection />
 
       <Section title={<label htmlFor="trans">ทรานซิชันตอนเปลี่ยน Active</label>}>
         <select id="trans" className={inputClass} value={d.transition} onChange={(e) => update((x) => ({ ...x, transition: e.target.value as Transition }))}>

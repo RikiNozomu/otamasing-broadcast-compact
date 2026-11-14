@@ -651,3 +651,42 @@ test("a narrow dock keeps the horse and jockey name boxes wide: Fav, jockey kg a
   await expect(page.locator("#f-name")).toHaveCSS("width", /^(2\d\d|1[5-9]\d)/);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(260);
 });
+
+test("lower third: a number button shows the runner over any scene, again hides it; position and size from the overview", async ({ context }) => {
+  const { dock, overlay } = await open(context);
+  const plate = overlay.getByTestId("lower-third");
+  await expect(plate).toHaveCount(0);
+  // the buttons follow the race on screen (11R); 6 is scratched
+  await expect(dock.locator("#lt-race")).toHaveValue("sample-11");
+  await expect(dock.locator("[data-lt='6']")).toBeDisabled();
+  await dock.locator("[data-lt='3']").click();
+  await expect(plate).toHaveAttribute("data-no", "3");
+  await expect(plate.getByTestId("lt-horse")).toHaveText("NORTHERN LANTERN");
+  await expect(plate.getByTestId("lt-jockey")).toHaveText("C. RIDER");
+  await expect(plate.getByTestId("lt-body")).toHaveText(/514kg\s*\+2/);
+  await expect(plate.getByTestId("lt-weight")).toHaveText(/57\.0\s*kg/);
+  // it stays through a scene change, blank included
+  await dock.getByRole("button", { name: "ตั้งหน้าเปล่าเป็น Active" }).click();
+  await expect(overlay.getByTestId("blank")).toBeVisible();
+  await expect(plate).toHaveAttribute("data-no", "3");
+  // another horse swaps the plate
+  await dock.locator("[data-lt='9']").click();
+  await expect(plate).toHaveAttribute("data-no", "9");
+  await expect(dock.locator("[data-lt='9']")).toHaveAttribute("aria-pressed", "true");
+  // position and size
+  const box = overlay.getByTestId("lower-third-box");
+  await dock.getByRole("button", { name: "ล่างกลาง" }).click();
+  await expect(box).toHaveAttribute("style", /left: 360px; top: 837px;/);
+  await dock.locator("#lt-x").fill("100");
+  await dock.locator("#lt-y").fill("100");
+  await dock.locator("#lt-scale").fill("0.5");
+  await expect(box).toHaveAttribute("style", /left: 1320px; top: 1005px;.*scale\(0\.5\)/);
+  // the second look, like the Japanese TV graphic: same runner, weight carried written as the TV does
+  await dock.locator("button[data-look='tv']").click();
+  await expect(plate).toHaveAttribute("data-look", "tv");
+  await expect(plate.getByTestId("lt-horse")).toHaveText("Final Furlong");
+  await expect(plate.getByTestId("lt-weight")).toHaveText("55.5");
+  // pressed again: gone
+  await dock.locator("[data-lt='9']").click();
+  await expect(plate).toHaveCount(0);
+});

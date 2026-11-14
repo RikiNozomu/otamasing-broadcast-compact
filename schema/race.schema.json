@@ -1120,6 +1120,58 @@
             "fade",
             "none"
           ]
+        },
+        "lowerThird": {
+          "type": "object",
+          "properties": {
+            "look": {
+              "type": "string",
+              "enum": [
+                "brand",
+                "tv"
+              ],
+              "default": "brand"
+            },
+            "raceId": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "number": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 30
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 4
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 90
+            },
+            "scale": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 1.5,
+              "default": 1
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

@@ -1,6 +1,6 @@
 /** Sample data written on first open, so every page shows something straight away. Names are made up. */
 import { newHorseSettings, newHorseView, type Horse } from "./horses";
-import { HOME, newPhotos, newCard, newResult, newStyle, type AppData, type Race, type Runner } from "./model";
+import { HOME, newLowerThird, newPhotos, newCard, newResult, newStyle, type AppData, type Race, type Runner } from "./model";
 
 const NAMES = ["Morning Gallop", "Silver Paddock", "Northern Lantern", "Checkered Flag", "Royal Furlong", "Paper Owner", "Gate Seven", "Blue Silks", "Final Furlong", "Yellow Draw", "Navy Plate", "Turf Comet", "Night Rally", "Rising Second", "Cream Headline", "Long Stretch", "Photo Finish", "Last Corner"];
 const JOCKEYS: [string, string][] = [["A. Sample", "JP"], ["B. Example", "JP"], ["C. Rider", "FR"], ["D. Jockey", "JP"], ["E. Saddle", "IT"], ["F. Whip", "JP"], ["G. Stirrup", "GB"], ["H. Reins", "JP"], ["I. Crop", "JP"], ["J. Girth", "IE"], ["K. Bridle", "JP"], ["L. Bit", "JP"], ["M. Halter", "DE"], ["N. Tack", "JP"], ["O. Visor", "JP"], ["P. Blinker", "JP"], ["Q. Hood", "FR"], ["R. Shoe", "JP"]];
@@ -37,7 +37,7 @@ export function sampleData(): AppData {
   r10.style.drawScheme = "us";
   r10.style.numberScheme = "us";
   r10.style.show.draw = false;
-  return { version: 1, races: [r10, r11, r12], horses: [sampleHorse()], horseSettings: newHorseSettings(), active: r11.id, transition: "wipe", home: { title: "Tokyo Races", subtitle: "2026.11.29", highlight: null, page: 0, background: null, showCourse: true, showDate: true }, images: {} };
+  return { version: 1, races: [r10, r11, r12], horses: [sampleHorse()], horseSettings: newHorseSettings(), active: r11.id, transition: "wipe", home: { title: "Tokyo Races", subtitle: "2026.11.29", highlight: null, page: 0, background: null, showCourse: true, showDate: true }, lowerThird: newLowerThird(), images: {} };
 }
 
 export { HOME };

@@ -4,7 +4,7 @@
  * Changes reach other pages through the storage event, a BroadcastChannel, and a 1 s poll as a fallback.
  */
 import { useSyncExternalStore } from "react";
-import { activeExists, HOME, newPhotos, newCard, newResult, type AppData } from "./model";
+import { activeExists, HOME, newLowerThird, newPhotos, newCard, newResult, type AppData } from "./model";
 import { sampleData } from "./sample";
 import { HOME_BG, raceImageKey } from "./images";
 import { horsePhotoKey, newHorseSettings, newHorseView, silksKey } from "./horses";
@@ -59,6 +59,9 @@ export function getData(): AppData {
     // the uploaded silks used to be found by the horse's id; now the horse names its picture
     if (h.silksImage === undefined) h.silksImage = data.images[silksKey(h.id)] ? silksKey(h.id) : null;
   }
+  // saved before the lower third; a runner whose race is gone is hidden
+  data.lowerThird = { ...newLowerThird(), ...data.lowerThird };
+  if (data.lowerThird.raceId && !data.races.some((r) => r.id === data.lowerThird.raceId)) data.lowerThird = { ...data.lowerThird, raceId: null, number: null };
   if (!activeExists(data.active, data.races, data.horses)) data.active = HOME;
   data.home.page ??= 0;
   // the home background used to be one fixed picture; now the home page names its picture

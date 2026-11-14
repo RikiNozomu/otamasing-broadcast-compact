@@ -169,6 +169,28 @@ export const HomeSchema = z.object({
 });
 export type Home = z.infer<typeof HomeSchema>;
 
+/**
+ * The lower third: one runner's plate (number, horse, jockey, weights) drawn over the live race video,
+ * on top of whatever scene is Active. `raceId` + `number` = the runner on screen (number null = hidden).
+ * `x` and `y` place it in the room the plate leaves on the 1920x1080 screen (0 = left/top, 100 = right/bottom),
+ * so it stays on screen at any size; `scale` is its size (1 = 1200x150 px); `look` is how the plate looks.
+ */
+export const LOWER_THIRD_W = 1200;
+export const LOWER_THIRD_H = 150;
+/** Look of the plate: "brand" = the โอตะม้าซิ่ง design system, "tv" = like the Japanese TV graphic (Nopphorn's reference picture). */
+export const LOWER_THIRD_LOOKS = ["brand", "tv"] as const;
+export type LowerThirdLook = (typeof LOWER_THIRD_LOOKS)[number];
+export const LowerThirdSchema = z.object({
+  look: z.enum(LOWER_THIRD_LOOKS).default("brand"),
+  raceId: z.string().nullable().default(null),
+  number: z.number().int().min(1).max(MAX_RUNNERS).nullable().default(null),
+  x: z.number().min(0).max(100).default(4),
+  y: z.number().min(0).max(100).default(90),
+  scale: z.number().min(0.5).max(1.5).default(1),
+});
+export type LowerThird = z.infer<typeof LowerThirdSchema>;
+export const newLowerThird = (): LowerThird => LowerThirdSchema.parse({});
+
 /** A whole export, or a file written by hand / by Claude: `races` or `horses` (or both). */
 export const FileSchema = z.object({
   version: z.literal(1).default(1),
@@ -178,6 +200,8 @@ export const FileSchema = z.object({
   home: HomeSchema.optional(),
   active: z.string().optional(),
   transition: z.enum(TRANSITIONS).optional(),
+  /** Lower third position and size (the runner on screen is not imported). */
+  lowerThird: LowerThirdSchema.optional(),
 }).refine((f) => f.races.length + f.horses.length > 0, { message: "ต้องมีอย่างน้อย 1 รายการหรือม้า 1 ตัว", path: ["races"] });
 export type FileInput = z.input<typeof FileSchema>;
 export type FileOutput = z.output<typeof FileSchema>;
@@ -192,6 +216,8 @@ export interface AppData {
   active: string;
   transition: Transition;
   home: Home;
+  /** The lower-third plate over the live video, independent of Active. */
+  lowerThird: LowerThird;
   /** Bumped when a picture changes in IndexedDB, so other pages reload it. Key: "race:<id>" or "home". */
   images: Record<string, number>;
 }
@@ -273,6 +299,7 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
       active,
       transition: file.transition ?? cur.transition,
       home: hasRaces ? file.home ?? cur.home : cur.home,
+      lowerThird: lowerThirdAfter(cur.lowerThird, races, file.lowerThird),
     };
   }
   const races = [...cur.races];
@@ -289,14 +316,21 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
     if (i >= 0) horses[i] = { ...h, id: horses[i].id };
     else horses.push(h);
   }
-  return { ...cur, races, horses, active };
+  return { ...cur, races, horses, active, lowerThird: lowerThirdAfter(cur.lowerThird, races) };
+}
+
+/** The lower third after an import: position and size from the file (if it has them), hidden when its race is gone. */
+function lowerThirdAfter(cur: LowerThird, races: Race[], fromFile?: LowerThird): LowerThird {
+  const lt = fromFile ? { ...fromFile, raceId: cur.raceId, number: cur.number } : cur;
+  return races.some((r) => r.id === lt.raceId) ? lt : { ...lt, raceId: null, number: null };
 }
 
 export function exportFile(data: AppData, only?: string): FileInput {
   const races = only ? data.races.filter((r) => r.id === only) : data.races;
   return only
     ? { version: 1, races }
-    : { version: 1, races, horses: data.horses, horseSettings: data.horseSettings, home: data.home, active: data.active, transition: data.transition };
+    : { version: 1, races, horses: data.horses, horseSettings: data.horseSettings, home: data.home, active: data.active, transition: data.transition,
+        lowerThird: { ...data.lowerThird, raceId: null, number: null } };
 }
 
 /** A file with just one horse (from the ม้า tab). */
