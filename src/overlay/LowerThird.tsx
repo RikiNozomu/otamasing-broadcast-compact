@@ -106,7 +106,8 @@ function TvPlate({ race, runner }: { race: Race; runner: Runner }) {
       {/* the plate: darker see-through band on top, lighter grey one below, thin dark frame */}
       <div className="absolute inset-0 border-2 border-black/45 bg-[linear-gradient(180deg,rgb(40_44_40/.55)_0,rgb(40_44_40/.55)_61%,rgb(120_126_116/.62)_61%,rgb(120_126_116/.62)_100%)]" />
       {/* number box with a slanted right edge, coloured like the race's NO. boxes */}
-      <span className={cx("absolute top-[8px] left-[8px] flex items-center justify-center pr-[22px] text-[72px] leading-none", tvText)}
+      {/* no outline on the number; nudged up so the digits sit in the middle of the colour (the font leaves room for descenders) */}
+      <span className="absolute top-[8px] left-[8px] flex items-center justify-center pr-[22px] pb-[8px] text-[72px] leading-none"
         style={{ width: TV_BOX + SLANT, height: TV_TOP - 16, background: colors[0], color: colors[1], clipPath: `polygon(0 0, 100% 0, calc(100% - ${SLANT}px) 100%, 0 100%)` }}>
         {runner.number}
       </span>
