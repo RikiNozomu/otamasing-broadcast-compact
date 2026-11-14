@@ -637,3 +637,17 @@ test("horse tab: each horse picture is moved and zoomed in the dock, and the bro
   await expect(scene.getByTestId("horse-photo-img").last()).toHaveAttribute("data-frame", "50 50 1");
   await expect(dock.getByRole("button", { name: "กลับไปตรงกลาง" })).toBeDisabled();
 });
+
+test("a narrow dock keeps the horse and jockey name boxes wide: Fav, jockey kg and ถอน move to their own line", async ({ page }) => {
+  await page.setViewportSize({ width: 260, height: 900 });
+  await page.goto("#/dock");
+  await page.getByRole("tab", { name: "การแข่งขัน" }).click();
+  const name = await page.getByLabel("ชื่อม้าเบอร์ 1", { exact: true }).boundingBox();
+  const jockey = await page.getByLabel("จ็อกกี้เบอร์ 1", { exact: true }).boundingBox();
+  const fav = await page.getByLabel("อันดับตัวเต็งเบอร์ 1", { exact: true }).boundingBox();
+  expect(name!.width).toBeGreaterThan(110);
+  expect(jockey!.width).toBeGreaterThan(110);
+  expect(fav!.y).toBeGreaterThan(jockey!.y + jockey!.height);
+  await expect(page.locator("#f-name")).toHaveCSS("width", /^(2\d\d|1[5-9]\d)/);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(260);
+});

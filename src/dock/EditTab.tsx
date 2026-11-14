@@ -57,7 +57,6 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
       </select>
     </Field>
   );
-  const runnerGrid = "grid grid-cols-[30px_minmax(0,1fr)_46px_44px_22px] items-center gap-1 text-xs";
   const subtabs = [["data", "ข้อมูล"], ["result", "ผล"], ["style", "สไตล์"]] as const;
 
   return (
@@ -131,27 +130,32 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             </div>
           </Section>
           <Section title={`ม้า ${n} ตัว (รองรับ ${MIN_RUNNERS}–${MAX_RUNNERS})`}>
-            <div className={cx(runnerGrid, "text-[11px] text-ink-muted")} aria-hidden="true"><span>No</span><span>ชื่อม้า / จ็อกกี้</span><span>ธง</span><span>Fav</span><span>ถอน</span></div>
+            <div className="grid gap-1.5">
+            <div className="runner-head text-[11px] text-ink-muted" aria-hidden="true"><span className="[grid-area:no]">No</span><span className="[grid-area:name]">ชื่อม้า / จ็อกกี้</span><span className="[grid-area:hflag]">ธง</span><span className="wide-only [grid-area:fav]">Fav</span><span className="wide-only [grid-area:scr]">ถอน</span></div>
             <div className="grid gap-1.5" data-testid="runner-rows">
               {race.runners.map((h, i) => (
-                <div className={cx(runnerGrid, "border-b border-line pb-1.5")} key={h.number}>
-                  <span className="bg-navy py-[3px] text-center font-display text-[15px] font-bold">{h.number}</span>
-                  <input className={inputClass} aria-label={`ชื่อม้าเบอร์ ${h.number}`} value={h.name} onChange={(e) => setRunner(i, { name: e.target.value })} />
-                  <FlagPicker label={`ธงม้าเบอร์ ${h.number}`} value={h.horseCountry} onChange={(c) => setRunner(i, { horseCountry: c })} />
-                  <input className={inputClass} type="number" min={1} max={MAX_RUNNERS} aria-label={`อันดับตัวเต็งเบอร์ ${h.number}`} value={h.fav ?? ""} onChange={(e) => setRunner(i, { fav: e.target.value ? Math.max(1, Math.round(+e.target.value)) : null })} />
-                  <input type="checkbox" className="justify-self-center" aria-label={`ถอนเบอร์ ${h.number}`} checked={h.scratched} onChange={(e) => setRunner(i, { scratched: e.target.checked })} />
-                  {S.autoDraw ? <span /> : <input className={cx(inputClass, "px-0.5 text-center")} type="number" min={1} max={MAX_RUNNERS} aria-label={`ซองเบอร์ ${h.number}`} title="ซอง" placeholder="ซอง" value={h.draw ?? ""} onChange={(e) => setRunner(i, { draw: e.target.value ? Math.round(+e.target.value) : null })} />}
-                  <input className={inputClass} aria-label={`จ็อกกี้เบอร์ ${h.number}`} placeholder="จ็อกกี้" value={h.jockey} onChange={(e) => setRunner(i, { jockey: e.target.value })} />
-                  <FlagPicker label={`ธงจ็อกกี้เบอร์ ${h.number}`} value={h.jockeyCountry} onChange={(c) => setRunner(i, { jockeyCountry: c })} />
-                  <input className={cx(inputClass, "px-0.5 text-center")} type="number" min={30} max={80} step={0.5} aria-label={`น้ำหนักจ็อกกี้เบอร์ ${h.number}`} title="น้ำหนักจ็อกกี้ (กก.)" placeholder="กก." value={h.weight ?? ""} onChange={(e) => setRunner(i, { weight: e.target.value ? Math.round(+e.target.value * 2) / 2 : null })} />
-                  <span />
-                  <span className="text-center text-[10px] text-ink-muted">ตัวม้า</span>
-                  <div className="col-span-4 flex items-center gap-1">
-                    <input className={cx(inputClass, "w-20")} type="number" min={200} max={800} aria-label={`น้ำหนักตัวม้าเบอร์ ${h.number}`} title="น้ำหนักตัวม้า (กก.)" placeholder="น้ำหนักตัว กก." value={h.horseWeight ?? ""} onChange={(e) => setRunner(i, { horseWeight: e.target.value ? Math.round(+e.target.value) : null })} />
-                    <input className={cx(inputClass, "w-16")} type="number" min={-99} max={99} aria-label={`น้ำหนักตัวม้าเปลี่ยนเบอร์ ${h.number}`} title="เพิ่ม/ลดจากครั้งก่อน (กก.)" placeholder="+/-" value={h.horseWeightChange ?? ""} onChange={(e) => setRunner(i, { horseWeightChange: e.target.value ? Math.round(+e.target.value) : null })} />
+                <div className="runner-row border-b border-line pb-1.5 text-xs" key={h.number}>
+                  <span className="[grid-area:no] bg-navy py-[3px] text-center font-display text-[15px] font-bold">{h.number}</span>
+                  <input className={cx(inputClass, "[grid-area:name]")} aria-label={`ชื่อม้าเบอร์ ${h.number}`} value={h.name} onChange={(e) => setRunner(i, { name: e.target.value })} />
+                  <div className="[grid-area:hflag]"><FlagPicker label={`ธงม้าเบอร์ ${h.number}`} value={h.horseCountry} onChange={(c) => setRunner(i, { horseCountry: c })} /></div>
+                  <span className="narrow-only text-center text-[10px] text-ink-muted [grid-area:favl]">Fav</span>
+                  <input className={cx(inputClass, "[grid-area:fav]")} type="number" min={1} max={MAX_RUNNERS} aria-label={`อันดับตัวเต็งเบอร์ ${h.number}`} title="อันดับตัวเต็ง (Fav)" value={h.fav ?? ""} onChange={(e) => setRunner(i, { fav: e.target.value ? Math.max(1, Math.round(+e.target.value)) : null })} />
+                  <label className="flex items-center justify-center gap-1 [grid-area:scr]">
+                    <input type="checkbox" aria-label={`ถอนเบอร์ ${h.number}`} checked={h.scratched} onChange={(e) => setRunner(i, { scratched: e.target.checked })} />
+                    <span className="narrow-only text-[10px] text-ink-muted" aria-hidden="true">ถอน</span>
+                  </label>
+                  {S.autoDraw ? null : <input className={cx(inputClass, "px-0.5 text-center [grid-area:draw]")} type="number" min={1} max={MAX_RUNNERS} aria-label={`ซองเบอร์ ${h.number}`} title="ซอง" placeholder="ซอง" value={h.draw ?? ""} onChange={(e) => setRunner(i, { draw: e.target.value ? Math.round(+e.target.value) : null })} />}
+                  <input className={cx(inputClass, "[grid-area:jockey]")} aria-label={`จ็อกกี้เบอร์ ${h.number}`} placeholder="จ็อกกี้" value={h.jockey} onChange={(e) => setRunner(i, { jockey: e.target.value })} />
+                  <div className="[grid-area:jflag]"><FlagPicker label={`ธงจ็อกกี้เบอร์ ${h.number}`} value={h.jockeyCountry} onChange={(c) => setRunner(i, { jockeyCountry: c })} /></div>
+                  <input className={cx(inputClass, "px-0.5 text-center [grid-area:wt]")} type="number" min={30} max={80} step={0.5} aria-label={`น้ำหนักจ็อกกี้เบอร์ ${h.number}`} title="น้ำหนักจ็อกกี้ (กก.)" placeholder="กก." value={h.weight ?? ""} onChange={(e) => setRunner(i, { weight: e.target.value ? Math.round(+e.target.value * 2) / 2 : null })} />
+                  <span className="text-center text-[10px] text-ink-muted [grid-area:hwl]">ตัวม้า</span>
+                  <div className="flex min-w-0 items-center gap-1 [grid-area:hw]">
+                    <input className={cx(inputClass, "w-20 min-w-0")} type="number" min={200} max={800} aria-label={`น้ำหนักตัวม้าเบอร์ ${h.number}`} title="น้ำหนักตัวม้า (กก.)" placeholder="น้ำหนักตัว กก." value={h.horseWeight ?? ""} onChange={(e) => setRunner(i, { horseWeight: e.target.value ? Math.round(+e.target.value) : null })} />
+                    <input className={cx(inputClass, "w-16 min-w-0")} type="number" min={-99} max={99} aria-label={`น้ำหนักตัวม้าเปลี่ยนเบอร์ ${h.number}`} title="เพิ่ม/ลดจากครั้งก่อน (กก.)" placeholder="+/-" value={h.horseWeightChange ?? ""} onChange={(e) => setRunner(i, { horseWeightChange: e.target.value ? Math.round(+e.target.value) : null })} />
                   </div>
                 </div>
               ))}
+            </div>
             </div>
             <div className="flex flex-wrap gap-1.5">
               <Button disabled={n >= MAX_RUNNERS} onClick={() => updateRace(race.id, (r) => ({ ...r, runners: [...r.runners, { number: Math.max(...r.runners.map((x) => x.number)) + 1, draw: null, name: "", jockey: "", horseCountry: "", jockeyCountry: "", fav: null, horseWeight: null, horseWeightChange: null, weight: null, scratched: false, finish: null, outcome: null, time: "", margin: "" }] }))}>+ เพิ่มม้า</Button>
