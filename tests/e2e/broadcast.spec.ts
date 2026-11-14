@@ -681,6 +681,11 @@ test("lower third: a number button shows the runner over any scene, again hides 
   await dock.locator("#lt-y").fill("100");
   await dock.locator("#lt-scale").fill("0.5");
   await expect(box).toHaveAttribute("style", /left: 1320px; top: 1005px;.*scale\(0\.5\)/);
+  // the second look, like the Japanese TV graphic: same runner, weight carried written as the TV does
+  await dock.locator("button[data-look='tv']").click();
+  await expect(plate).toHaveAttribute("data-look", "tv");
+  await expect(plate.getByTestId("lt-horse")).toHaveText("Final Furlong");
+  await expect(plate.getByTestId("lt-weight")).toHaveText("55.5");
   // pressed again: gone
   await dock.locator("[data-lt='9']").click();
   await expect(plate).toHaveCount(0);

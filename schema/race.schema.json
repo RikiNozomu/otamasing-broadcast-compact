@@ -1124,6 +1124,14 @@
         "lowerThird": {
           "type": "object",
           "properties": {
+            "look": {
+              "type": "string",
+              "enum": [
+                "brand",
+                "tv"
+              ],
+              "default": "brand"
+            },
             "raceId": {
               "type": [
                 "string",

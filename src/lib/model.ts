@@ -173,11 +173,15 @@ export type Home = z.infer<typeof HomeSchema>;
  * The lower third: one runner's plate (number, horse, jockey, weights) drawn over the live race video,
  * on top of whatever scene is Active. `raceId` + `number` = the runner on screen (number null = hidden).
  * `x` and `y` place it in the room the plate leaves on the 1920x1080 screen (0 = left/top, 100 = right/bottom),
- * so it stays on screen at any size; `scale` is its size (1 = 1200x150 px).
+ * so it stays on screen at any size; `scale` is its size (1 = 1200x150 px); `look` is how the plate looks.
  */
 export const LOWER_THIRD_W = 1200;
 export const LOWER_THIRD_H = 150;
+/** Look of the plate: "brand" = the โอตะม้าซิ่ง design system, "tv" = like the Japanese TV graphic (Nopphorn's reference picture). */
+export const LOWER_THIRD_LOOKS = ["brand", "tv"] as const;
+export type LowerThirdLook = (typeof LOWER_THIRD_LOOKS)[number];
 export const LowerThirdSchema = z.object({
+  look: z.enum(LOWER_THIRD_LOOKS).default("brand"),
   raceId: z.string().nullable().default(null),
   number: z.number().int().min(1).max(MAX_RUNNERS).nullable().default(null),
   x: z.number().min(0).max(100).default(4),

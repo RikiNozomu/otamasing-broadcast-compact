@@ -3,7 +3,7 @@
  * runner's plate (press it again to hide), like the racecard highlight buttons. It shows on top of
  * whatever is Active, blank included. Position and size are set here, with a small preview.
  */
-import { LOWER_THIRD_H, LOWER_THIRD_W, newLowerThird, parseActive, type LowerThird as LT } from "../lib/model";
+import { LOWER_THIRD_H, LOWER_THIRD_LOOKS, LOWER_THIRD_W, newLowerThird, parseActive, type LowerThird as LT } from "../lib/model";
 import { update, useData } from "../lib/store";
 import { cx } from "../lib/cx";
 import { Button } from "../components/Button";
@@ -12,6 +12,7 @@ import { Section, hintClass } from "../components/Section";
 import { Stage } from "../overlay/Stage";
 import { LowerThird, lowerThirdBox } from "../overlay/LowerThird";
 
+const LOOK_LABEL = { brand: "แบบโอตะม้าซิ่ง", tv: "แบบทีวีญี่ปุ่น" } as const;
 const PRESETS: [string, Pick<LT, "x" | "y">][] = [["ล่างซ้าย", { x: 4, y: 90 }], ["ล่างกลาง", { x: 50, y: 90 }], ["ล่างขวา", { x: 96, y: 90 }], ["บนซ้าย", { x: 4, y: 8 }]];
 
 export function LowerThirdSection() {
@@ -55,6 +56,12 @@ export function LowerThirdSection() {
           })}
         </div>
       )}
+      <div className="flex flex-wrap items-center gap-1.5 text-[13px]" role="group" aria-label="หน้าตาป้าย">
+        <span className="mr-1">หน้าตา</span>
+        {LOWER_THIRD_LOOKS.map((k) => (
+          <Button key={k} variant={lt.look === k ? "primary" : "default"} aria-pressed={lt.look === k} data-look={k} className="px-2.5 py-[3px] text-xs" onClick={() => set({ look: k })}>{LOOK_LABEL[k]}</Button>
+        ))}
+      </div>
       <div className="relative aspect-video w-full overflow-hidden border border-line bg-[repeating-conic-gradient(#1a1d38_0_25%,#10132B_0_50%)] bg-size-[24px_24px]" data-testid="lt-preview">
         <Stage>
           {/* where the plate goes, also while it is hidden */}

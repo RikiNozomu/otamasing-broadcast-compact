@@ -27,11 +27,11 @@ describe("lower third", () => {
   it("exports position and size but not the runner on screen; import keeps the runner if its race stays", () => {
     const d = withLt({ raceId: "sample-11", number: 3, x: 50, scale: 1.2 });
     const file = exportFile(d);
-    expect(file.lowerThird).toEqual({ raceId: null, number: null, x: 50, y: 90, scale: 1.2 });
-    const res = parseFile(JSON.stringify({ ...file, lowerThird: { x: 10, y: 20, scale: 0.8 } }));
+    expect(file.lowerThird).toEqual({ look: "brand", raceId: null, number: null, x: 50, y: 90, scale: 1.2 });
+    const res = parseFile(JSON.stringify({ ...file, lowerThird: { look: "tv", x: 10, y: 20, scale: 0.8 } }));
     if (!res.ok) throw new Error(res.error);
     const replaced = mergeImport(d, res.data, "replace");
-    expect(replaced.lowerThird).toEqual({ raceId: "sample-11", number: 3, x: 10, y: 20, scale: 0.8 });
+    expect(replaced.lowerThird).toEqual({ look: "tv", raceId: "sample-11", number: 3, x: 10, y: 20, scale: 0.8 });
     // the race went away: the plate is hidden
     const other = parseFile(JSON.stringify({ races: [{ date: "2026-01-01", name: "X", runners: [{ number: 1 }, { number: 2 }] }] }));
     if (!other.ok) throw new Error(other.error);
