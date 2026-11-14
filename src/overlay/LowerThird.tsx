@@ -83,6 +83,8 @@ function Plate({ race, runner }: { race: Race; runner: Runner }) {
 
 /** Text with a dark outline under the fill and a soft drop shadow, as on the TV graphic. */
 const tvText = "[paint-order:stroke_fill] [-webkit-text-stroke:7px_#1b1b1b] [text-shadow:3px_4px_0_rgb(0_0_0/.55)]";
+/** Zen Kaku Gothic Antique (public/fonts/zen-kaku-gothic-antique), with Otamasing Sans for Thai. */
+const TV_FONT = '"Zen Kaku Gothic Antique", "Otamasing Sans", system-ui, sans-serif';
 const TV_TOP = 92;
 const TV_BOX = 120;
 const TV_SIDE = 400;
@@ -100,35 +102,37 @@ function TvPlate({ race, runner }: { race: Race; runner: Runner }) {
   const colors = boxColors(S.numberScheme, runner.number, runner.number, race.runners.length, S, true) ?? (["#0A056B", "#FFFFFF"] as const);
   return (
     <motion.div data-testid="lower-third" data-look="tv" data-no={runner.number}
-      className="absolute inset-0 font-display font-extrabold text-white"
+      className="absolute inset-0 font-black text-white"
+      // Zen Kaku Gothic Antique like the TV graphic (Nopphorn's pick); Thai falls back to Otamasing Sans
+      style={{ fontFamily: TV_FONT }}
       initial={{ clipPath: "inset(0 100% 0 0)" }} animate={{ clipPath: "inset(0 0% 0 0)" }} exit={{ clipPath: "inset(0 0 0 100%)" }}
       transition={{ duration: 0.55, ease: EASE }}>
       {/* the plate: darker see-through band on top, lighter grey one below, thin dark frame */}
       <div className="absolute inset-0 border-2 border-black/45 bg-[linear-gradient(180deg,rgb(40_44_40/.55)_0,rgb(40_44_40/.55)_61%,rgb(120_126_116/.62)_61%,rgb(120_126_116/.62)_100%)]" />
       {/* number box with a slanted right edge, coloured like the race's NO. boxes */}
-      <span className={cx("absolute top-[8px] left-[8px] flex items-center justify-center pr-[22px] text-[72px] leading-none", tvText)}
+      <span className={cx("absolute top-[8px] left-[8px] flex items-center justify-center pr-[22px] text-[64px] leading-none", tvText)}
         style={{ width: TV_BOX + SLANT, height: TV_TOP - 16, background: colors[0], color: colors[1], clipPath: `polygon(0 0, 100% 0, calc(100% - ${SLANT}px) 100%, 0 100%)` }}>
         {runner.number}
       </span>
       {/* horse */}
       <span className="absolute top-0 flex items-center" style={{ left: TV_BOX + SLANT + 20, right: TV_SIDE + 10, height: TV_TOP }}>
-        <FitText className={cx("text-[72px] leading-[1.15]", tvText)}><span data-testid="lt-horse">{runner.name}</span></FitText>
+        <FitText className={cx("text-[62px] leading-[1.2]", tvText)}><span data-testid="lt-horse">{runner.name}</span></FitText>
       </span>
       {/* body weight and change on a dark slanted panel */}
       <span data-testid="lt-body" className="absolute top-0 right-0 flex items-center gap-1 pr-6 pl-[60px] leading-none"
         style={{ width: TV_SIDE, height: TV_TOP, background: "rgb(20 22 20 / .82)", clipPath: `polygon(${SLANT}px 0, 100% 0, 100% 100%, 0 100%)` }}>
         {runner.horseWeight != null && <>
-          <span className={cx("text-[68px] text-[#FFF6B8]", tvText)}>{runner.horseWeight}</span>
-          <span className={cx("text-[36px] text-[#FFF6B8]", tvText)}>kg</span>
-          {runner.horseWeightChange != null && <span data-testid="lt-change" className={cx("ml-7 text-[58px] text-[#C9DCFF]", tvText)}>{signedChange(runner.horseWeightChange)}</span>}
+          <span className={cx("text-[60px] text-[#FFF6B8]", tvText)}>{runner.horseWeight}</span>
+          <span className={cx("text-[34px] text-[#FFF6B8]", tvText)}>kg</span>
+          {runner.horseWeightChange != null && <span data-testid="lt-change" className={cx("ml-7 text-[54px] text-[#C9DCFF]", tvText)}>{signedChange(runner.horseWeightChange)}</span>}
         </>}
       </span>
       {/* jockey */}
       <span className="absolute bottom-0 flex items-center" style={{ left: TV_BOX + SLANT + 20, right: TV_SIDE + 10, top: TV_TOP }}>
-        <FitText className={cx("text-[44px] leading-[1.15] font-bold", tvText)}><span data-testid="lt-jockey">{runner.jockey}</span></FitText>
+        <FitText className={cx("text-[40px] leading-[1.2] font-bold", tvText)}><span data-testid="lt-jockey">{runner.jockey}</span></FitText>
       </span>
       {/* weight carried, under the start of the body weight panel */}
-      <span data-testid="lt-weight" className={cx("absolute bottom-0 flex items-center text-[46px] leading-none font-bold", tvText)} style={{ left: LOWER_THIRD_W - TV_SIDE + 60, top: TV_TOP }}>
+      <span data-testid="lt-weight" className={cx("absolute bottom-0 flex items-center text-[42px] leading-none font-bold", tvText)} style={{ left: LOWER_THIRD_W - TV_SIDE + 60, top: TV_TOP }}>
         {runner.weight != null && carried(runner.weight)}
       </span>
     </motion.div>
