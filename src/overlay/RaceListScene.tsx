@@ -37,7 +37,7 @@ export function RaceListScene() {
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(0_21_125/.92)_0%,rgb(0_21_125/.75)_60%,rgb(0_21_125/.55)_100%)]" />
         </div>
       )}
-      <Logo className="absolute top-[30px] right-10 w-40" />
+      <Logo className="absolute top-[30px] right-10 w-48" />
       <div className="absolute top-[70px] left-20 text-white">
         <div data-testid="home-subtitle" className="font-display text-[34px] leading-[normal] font-semibold tracking-[.06em] text-home-date">{d.home.subtitle}</div>
         <div data-testid="home-title" className="font-display text-[110px] leading-none font-bold uppercase">{d.home.title}</div>

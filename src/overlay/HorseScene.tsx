@@ -90,7 +90,7 @@ function HorsePhoto({ h }: { h: Horse }) {
   if (!set.keys.length) return (
     <>
       <div data-testid="horse-photo" className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_21_125/.9)_0%,rgb(0_21_125/.8)_45%,rgb(0_10_70/.94)_100%)]" />
-      <Logo className="absolute top-[34px] right-[60px] w-40" />
+      <Logo className="absolute top-[34px] right-[60px] w-48" />
     </>
   );
   return (
@@ -103,14 +103,14 @@ function HorsePhoto({ h }: { h: Horse }) {
       <div data-testid="horse-photo" data-has={key ? "" : undefined} className="pointer-events-none absolute inset-y-0 left-0 overflow-hidden" style={{ width: PHOTO_W }}>
         {!key && (
           <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(70%_60%_at_50%_45%,#1d2f9e_0%,#0b1a86_60%,var(--color-scene)_100%)]">
-            <Logo className="w-56 opacity-30" />
+            <Logo className="w-64 opacity-30" />
           </div>
         )}
         {/* the right edge melts into the navy, and a yellow rule marks the edge */}
         <div className="absolute inset-y-0 right-0 w-40 bg-[linear-gradient(90deg,transparent,rgb(0_21_125/.85))]" />
       </div>
       <div className="absolute inset-y-0 w-[6px] bg-yellow" style={{ left: PHOTO_W - 6 }} />
-      <Logo className="absolute top-[34px] right-[60px] w-40" />
+      <Logo className="absolute top-[34px] right-[60px] w-48" />
     </>
   );
 }
