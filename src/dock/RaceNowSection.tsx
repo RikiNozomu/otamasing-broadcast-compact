@@ -1,9 +1,9 @@
 /**
  * Dock (ภาพรวม): the Race Now box in the middle of the screen. Pick the race being run (or "ว่าง" for
- * logo + clock only), the clock's time zone, and the box's place and size, with a small preview.
+ * logo + clock only), its status (waiting / live / finished), the post times' time zone, and the box's place and size, with a small preview.
  * It shows on its own Browser Source (#/race-now), so it never depends on what is Active.
  */
-import { RACE_NOW_H, RACE_NOW_TZ, RACE_NOW_W, newRaceNow, type RaceNow as RN } from "../lib/model";
+import { RACE_NOW_H, RACE_NOW_STATUS, RACE_NOW_TZ, RACE_NOW_W, newRaceNow, type RaceNow as RN } from "../lib/model";
 import { update, useData } from "../lib/store";
 import { cx } from "../lib/cx";
 import { Button } from "../components/Button";
@@ -13,6 +13,7 @@ import { Stage } from "../overlay/Stage";
 import { RaceNow, raceNowBox } from "../overlay/RaceNow";
 
 const TZ_LABEL = { th: "เวลาไทย", jp: "เวลาญี่ปุ่น" } as const;
+const STATUS_LABEL = { waiting: "Waiting (นับถอยหลัง)", live: "Live", finished: "Finished" } as const;
 const chip = (on: boolean) => cx("max-w-[150px] truncate border-2 px-3 py-[3px] font-display text-[17px] font-bold", on ? "border-yellow bg-yellow text-navy" : "border-white bg-navy text-white");
 
 export function RaceNowSection() {
@@ -31,20 +32,28 @@ export function RaceNowSection() {
   );
   return (
     <Section title="Race Now (กลางจอ)">
-      <span className={hintClass}>ขึ้นในหน้าแยก #/race-now (Browser Source อีกตัว) ไม่ขึ้นกับ Active · เลือกเรสที่กำลังแข่ง จอจะโชว์ชื่อม้าทุกตัว · "ว่าง" = โลโก้ + เวลาอย่างเดียว</span>
+      <span className={hintClass}>ขึ้นในหน้าแยก #/race-now (Browser Source อีกตัว) ไม่ขึ้นกับ Active · เลือกเรสที่กำลังแข่ง จอจะโชว์ชื่อม้าทุกตัว · "ว่าง" = โลโก้ + เวลาปัจจุบันอย่างเดียว · เลือกเรสใหม่ สถานะกลับเป็น Waiting</span>
       <div className="flex flex-wrap gap-1" role="group" aria-label="เรสที่กำลังแข่ง" data-testid="rn-buttons">
-        <button type="button" data-rn="" aria-pressed={current == null} className={chip(current == null)} onClick={() => set({ raceId: null })}>ว่าง</button>
+        <button type="button" data-rn="" aria-pressed={current == null} className={chip(current == null)} onClick={() => set({ raceId: null, status: "waiting" })}>ว่าง</button>
         {d.races.map((r) => (
           <button key={r.id} type="button" data-rn={r.id} aria-pressed={current === r.id} title={`${r.round} ${r.name}`.trim()}
-            className={chip(current === r.id)} onClick={() => set({ raceId: current === r.id ? null : r.id })}>{r.round || r.name}</button>
+            className={chip(current === r.id)} onClick={() => set({ raceId: current === r.id ? null : r.id, status: "waiting" })}>{r.round || r.name}</button>
         ))}
       </div>
-      <div className="flex flex-wrap items-center gap-1.5 text-[13px]" role="group" aria-label="เขตเวลา">
-        <span className="mr-1">นาฬิกา</span>
+      <div className="flex flex-wrap items-center gap-1.5 text-[13px]" role="group" aria-label="สถานะเรส">
+        <span className="mr-1">สถานะ</span>
+        {RACE_NOW_STATUS.map((k) => (
+          <Button key={k} variant={rn.status === k ? "primary" : "default"} aria-pressed={rn.status === k} data-status={k} disabled={current == null}
+            className="px-2.5 py-[3px] text-xs" onClick={() => set({ status: k })}>{STATUS_LABEL[k]}</Button>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5 text-[13px]" role="group" aria-label="เวลาออกตัวในข้อมูลเป็นเวลา">
+        <span className="mr-1">เวลาออกตัวในข้อมูลเป็น</span>
         {RACE_NOW_TZ.map((k) => (
           <Button key={k} variant={rn.tz === k ? "primary" : "default"} aria-pressed={rn.tz === k} data-tz={k} className="px-2.5 py-[3px] text-xs" onClick={() => set({ tz: k })}>{TZ_LABEL[k]}</Button>
         ))}
       </div>
+      <span className={hintClass}>นับถอยหลังถึง "เวลาออกตัว" ของเรส (แก้ได้ในแท็บการแข่งขัน) ถึงเวลาแล้วขึ้น SOON · เรส JRA ใช้เวลาญี่ปุ่น</span>
       <div className="relative aspect-video w-full overflow-hidden border border-line bg-[repeating-conic-gradient(#1a1d38_0_25%,#10132B_0_50%)] bg-size-[24px_24px]" data-testid="rn-preview">
         <Stage>
           <span aria-hidden="true" className="absolute border-[6px] border-dashed border-ink-muted/60" style={{ left: box.left, top: box.top, width: box.w, height: box.h }} />

@@ -1186,13 +1186,22 @@
               ],
               "default": null
             },
+            "status": {
+              "type": "string",
+              "enum": [
+                "waiting",
+                "live",
+                "finished"
+              ],
+              "default": "waiting"
+            },
             "tz": {
               "type": "string",
               "enum": [
                 "th",
                 "jp"
               ],
-              "default": "th"
+              "default": "jp"
             },
             "x": {
               "type": "number",

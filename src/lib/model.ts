@@ -195,16 +195,21 @@ export const newLowerThird = (): LowerThird => LowerThirdSchema.parse({});
  * "Race Now": the race being run, with every runner's name and the clock, in the middle of the screen
  * (the band between the race video above and below). It has its own Browser Source (#/race-now) and is
  * run from the dock. `raceId` null = no race picked (the box shows the logo and the clock only).
- * `x`/`y` place the box in the room it leaves on the 1920x1080 screen, `scale` is its size (1 = 1760x500 px),
- * `tz` is the clock's time zone (Thai or Japan time).
+ * `x`/`y` place the box in the room it leaves on the 1920x1080 screen, `scale` is its size (1 = 1760x500 px).
+ * `status` is where the picked race is: waiting (a countdown to its post time, "SOON" once it is reached), live or finished.
+ * `tz` is the time zone the races' post times are written in (Japan time for JRA, Thai time for Thai racing);
+ * the clock on the empty box is always Thai time.
  */
 export const RACE_NOW_W = 1760;
 export const RACE_NOW_H = 500;
 export const RACE_NOW_TZ = ["th", "jp"] as const;
 export type RaceNowTz = (typeof RACE_NOW_TZ)[number];
+export const RACE_NOW_STATUS = ["waiting", "live", "finished"] as const;
+export type RaceNowStatus = (typeof RACE_NOW_STATUS)[number];
 export const RaceNowSchema = z.object({
   raceId: z.string().nullable().default(null),
-  tz: z.enum(RACE_NOW_TZ).default("th"),
+  status: z.enum(RACE_NOW_STATUS).default("waiting"),
+  tz: z.enum(RACE_NOW_TZ).default("jp"),
   x: z.number().min(0).max(100).default(50),
   y: z.number().min(0).max(100).default(50),
   scale: z.number().min(0.5).max(1.5).default(1),
@@ -223,7 +228,7 @@ export const FileSchema = z.object({
   transition: z.enum(TRANSITIONS).optional(),
   /** Lower third position and size (the runner on screen is not imported). */
   lowerThird: LowerThirdSchema.optional(),
-  /** Race Now box position, size and clock (the race on screen is not imported). */
+  /** Race Now box position, size and post-time zone (the race on screen and its status are not imported). */
   raceNow: RaceNowSchema.optional(),
 }).refine((f) => f.races.length + f.horses.length > 0, { message: "ต้องมีอย่างน้อย 1 รายการหรือม้า 1 ตัว", path: ["races"] });
 export type FileInput = z.input<typeof FileSchema>;
@@ -347,7 +352,7 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
 
 /** The Race Now box after an import: place, size and clock from the file (if it has them); empty when its race is gone. */
 export function raceNowAfter(cur: RaceNow, races: Race[], fromFile?: RaceNow): RaceNow {
-  const rn = fromFile ? { ...fromFile, raceId: cur.raceId } : cur;
+  const rn = fromFile ? { ...fromFile, raceId: cur.raceId, status: cur.status } : cur;
   return rn.raceId == null || races.some((r) => r.id === rn.raceId) ? rn : { ...rn, raceId: null };
 }
 
@@ -362,7 +367,7 @@ export function exportFile(data: AppData, only?: string): FileInput {
   return only
     ? { version: 1, races }
     : { version: 1, races, horses: data.horses, horseSettings: data.horseSettings, home: data.home, active: data.active, transition: data.transition,
-        lowerThird: { ...data.lowerThird, raceId: null, number: null }, raceNow: { ...data.raceNow, raceId: null } };
+        lowerThird: { ...data.lowerThird, raceId: null, number: null }, raceNow: { ...data.raceNow, raceId: null, status: "waiting" } };
 }
 
 /** A file with just one horse (from the ม้า tab). */

@@ -1,12 +1,13 @@
 /**
- * "Race Now": the race being run and every runner's name (up to 18 in 3 columns of 6), with the clock,
- * in a box made for the middle band of the screen (between the race video above and below).
- * With no race picked the box shows the logo and the clock only.
+ * "Race Now": the race being run and every runner's name (up to 18 in 3 columns of 6), with its status:
+ * waiting = a countdown to the post time ("SOON" once it is reached or when there is no post time), LIVE or FINISHED.
+ * It sits in a box made for the middle band of the screen (between the race video above and below).
+ * With no race picked the box shows the logo and the clock (Thai time) only.
  * It lives on its own Browser Source (#/race-now) and is run from the dock's overview tab.
  */
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { CLASSES, RACE_NOW_H, RACE_NOW_W, type Race, type RaceNow as RN, type RaceNowTz } from "../lib/model";
+import { CLASSES, RACE_NOW_H, RACE_NOW_W, type Race, type RaceNow as RN, type RaceNowStatus, type RaceNowTz } from "../lib/model";
 import { boxColors, GRADE_COLOR } from "../lib/colors";
 import { gradeLabel } from "../lib/labels";
 import { useData } from "../lib/store";
@@ -17,10 +18,8 @@ import { Logo } from "../components/Logo";
 const EASE = [0.65, 0, 0.35, 1] as const;
 const LEFT_W = 540;
 const ROWS = 6;
-const TZ: Record<RaceNowTz, { zone: string; label: string }> = {
-  th: { zone: "Asia/Bangkok", label: "THAI TIME" },
-  jp: { zone: "Asia/Tokyo", label: "JAPAN TIME" },
-};
+/** UTC offset of the time zone the post times are written in. */
+const OFFSET: Record<RaceNowTz, string> = { th: "+07:00", jp: "+09:00" };
 
 /** Top-left corner of the box on the 1920x1080 stage, from the x/y percentages of the free room. */
 export function raceNowBox(rn: Pick<RN, "x" | "y" | "scale">) {
@@ -36,12 +35,29 @@ export function raceNowColumns(n: number): number {
   return n <= ROWS ? 1 : n <= ROWS * 2 ? 2 : 3;
 }
 
-/** "14:05:09" and "SAT 22 NOV" in the given time zone. */
-export function clockText(now: Date, tz: RaceNowTz) {
-  const zone = TZ[tz].zone;
+/** "14:05:09" and "SAT 22 NOV" in Thai time. */
+export function clockText(now: Date) {
+  const zone = "Asia/Bangkok";
   const time = new Intl.DateTimeFormat("en-GB", { timeZone: zone, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" }).format(now);
   const date = new Intl.DateTimeFormat("en-GB", { timeZone: zone, weekday: "short", day: "numeric", month: "short" }).format(now).replace(",", "").toUpperCase();
   return { time, date };
+}
+
+/** The race's post time as a moment, from its date and "15:40" written in time zone `tz`; null without a post time. */
+export function postAt(race: Pick<Race, "date" | "postTime">, tz: RaceNowTz): Date | null {
+  const m = /^(\d{1,2})[:.](\d{2})$/.exec(race.postTime.trim());
+  if (!m || +m[1] > 23 || +m[2] > 59) return null;
+  return new Date(`${race.date}T${m[1].padStart(2, "0")}:${m[2]}:00${OFFSET[tz]}`);
+}
+
+/** What the waiting race shows: "12:05" / "1:02:03" until the post time, then "SOON" (also with no post time). */
+export function countdownText(post: Date | null, now: Date): string {
+  if (!post) return "SOON";
+  const left = Math.ceil((post.getTime() - now.getTime()) / 1000);
+  if (left <= 0) return "SOON";
+  const h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60), sec = left % 60;
+  const two = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${two(m)}:${two(sec)}` : `${two(m)}:${two(sec)}`;
 }
 
 function useNow() {
@@ -56,14 +72,32 @@ function useNow() {
   return now;
 }
 
-function Clock({ tz, big }: { tz: RaceNowTz; big?: boolean }) {
-  const { time, date } = clockText(useNow(), tz);
+function Clock() {
+  const { time, date } = clockText(useNow());
   return (
-    <div className="grid justify-items-start gap-1 font-display leading-none" data-testid="race-now-clock">
-      <span className={cx("font-bold tabular-nums text-white", big ? "text-[150px]" : "text-[104px]")} data-testid="race-now-time">{time}</span>
-      <span className={cx("flex items-center gap-3 font-semibold tracking-[.06em] text-home-date", big ? "text-[34px]" : "text-[28px]")}>
-        <span className="bg-yellow px-2.5 py-1 text-navy">{TZ[tz].label}</span>
-        <span>{date}</span>
+    <div className="grid justify-items-start gap-2 font-display leading-none" data-testid="race-now-clock">
+      <span className="text-[150px] font-bold tabular-nums text-white" data-testid="race-now-time">{time}</span>
+      <span className="text-[38px] font-semibold tracking-[.06em] text-home-date">{date}</span>
+    </div>
+  );
+}
+
+/** Bottom-left of the race panel: the countdown (or SOON), LIVE or FINISHED. */
+function Status({ race, status, tz }: { race: Race; status: RaceNowStatus; tz: RaceNowTz }) {
+  const now = useNow();
+  const post = postAt(race, tz);
+  const text = status === "live" ? "LIVE" : status === "finished" ? "FINISHED" : countdownText(post, now);
+  const caption = status === "live" ? "RACE IN PROGRESS" : status === "finished" ? "RESULT COMING UP" : text === "SOON" ? "STARTING" : "STARTS IN";
+  return (
+    <div className="grid justify-items-start gap-2 font-display leading-none" data-testid="race-now-status" data-status={status}>
+      <span className="flex items-center gap-3 text-[28px] font-semibold tracking-[.08em] text-home-date">
+        {caption}
+        {status === "waiting" && race.postTime && <span className="bg-white/12 px-2 py-0.5 text-white">POST {race.postTime}</span>}
+      </span>
+      <span data-testid="race-now-count" className={cx("flex items-center gap-4 font-bold tabular-nums",
+        status === "live" ? "text-[96px] text-white" : status === "finished" ? "text-[80px] text-home-date" : text === "SOON" ? "text-[96px] text-yellow" : "text-[104px] text-white")}>
+        {status === "live" && <span aria-hidden="true" className="size-8 animate-pulse rounded-full bg-[#E23B24]" />}
+        {text}
       </span>
     </div>
   );
@@ -71,7 +105,7 @@ function Clock({ tz, big }: { tz: RaceNowTz; big?: boolean }) {
 
 const pill = "inline-flex h-[44px] flex-none items-center rounded-full px-5 text-[30px] font-bold leading-none text-white";
 
-function RacePanel({ race, tz }: { race: Race; tz: RaceNowTz }) {
+function RacePanel({ race, status, tz }: { race: Race; status: RaceNowStatus; tz: RaceNowTz }) {
   const S = race.style;
   const n = race.runners.length;
   const cols = raceNowColumns(n);
@@ -85,7 +119,7 @@ function RacePanel({ race, tz }: { race: Race; tz: RaceNowTz }) {
       {/* left: RACE NOW, the race, the clock */}
       <div className="flex min-w-0 flex-col bg-scene px-9 pt-8 pb-7">
         <span className="flex w-max items-center gap-3 bg-yellow px-4 py-1.5 text-[34px] leading-none font-extrabold tracking-[.08em] text-navy">
-          <span className="size-4 animate-pulse rounded-full bg-[#E23B24]" aria-hidden="true" />RACE NOW
+          <span className={cx("size-4 rounded-full bg-[#E23B24]", status === "live" && "animate-pulse")} aria-hidden="true" />RACE NOW
         </span>
         <div className="mt-5 flex min-w-0 items-center">
           <FitText className="text-[64px] leading-[1.05] font-bold uppercase"><span data-testid="race-now-name">{race.name}</span></FitText>
@@ -97,7 +131,7 @@ function RacePanel({ race, tz }: { race: Race; tz: RaceNowTz }) {
             {facts.map((f, i) => <span key={i}>{i > 0 && <span className="px-2 text-white/55">·</span>}{f}</span>)}
           </span>
         </div>
-        <div className="mt-auto"><Clock tz={tz} /></div>
+        <div className="mt-auto"><Status race={race} status={status} tz={tz} /></div>
       </div>
       {/* right: every runner, top to bottom then the next column */}
       <div data-testid="race-now-runners" className="grid gap-x-4 gap-y-2 bg-navy p-5"
@@ -124,13 +158,13 @@ function RacePanel({ race, tz }: { race: Race; tz: RaceNowTz }) {
 }
 
 /** No race picked: the logo and the clock, nothing else. */
-function IdlePanel({ tz }: { tz: RaceNowTz }) {
+function IdlePanel() {
   return (
     <motion.div data-testid="race-now-idle" className="absolute inset-0 flex items-center justify-center gap-24 bg-navy"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.45, ease: EASE }}>
       <Logo className="w-[560px]" />
       <span aria-hidden="true" className="h-[300px] w-[4px] bg-yellow" />
-      <Clock tz={tz} big />
+      <Clock />
       <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[6px] bg-yellow" />
     </motion.div>
   );
@@ -146,7 +180,7 @@ export function RaceNow() {
     <div className="pointer-events-none absolute z-10 origin-top-left overflow-hidden" data-testid="race-now-box"
       style={{ left: box.left, top: box.top, width: RACE_NOW_W, height: RACE_NOW_H, transform: `scale(${rn.scale})` }}>
       <AnimatePresence initial={false} mode="wait">
-        {race ? <RacePanel key={race.id} race={race} tz={rn.tz} /> : <IdlePanel key="idle" tz={rn.tz} />}
+        {race ? <RacePanel key={race.id} race={race} status={rn.status} tz={rn.tz} /> : <IdlePanel key="idle" />}
       </AnimatePresence>
     </div>
   );
