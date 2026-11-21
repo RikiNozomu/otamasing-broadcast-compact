@@ -698,3 +698,41 @@ test("lower third: its own page (#/lower-third), run from the overview; a number
   await dock.locator("[data-lt='9']").click();
   await expect(plate).toHaveCount(0);
 });
+
+test("race now: its own page (#/race-now), run from the overview; logo + clock until a race is picked, then every runner", async ({ context }) => {
+  const { dock, overlay: main } = await open(context);
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto("#/race-now");
+  await expect(page.getByTestId("race-now-page")).toBeAttached();
+  await expect(dock.getByTestId("url-race-now")).toHaveText(/#\/race-now$/);
+  // nothing picked: logo and the clock (Thai time by default)
+  await expect(page.getByTestId("race-now-idle")).toBeVisible();
+  await expect(page.getByTestId("race-now-time")).toHaveText(/^\d\d:\d\d:\d\d$/);
+  await expect(page.getByTestId("race-now-clock")).toContainText("THAI TIME");
+  await expect(dock.locator("[data-rn='']")).toHaveAttribute("aria-pressed", "true");
+  // pick 11R: all 18 names, 3 columns of 6, the scratched one marked
+  await dock.locator("[data-rn='sample-11']").click();
+  const box = page.getByTestId("race-now");
+  await expect(box).toHaveAttribute("data-race", "sample-11");
+  await expect(box.getByTestId("race-now-name")).toHaveText("Sample Cup");
+  await expect(box.getByTestId("race-now-facts")).toHaveText(/11R.*TOKYO.*TURF 2400M/i);
+  await expect(box.locator("[data-no]")).toHaveCount(18);
+  await expect(box.locator("[data-no='6']")).toHaveAttribute("data-scratched", "true");
+  await expect(box.getByTestId("race-now-time")).toBeVisible();
+  // the main overlay does not show it
+  await expect(main.getByTestId("race-now")).toHaveCount(0);
+  // Japan time
+  await dock.locator("button[data-tz='jp']").click();
+  await expect(page.getByTestId("race-now-clock")).toContainText("JAPAN TIME");
+  // another race swaps the names; pressing it again empties the box
+  await dock.locator("[data-rn='sample-12']").click();
+  await expect(box).toHaveAttribute("data-race", "sample-12");
+  await expect(page.getByTestId("race-now").locator("[data-no]")).toHaveCount(12);
+  await dock.locator("[data-rn='sample-12']").click();
+  await expect(page.getByTestId("race-now-idle")).toBeVisible();
+  // place and size
+  await dock.locator("#rn-y").fill("0");
+  await dock.locator("#rn-scale").fill("0.5");
+  await expect(page.getByTestId("race-now-box")).toHaveAttribute("style", /left: 520px; top: 0px;.*scale\(0\.5\)/);
+});

@@ -4,6 +4,7 @@ import { Dock } from "./dock/Dock";
 import { Landing } from "./Landing";
 import { Overlay } from "./overlay/Overlay";
 import { LowerThirdOverlay } from "./overlay/LowerThirdOverlay";
+import { RaceNowOverlay } from "./overlay/RaceNowOverlay";
 
 /** Hash routing, so GitHub Pages serves one index.html for every page. */
 const route = () => location.hash.replace(/^#\/?/, "").split("?")[0];
@@ -18,7 +19,7 @@ export function App() {
   // "user": follow the OS "reduce motion" setting
   return (
     <MotionConfig reducedMotion="user">
-      {r === "overlay" ? <Overlay /> : r === "lower-third" ? <LowerThirdOverlay /> : r === "dock" ? <Dock /> : <Landing />}
+      {r === "overlay" ? <Overlay /> : r === "lower-third" ? <LowerThirdOverlay /> : r === "race-now" ? <RaceNowOverlay /> : r === "dock" ? <Dock /> : <Landing />}
     </MotionConfig>
   );
 }

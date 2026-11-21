@@ -1175,6 +1175,45 @@
             }
           },
           "additionalProperties": false
+        },
+        "raceNow": {
+          "type": "object",
+          "properties": {
+            "raceId": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "tz": {
+              "type": "string",
+              "enum": [
+                "th",
+                "jp"
+              ],
+              "default": "th"
+            },
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 50
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 50
+            },
+            "scale": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 1.5,
+              "default": 1
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
