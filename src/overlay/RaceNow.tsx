@@ -2,7 +2,8 @@
  * "Race Now": the race being run and every runner's name (up to 18 in 3 columns of 6), with its status:
  * waiting = a countdown to the post time ("SOON" once it is reached or when there is no post time), LIVE or FINISHED.
  * It sits in a box made for the middle band of the screen (between the race video above and below).
- * With no race picked the box shows the logo and the clock (Thai time) only.
+ * With no race picked the box shows the logo and the clock (Thai time) only. `hidden` takes it all off the screen;
+ * highlighted runners turn yellow and the others dim.
  * It lives on its own Browser Source (#/race-now) and is run from the dock's overview tab.
  */
 import { useEffect, useState } from "react";
@@ -105,7 +106,7 @@ function Status({ race, status, tz }: { race: Race; status: RaceNowStatus; tz: R
 
 const pill = "inline-flex h-[44px] flex-none items-center rounded-full px-5 text-[30px] font-bold leading-none text-white";
 
-function RacePanel({ race, status, tz }: { race: Race; status: RaceNowStatus; tz: RaceNowTz }) {
+function RacePanel({ race, status, tz, highlight }: { race: Race; status: RaceNowStatus; tz: RaceNowTz; highlight: number[] }) {
   const S = race.style;
   const n = race.runners.length;
   const cols = raceNowColumns(n);
@@ -138,13 +139,15 @@ function RacePanel({ race, status, tz }: { race: Race; status: RaceNowStatus; tz
         style={{ gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))`, gridTemplateRows: `repeat(${rows}, minmax(0,1fr))`, gridAutoFlow: "column" }}>
         {race.runners.map((h, i) => {
           const colors = boxColors(S.numberScheme, h.number, h.number, n, S, true);
+          const hl = highlight.includes(h.number);
+          const dim = h.scratched || (highlight.length > 0 && !hl);
           return (
-            <motion.div key={h.number} data-no={h.number} data-scratched={h.scratched || undefined}
-              className={cx("grid min-w-0 items-stretch bg-band", h.scratched && "opacity-45")} style={{ gridTemplateColumns: "76px minmax(0,1fr)" }}
-              initial={{ opacity: 0, x: 40 }} animate={{ opacity: h.scratched ? 0.45 : 1, x: 0 }} transition={{ duration: 0.3, ease: EASE, delay: 0.35 + i * 0.03 }}>
+            <motion.div key={h.number} data-no={h.number} data-scratched={h.scratched || undefined} data-hl={hl ? "on" : undefined}
+              className="grid min-w-0 items-stretch" style={{ gridTemplateColumns: "76px minmax(0,1fr)" }}
+              initial={{ opacity: 0, x: 40 }} animate={{ opacity: dim ? 0.45 : 1, x: 0, transition: { duration: 0.3, ease: EASE, delay: 0.35 + i * 0.03 } }}>
               <span className={cx("flex items-center justify-center text-[44px] leading-none font-bold", !colors && "bg-scene shadow-[inset_0_0_0_3px_#fff]")}
                 style={colors ? { background: colors[0], color: colors[1] } : undefined}>{h.number}</span>
-              <span className="flex min-w-0 items-center gap-3 px-4">
+              <span className={cx("flex min-w-0 items-center gap-3 px-4 transition-colors duration-300", hl ? "bg-yellow text-navy" : "bg-band")}>
                 <FitText strike={h.scratched} className="leading-none font-bold" ><span style={{ fontSize: nameSize }}>{h.name.toUpperCase()}</span></FitText>
                 {h.scratched && <span className="flex-none text-[24px] font-bold text-danger-ink">SCR</span>}
               </span>
@@ -180,7 +183,9 @@ export function RaceNow() {
     <div className="pointer-events-none absolute z-10 origin-top-left overflow-hidden" data-testid="race-now-box"
       style={{ left: box.left, top: box.top, width: RACE_NOW_W, height: RACE_NOW_H, transform: `scale(${rn.scale})` }}>
       <AnimatePresence initial={false} mode="wait">
-        {race ? <RacePanel key={race.id} race={race} status={rn.status} tz={rn.tz} /> : <IdlePanel key="idle" />}
+        {rn.hidden ? null : race
+          ? <RacePanel key={race.id} race={race} status={rn.status} tz={rn.tz} highlight={rn.highlight} />
+          : <IdlePanel key="idle" />}
       </AnimatePresence>
     </div>
   );

@@ -21,6 +21,7 @@ export function RaceNowSection() {
   const rn = d.raceNow;
   const set = (patch: Partial<RN>) => update((x) => ({ ...x, raceNow: { ...x.raceNow, ...patch } }));
   const current = d.races.some((r) => r.id === rn.raceId) ? rn.raceId : null;
+  const race = d.races.find((r) => r.id === current);
   const box = raceNowBox(rn);
   const slider = (id: string, label: string, value: number, min: number, max: number, step: number, onChange: (v: number) => void, shown: string) => (
     <Field id={id} label={label}>
@@ -33,13 +34,36 @@ export function RaceNowSection() {
   return (
     <Section title="Race Now (กลางจอ)">
       <span className={hintClass}>ขึ้นในหน้าแยก #/race-now (Browser Source อีกตัว) ไม่ขึ้นกับ Active · เลือกเรสที่กำลังแข่ง จอจะโชว์ชื่อม้าทุกตัว · "ว่าง" = โลโก้ + เวลาปัจจุบันอย่างเดียว · เลือกเรสใหม่ สถานะกลับเป็น Waiting</span>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Button variant={rn.hidden ? "danger" : "default"} aria-pressed={rn.hidden} data-testid="rn-hide" onClick={() => set({ hidden: !rn.hidden })}>
+          {rn.hidden ? "ซ่อนอยู่ · กดเพื่อโชว์" : "ซ่อนกราฟิก"}
+        </Button>
+        {rn.hidden && <span className={hintClass}>จอ Race Now ว่างเปล่า (ยังเลือกเรส/ไฮไลต์ได้)</span>}
+      </div>
       <div className="flex flex-wrap gap-1" role="group" aria-label="เรสที่กำลังแข่ง" data-testid="rn-buttons">
-        <button type="button" data-rn="" aria-pressed={current == null} className={chip(current == null)} onClick={() => set({ raceId: null, status: "waiting" })}>ว่าง</button>
+        <button type="button" data-rn="" aria-pressed={current == null} className={chip(current == null)} onClick={() => set({ raceId: null, status: "waiting", highlight: [] })}>ว่าง</button>
         {d.races.map((r) => (
           <button key={r.id} type="button" data-rn={r.id} aria-pressed={current === r.id} title={`${r.round} ${r.name}`.trim()}
-            className={chip(current === r.id)} onClick={() => set({ raceId: current === r.id ? null : r.id, status: "waiting" })}>{r.round || r.name}</button>
+            className={chip(current === r.id)} onClick={() => set({ raceId: current === r.id ? null : r.id, status: "waiting", highlight: [] })}>{r.round || r.name}</button>
         ))}
       </div>
+      {race && (
+        <>
+          <span className="text-[13px]">ไฮไลต์ม้า (กดได้หลายตัว กดซ้ำเพื่อเอาออก)</span>
+          <div className="grid grid-cols-8 gap-1" data-testid="rn-hl-buttons">
+            {race.runners.map((h) => {
+              const on = rn.highlight.includes(h.number);
+              return (
+                <button key={h.number} type="button" data-rn-hl={h.number} aria-pressed={on} disabled={h.scratched} title={h.name}
+                  aria-label={on ? `เอาไฮไลต์เบอร์ ${h.number} ออก` : `ไฮไลต์เบอร์ ${h.number}`}
+                  className={cx("border-2 py-[3px] font-display text-[17px] font-bold disabled:opacity-35", on ? "border-yellow bg-yellow text-navy" : "border-white bg-navy text-white")}
+                  onClick={() => set({ highlight: on ? rn.highlight.filter((x) => x !== h.number) : [...rn.highlight, h.number] })}>{h.number}</button>
+              );
+            })}
+          </div>
+          {rn.highlight.length > 0 && <Button className="w-max px-2.5 py-[3px] text-xs" onClick={() => set({ highlight: [] })}>ล้างไฮไลต์</Button>}
+        </>
+      )}
       <div className="flex flex-wrap items-center gap-1.5 text-[13px]" role="group" aria-label="สถานะเรส">
         <span className="mr-1">สถานะ</span>
         {RACE_NOW_STATUS.map((k) => (

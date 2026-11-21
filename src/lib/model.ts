@@ -197,6 +197,7 @@ export const newLowerThird = (): LowerThird => LowerThirdSchema.parse({});
  * run from the dock. `raceId` null = no race picked (the box shows the logo and the clock only).
  * `x`/`y` place the box in the room it leaves on the 1920x1080 screen, `scale` is its size (1 = 1760x500 px).
  * `status` is where the picked race is: waiting (a countdown to its post time, "SOON" once it is reached), live or finished.
+ * `hidden` takes the box off the screen (the picks stay); `highlight` = runner numbers lit up in yellow (the rest dim).
  * `tz` is the time zone the races' post times are written in (Japan time for JRA, Thai time for Thai racing);
  * the clock on the empty box is always Thai time.
  */
@@ -209,6 +210,8 @@ export type RaceNowStatus = (typeof RACE_NOW_STATUS)[number];
 export const RaceNowSchema = z.object({
   raceId: z.string().nullable().default(null),
   status: z.enum(RACE_NOW_STATUS).default("waiting"),
+  hidden: z.boolean().default(false),
+  highlight: z.array(z.number().int().min(1).max(MAX_RUNNERS)).default([]),
   tz: z.enum(RACE_NOW_TZ).default("jp"),
   x: z.number().min(0).max(100).default(50),
   y: z.number().min(0).max(100).default(50),
@@ -352,8 +355,8 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
 
 /** The Race Now box after an import: place, size and clock from the file (if it has them); empty when its race is gone. */
 export function raceNowAfter(cur: RaceNow, races: Race[], fromFile?: RaceNow): RaceNow {
-  const rn = fromFile ? { ...fromFile, raceId: cur.raceId, status: cur.status } : cur;
-  return rn.raceId == null || races.some((r) => r.id === rn.raceId) ? rn : { ...rn, raceId: null };
+  const rn = fromFile ? { ...fromFile, raceId: cur.raceId, status: cur.status, hidden: cur.hidden, highlight: cur.highlight } : cur;
+  return rn.raceId == null || races.some((r) => r.id === rn.raceId) ? rn : { ...rn, raceId: null, highlight: [] };
 }
 
 /** The lower third after an import: position and size from the file (if it has them), hidden when its race is gone. */
@@ -367,7 +370,7 @@ export function exportFile(data: AppData, only?: string): FileInput {
   return only
     ? { version: 1, races }
     : { version: 1, races, horses: data.horses, horseSettings: data.horseSettings, home: data.home, active: data.active, transition: data.transition,
-        lowerThird: { ...data.lowerThird, raceId: null, number: null }, raceNow: { ...data.raceNow, raceId: null, status: "waiting" } };
+        lowerThird: { ...data.lowerThird, raceId: null, number: null }, raceNow: { ...data.raceNow, raceId: null, status: "waiting", hidden: false, highlight: [] } };
 }
 
 /** A file with just one horse (from the ม้า tab). */

@@ -737,10 +737,25 @@ test("race now: its own page (#/race-now), run from the overview; logo + clock u
   await expect(box.getByTestId("race-now-count")).toHaveText("LIVE");
   await dock.locator("button[data-status='finished']").click();
   await expect(box.getByTestId("race-now-count")).toHaveText("FINISHED");
+  // highlight horses: lit up, the rest dim; scratched ones cannot be picked
+  await expect(dock.locator("[data-rn-hl='6']")).toBeDisabled();
+  await dock.locator("[data-rn-hl='3']").click();
+  await dock.locator("[data-rn-hl='9']").click();
+  await expect(box.locator("[data-hl=on]")).toHaveCount(2);
+  await expect(box.locator("[data-no='9']")).toHaveAttribute("data-hl", "on");
+  await dock.locator("[data-rn-hl='3']").click();
+  await expect(box.locator("[data-hl=on]")).toHaveCount(1);
+  // hide the graphic and bring it back
+  await dock.getByTestId("rn-hide").click();
+  await expect(page.getByTestId("race-now")).toHaveCount(0);
+  await dock.getByTestId("rn-hide").click();
+  await expect(page.getByTestId("race-now")).toHaveAttribute("data-race", "sample-11");
+  await expect(page.getByTestId("race-now").locator("[data-hl=on]")).toHaveCount(1);
   // another race swaps the names; pressing it again empties the box
   await dock.locator("[data-rn='sample-12']").click();
   await expect(box).toHaveAttribute("data-race", "sample-12");
   await expect(page.getByTestId("race-now-status")).toHaveAttribute("data-status", "waiting");
+  await expect(page.getByTestId("race-now").locator("[data-hl=on]")).toHaveCount(0);
   await expect(page.getByTestId("race-now").locator("[data-no]")).toHaveCount(12);
   await dock.locator("[data-rn='sample-12']").click();
   await expect(page.getByTestId("race-now-idle")).toBeVisible();

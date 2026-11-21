@@ -36,12 +36,12 @@ describe("race now", () => {
     expect(countdownText(null, new Date())).toBe("SOON");
   });
   it("exports place, size and clock but not the race; import keeps the race if it stays", () => {
-    const d = { ...sampleData(), raceNow: { ...sampleData().raceNow, raceId: "sample-11", status: "live" as const, tz: "th" as const, y: 40 } };
+    const d = { ...sampleData(), raceNow: { ...sampleData().raceNow, raceId: "sample-11", status: "live" as const, hidden: true, highlight: [3], tz: "th" as const, y: 40 } };
     const file = exportFile(d);
-    expect(file.raceNow).toEqual({ raceId: null, status: "waiting", tz: "th", x: 50, y: 40, scale: 1 });
+    expect(file.raceNow).toEqual({ raceId: null, status: "waiting", hidden: false, highlight: [], tz: "th", x: 50, y: 40, scale: 1 });
     const parsed = parseFile(JSON.stringify(file));
     if (!parsed.ok) throw new Error(parsed.error);
-    expect(mergeImport({ ...d, raceNow: { ...d.raceNow, tz: "jp", y: 50 } }, parsed.data, "replace").raceNow).toMatchObject({ raceId: "sample-11", status: "live", tz: "th", y: 40 });
+    expect(mergeImport({ ...d, raceNow: { ...d.raceNow, tz: "jp", y: 50 } }, parsed.data, "replace").raceNow).toMatchObject({ raceId: "sample-11", status: "live", hidden: true, highlight: [3], tz: "th", y: 40 });
     expect(mergeImport(d, { ...parsed.data, races: [] , horses: d.horses }, "append").raceNow.raceId).toBe("sample-11");
     expect(raceNowAfter(d.raceNow, []).raceId).toBeNull();
   });
