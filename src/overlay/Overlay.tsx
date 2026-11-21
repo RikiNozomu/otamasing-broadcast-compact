@@ -1,8 +1,9 @@
-/** The one OBS Browser Source (1920x1080): shows whatever is Active in the dock, on a transparent page. */
+/** The one OBS Browser Source (1920x1080): shows whatever is Active in the dock, on a transparent page.
+ * The runner lower third is not here: it has its own Browser Source, #/lower-third.
+ */
 import { useEffect } from "react";
 import { LiveScene } from "./LiveScene";
 import { Stage } from "./Stage";
-import { LowerThird } from "./LowerThird";
 
 export function Overlay() {
   useEffect(() => {
@@ -11,7 +12,7 @@ export function Overlay() {
   }, []);
   return (
     <div className="fixed inset-0 overflow-hidden">
-      <Stage><LiveScene /><LowerThird /></Stage>
+      <Stage><LiveScene /></Stage>
     </div>
   );
 }

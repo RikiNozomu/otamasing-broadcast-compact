@@ -1,7 +1,7 @@
 /**
  * Dock (ภาพรวม): the lower third over the live video. Pick a race, then a number button shows that
- * runner's plate (press it again to hide), like the racecard highlight buttons. It shows on top of
- * whatever is Active, blank included. Position and size are set here, with a small preview.
+ * runner's plate (press it again to hide), like the racecard highlight buttons. It shows on its own
+ * Browser Source (#/lower-third), not on #/overlay, so it never depends on what is Active. Position and size are set here, with a small preview.
  */
 import { LOWER_THIRD_H, LOWER_THIRD_LOOKS, LOWER_THIRD_W, newLowerThird, parseActive, type LowerThird as LT } from "../lib/model";
 import { update, useData } from "../lib/store";
@@ -33,7 +33,7 @@ export function LowerThirdSection() {
   );
   return (
     <Section title="Lower third ม้า (ทับภาพถ่ายทอดสด)">
-      <span className={hintClass}>ขึ้นทับทุกหน้าจอ ไม่ขึ้นกับ Active (ใช้คู่กับหน้าเปล่าได้) · กดเบอร์เพื่อโชว์ กดซ้ำเพื่อเอาออก</span>
+      <span className={hintClass}>ขึ้นในหน้าแยก #/lower-third (Browser Source อีกตัว วางไว้บนสุด) ไม่ขึ้นกับ Active · กดเบอร์เพื่อโชว์ กดซ้ำเพื่อเอาออก</span>
       {d.races.length === 0 ? <span className={hintClass}>ยังไม่มีรายการแข่ง</span> : (
         <Field id="lt-race" label="รายการ">
           <select id="lt-race" className={inputClass} value={raceId ?? ""}
