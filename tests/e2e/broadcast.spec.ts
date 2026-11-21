@@ -140,6 +140,28 @@ test("import JSON (append / replace), reject a bad file, delete with confirm", a
   await expect(dock.getByRole("tab", { name: "Sample Star" })).toBeVisible();
 });
 
+test("import race data only: results come in, horses and the screen on air stay", async ({ context }) => {
+  const { dock, overlay } = await open(context);
+  const runners = Array.from({ length: 18 }, (_, i) => ({ number: i + 1, name: `Runner ${i + 1}`, fav: i + 1, finish: i + 1, scratched: i === 17 }));
+  const day = { races: [
+    { date: "2026-11-29", course: "TOKYO", round: "11R", name: "Sample Cup Updated", runners },
+    { date: "2026-12-06", course: "Kyoto", round: "11R", name: "Not Here Yet", runners: [{ number: 1 }, { number: 2 }] },
+  ], horses: [{ name: "Other Horse" }] };
+  await dock.getByTestId("import-file").setInputFiles({ name: "day.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(day)) });
+  const box = dock.getByRole("alertdialog", { name: "ยืนยันการนำเข้า" });
+  await expect(box.getByRole("button", { name: "อัปเดตข้อมูลแข่งเท่านั้น" })).toBeVisible();
+  await box.getByRole("button", { name: "อัปเดตข้อมูลแข่งเท่านั้น" }).click();
+  await expect(dock.getByRole("status")).toContainText("อัปเดตข้อมูลแข่ง 1 รายการแล้ว ข้อมูลม้าไม่เปลี่ยน · ข้าม 1 รายการที่ยังไม่มีในเครื่อง");
+  // the race list is the same 3 races, and the race on air stays on air (no jump to the home page)
+  await expect(dock.getByTestId("race-row")).toHaveCount(3);
+  await expect(dock.getByTestId("active-tag")).toHaveText("Active: 11R");
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Cup Updated");
+  // horses untouched: the sample horse is still there, the file's horse was not added
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await expect(dock.getByRole("tab", { name: "Sample Star" })).toBeVisible();
+  await expect(dock.getByRole("tab", { name: "Other Horse" })).toHaveCount(0);
+});
+
 test("export inside OBS: copy the JSON and paste it back in", async ({ context }) => {
   // OBS's browser sets window.obsstudio, and its docks ignore downloads
   await context.addInitScript(() => { (window as unknown as { obsstudio: object }).obsstudio = {}; });

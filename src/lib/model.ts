@@ -353,6 +353,30 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
   return { ...cur, races, horses, active, lowerThird: lowerThirdAfter(cur.lowerThird, races), raceNow: raceNowAfter(cur.raceNow, races) };
 }
 
+/**
+ * "Race data only" import: for each race in the file that is already here (same date + course + round),
+ * take only its race data (name, post time, grade, distance... and the runners: numbers, jockeys, Fav, body weight,
+ * weight carried, scratches, results). The race keeps its id, photos, display style, page settings and highlight;
+ * horses, horse settings, home page and the screen on air are not touched. Races not here yet are skipped.
+ */
+export function mergeRaceData(cur: AppData, file: z.output<typeof FileSchema>): { data: AppData; updated: number; skipped: number } {
+  const races = [...cur.races];
+  let updated = 0, skipped = 0;
+  for (const r of file.races) {
+    const i = races.findIndex((x) => raceKey(x) === raceKey(r));
+    if (i < 0) { skipped++; continue; }
+    const old = races[i];
+    races[i] = {
+      ...old,
+      postTime: r.postTime, name: r.name, jpName: r.jpName, subtitle: r.subtitle, grade: r.grade, jump: r.jump,
+      class: r.class, surface: r.surface, distanceM: r.distanceM, runners: r.runners,
+      highlight: r.runners.some((x) => x.number === old.highlight && !x.scratched) ? old.highlight : null,
+    };
+    updated++;
+  }
+  return { data: { ...cur, races }, updated, skipped };
+}
+
 /** The Race Now box after an import: place, size and clock from the file (if it has them); empty when its race is gone. */
 export function raceNowAfter(cur: RaceNow, races: Race[], fromFile?: RaceNow): RaceNow {
   const rn = fromFile ? { ...fromFile, raceId: cur.raceId, status: cur.status, hidden: cur.hidden, highlight: cur.highlight } : cur;
