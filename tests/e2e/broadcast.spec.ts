@@ -698,3 +698,69 @@ test("lower third: its own page (#/lower-third), run from the overview; a number
   await dock.locator("[data-lt='9']").click();
   await expect(plate).toHaveCount(0);
 });
+
+test("race now: its own page (#/race-now), run from the overview; logo + clock until a race is picked, then every runner", async ({ context }) => {
+  // 10 minutes before the sample 11R (2026-11-29 15:40 Japan time)
+  await context.clock.setFixedTime(new Date("2026-11-29T06:30:00Z"));
+  const { dock, overlay: main } = await open(context);
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto("#/race-now");
+  await expect(page.getByTestId("race-now-page")).toBeAttached();
+  await expect(dock.getByTestId("url-race-now")).toHaveText(/#\/race-now$/);
+  // nothing picked: logo and the clock (no time zone label)
+  await expect(page.getByTestId("race-now-idle")).toBeVisible();
+  await expect(page.getByTestId("race-now-time")).toHaveText(/^\d\d:\d\d:\d\d$/);
+  await expect(page.getByTestId("race-now-clock")).not.toContainText("TIME");
+  await expect(dock.locator("button[data-status='live']")).toBeDisabled();
+  await expect(dock.locator("[data-rn='']")).toHaveAttribute("aria-pressed", "true");
+  // pick 11R: all 18 names, 3 columns of 6, the scratched one marked
+  await dock.locator("[data-rn='sample-11']").click();
+  const box = page.getByTestId("race-now");
+  await expect(box).toHaveAttribute("data-race", "sample-11");
+  await expect(box.getByTestId("race-now-name")).toHaveText("Sample Cup");
+  await expect(box.getByTestId("race-now-facts")).toHaveText(/11R.*TOKYO.*TURF 2400M/i);
+  await expect(box.locator("[data-no]")).toHaveCount(18);
+  await expect(box.locator("[data-no='6']")).toHaveAttribute("data-scratched", "true");
+  // waiting: a countdown to the post time (Japan time by default), SOON once it is reached
+  await expect(box.getByTestId("race-now-status")).toHaveAttribute("data-status", "waiting");
+  await expect(box.getByTestId("race-now-count")).toHaveText("10:00");
+  await dock.locator("button[data-tz='th']").click();
+  await expect(box.getByTestId("race-now-count")).toHaveText("2:10:00");
+  await dock.locator("button[data-tz='jp']").click();
+  await context.clock.setFixedTime(new Date("2026-11-29T06:41:00Z"));
+  await expect(box.getByTestId("race-now-count")).toHaveText("SOON");
+  // the main overlay does not show it
+  await expect(main.getByTestId("race-now")).toHaveCount(0);
+  // live, then finished
+  await dock.locator("button[data-status='live']").click();
+  await expect(box.getByTestId("race-now-count")).toHaveText("LIVE");
+  await dock.locator("button[data-status='finished']").click();
+  await expect(box.getByTestId("race-now-count")).toHaveText("FINISHED");
+  // highlight horses: lit up, the rest dim; scratched ones cannot be picked
+  await expect(dock.locator("[data-rn-hl='6']")).toBeDisabled();
+  await dock.locator("[data-rn-hl='3']").click();
+  await dock.locator("[data-rn-hl='9']").click();
+  await expect(box.locator("[data-hl=on]")).toHaveCount(2);
+  await expect(box.locator("[data-no='9']")).toHaveAttribute("data-hl", "on");
+  await dock.locator("[data-rn-hl='3']").click();
+  await expect(box.locator("[data-hl=on]")).toHaveCount(1);
+  // hide the graphic and bring it back
+  await dock.getByTestId("rn-hide").click();
+  await expect(page.getByTestId("race-now")).toHaveCount(0);
+  await dock.getByTestId("rn-hide").click();
+  await expect(page.getByTestId("race-now")).toHaveAttribute("data-race", "sample-11");
+  await expect(page.getByTestId("race-now").locator("[data-hl=on]")).toHaveCount(1);
+  // another race swaps the names; pressing it again empties the box
+  await dock.locator("[data-rn='sample-12']").click();
+  await expect(box).toHaveAttribute("data-race", "sample-12");
+  await expect(page.getByTestId("race-now-status")).toHaveAttribute("data-status", "waiting");
+  await expect(page.getByTestId("race-now").locator("[data-hl=on]")).toHaveCount(0);
+  await expect(page.getByTestId("race-now").locator("[data-no]")).toHaveCount(12);
+  await dock.locator("[data-rn='sample-12']").click();
+  await expect(page.getByTestId("race-now-idle")).toBeVisible();
+  // place and size
+  await dock.locator("#rn-y").fill("0");
+  await dock.locator("#rn-scale").fill("0.5");
+  await expect(page.getByTestId("race-now-box")).toHaveAttribute("style", /left: 520px; top: 0px;.*scale\(0\.5\)/);
+});

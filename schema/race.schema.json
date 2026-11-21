@@ -1175,6 +1175,67 @@
             }
           },
           "additionalProperties": false
+        },
+        "raceNow": {
+          "type": "object",
+          "properties": {
+            "raceId": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "waiting",
+                "live",
+                "finished"
+              ],
+              "default": "waiting"
+            },
+            "hidden": {
+              "type": "boolean",
+              "default": false
+            },
+            "highlight": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30
+              },
+              "default": []
+            },
+            "tz": {
+              "type": "string",
+              "enum": [
+                "th",
+                "jp"
+              ],
+              "default": "jp"
+            },
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 50
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 50
+            },
+            "scale": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 1.5,
+              "default": 1
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

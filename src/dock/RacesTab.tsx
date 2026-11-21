@@ -13,6 +13,7 @@ import { HOME_ROWS, paginate } from "../lib/paging";
 import { PageButtons } from "../components/PageButtons";
 import { ExportPanel } from "./ExportPanel";
 import { LowerThirdSection } from "./LowerThirdSection";
+import { RaceNowSection } from "./RaceNowSection";
 import { CardPageButtons } from "./CardPagesSection";
 import { cx } from "../lib/cx";
 import { Button, buttonClass } from "../components/Button";
@@ -73,6 +74,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
   const fileRef = useRef<HTMLInputElement>(null);
   const overlayUrl = `${location.origin}${location.pathname}#/overlay`;
   const lowerThirdUrl = `${location.origin}${location.pathname}#/lower-third`;
+  const raceNowUrl = `${location.origin}${location.pathname}#/race-now`;
 
   const home = paginate(d.races, HOME_ROWS, d.home.page);
   const setHomePage = (i: number) => update((x) => ({ ...x, home: { ...x.home, page: i } }));
@@ -260,6 +262,8 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
       </div>
       <p className={hintClass}>กดแถวไหนก็ได้เพื่อตั้งเป็น Active จอจะเปลี่ยนพร้อมทรานซิชัน · กดแถวรายการ = การ์ดรายชื่อม้า, ปุ่ม "ผล" = หน้าผลการแข่งขัน, "หน้าเปล่า" = เอากราฟิกออกจากจอ · ลาก ⠿ (หรือกด ▲) เพื่อเรียงลำดับ หน้าแรกเรียงตามนี้ · ข้อมูลเก็บในเครื่องนี้ ย้ายเครื่องใช้ส่งออก/นำเข้า JSON</p>
 
+      <RaceNowSection />
+
       <LowerThirdSection />
 
       <Section title={<label htmlFor="trans">ทรานซิชันตอนเปลี่ยน Active</label>}>
@@ -295,7 +299,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
       </Section>
 
       <Section title="URL สำหรับ Browser Source ใน OBS">
-        {([["หน้าจอหลัก", overlayUrl, "url-overlay"], ["Lower third ม้า", lowerThirdUrl, "url-lower-third"]] as const).map(([label, url, id]) => (
+        {([["หน้าจอหลัก", overlayUrl, "url-overlay"], ["Race Now (กลางจอ)", raceNowUrl, "url-race-now"], ["Lower third ม้า", lowerThirdUrl, "url-lower-third"]] as const).map(([label, url, id]) => (
           <div key={id} className="grid gap-1">
             <span className="text-[13px]">{label}</span>
             <div className="flex items-center gap-1.5">
@@ -304,7 +308,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
             </div>
           </div>
         ))}
-        <span className={hintClass}>Browser Source สองตัว ขนาด 1920×1080 ทั้งคู่ วาง Lower third ไว้บนหน้าจอหลัก</span>
+        <span className={hintClass}>Browser Source ขนาด 1920×1080 ทุกตัว วาง Race Now และ Lower third ไว้บนหน้าจอหลัก (Lower third บนสุด)</span>
       </Section>
 
       <Section title="รูปที่เก็บในเครื่องนี้">

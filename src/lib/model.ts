@@ -191,6 +191,35 @@ export const LowerThirdSchema = z.object({
 export type LowerThird = z.infer<typeof LowerThirdSchema>;
 export const newLowerThird = (): LowerThird => LowerThirdSchema.parse({});
 
+/**
+ * "Race Now": the race being run, with every runner's name and the clock, in the middle of the screen
+ * (the band between the race video above and below). It has its own Browser Source (#/race-now) and is
+ * run from the dock. `raceId` null = no race picked (the box shows the logo and the clock only).
+ * `x`/`y` place the box in the room it leaves on the 1920x1080 screen, `scale` is its size (1 = 1760x500 px).
+ * `status` is where the picked race is: waiting (a countdown to its post time, "SOON" once it is reached), live or finished.
+ * `hidden` takes the box off the screen (the picks stay); `highlight` = runner numbers lit up in yellow (the rest dim).
+ * `tz` is the time zone the races' post times are written in (Japan time for JRA, Thai time for Thai racing);
+ * the clock on the empty box is always Thai time.
+ */
+export const RACE_NOW_W = 1760;
+export const RACE_NOW_H = 500;
+export const RACE_NOW_TZ = ["th", "jp"] as const;
+export type RaceNowTz = (typeof RACE_NOW_TZ)[number];
+export const RACE_NOW_STATUS = ["waiting", "live", "finished"] as const;
+export type RaceNowStatus = (typeof RACE_NOW_STATUS)[number];
+export const RaceNowSchema = z.object({
+  raceId: z.string().nullable().default(null),
+  status: z.enum(RACE_NOW_STATUS).default("waiting"),
+  hidden: z.boolean().default(false),
+  highlight: z.array(z.number().int().min(1).max(MAX_RUNNERS)).default([]),
+  tz: z.enum(RACE_NOW_TZ).default("jp"),
+  x: z.number().min(0).max(100).default(50),
+  y: z.number().min(0).max(100).default(50),
+  scale: z.number().min(0.5).max(1.5).default(1),
+});
+export type RaceNow = z.infer<typeof RaceNowSchema>;
+export const newRaceNow = (): RaceNow => RaceNowSchema.parse({});
+
 /** A whole export, or a file written by hand / by Claude: `races` or `horses` (or both). */
 export const FileSchema = z.object({
   version: z.literal(1).default(1),
@@ -202,6 +231,8 @@ export const FileSchema = z.object({
   transition: z.enum(TRANSITIONS).optional(),
   /** Lower third position and size (the runner on screen is not imported). */
   lowerThird: LowerThirdSchema.optional(),
+  /** Race Now box position, size and post-time zone (the race on screen and its status are not imported). */
+  raceNow: RaceNowSchema.optional(),
 }).refine((f) => f.races.length + f.horses.length > 0, { message: "ต้องมีอย่างน้อย 1 รายการหรือม้า 1 ตัว", path: ["races"] });
 export type FileInput = z.input<typeof FileSchema>;
 export type FileOutput = z.output<typeof FileSchema>;
@@ -218,6 +249,8 @@ export interface AppData {
   home: Home;
   /** The lower-third plate over the live video, independent of Active. */
   lowerThird: LowerThird;
+  /** The Race Now box (its own Browser Source), independent of Active. */
+  raceNow: RaceNow;
   /** Bumped when a picture changes in IndexedDB, so other pages reload it. Key: "race:<id>" or "home". */
   images: Record<string, number>;
 }
@@ -300,6 +333,7 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
       transition: file.transition ?? cur.transition,
       home: hasRaces ? file.home ?? cur.home : cur.home,
       lowerThird: lowerThirdAfter(cur.lowerThird, races, file.lowerThird),
+      raceNow: raceNowAfter(cur.raceNow, races, file.raceNow),
     };
   }
   const races = [...cur.races];
@@ -316,7 +350,13 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
     if (i >= 0) horses[i] = { ...h, id: horses[i].id };
     else horses.push(h);
   }
-  return { ...cur, races, horses, active, lowerThird: lowerThirdAfter(cur.lowerThird, races) };
+  return { ...cur, races, horses, active, lowerThird: lowerThirdAfter(cur.lowerThird, races), raceNow: raceNowAfter(cur.raceNow, races) };
+}
+
+/** The Race Now box after an import: place, size and clock from the file (if it has them); empty when its race is gone. */
+export function raceNowAfter(cur: RaceNow, races: Race[], fromFile?: RaceNow): RaceNow {
+  const rn = fromFile ? { ...fromFile, raceId: cur.raceId, status: cur.status, hidden: cur.hidden, highlight: cur.highlight } : cur;
+  return rn.raceId == null || races.some((r) => r.id === rn.raceId) ? rn : { ...rn, raceId: null, highlight: [] };
 }
 
 /** The lower third after an import: position and size from the file (if it has them), hidden when its race is gone. */
@@ -330,7 +370,7 @@ export function exportFile(data: AppData, only?: string): FileInput {
   return only
     ? { version: 1, races }
     : { version: 1, races, horses: data.horses, horseSettings: data.horseSettings, home: data.home, active: data.active, transition: data.transition,
-        lowerThird: { ...data.lowerThird, raceId: null, number: null } };
+        lowerThird: { ...data.lowerThird, raceId: null, number: null }, raceNow: { ...data.raceNow, raceId: null, status: "waiting", hidden: false, highlight: [] } };
 }
 
 /** A file with just one horse (from the ม้า tab). */

@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | Dock | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/dock` | Docks → Custom Browser Docks |
 | หน้าจอออกอากาศ | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/overlay` | Sources → Browser ขนาด 1920×1080 |
+| Race Now (กลางจอ) | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/race-now` | Sources → Browser อีกตัว ขนาด 1920×1080 วางไว้บนฉากหลังกลางจอ: เรสที่กำลังแข่ง + ชื่อม้าทุกตัว + เวลา (คุมจาก dock แท็บภาพรวม) |
 | Lower third ม้า | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/lower-third` | Sources → Browser อีกตัว ขนาด 1920×1080 วางไว้บนหน้าจอออกอากาศ (คุมจาก dock แท็บภาพรวม) |
 
 ## ใช้งาน
