@@ -652,8 +652,14 @@ test("a narrow dock keeps the horse and jockey name boxes wide: Fav, jockey kg a
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(260);
 });
 
-test("lower third: a number button shows the runner over any scene, again hides it; position and size from the overview", async ({ context }) => {
-  const { dock, overlay } = await open(context);
+test("lower third: its own page (#/lower-third), run from the overview; a number button shows the runner, again hides it", async ({ context }) => {
+  const { dock, overlay: main } = await open(context);
+  // the lower third has its own Browser Source page; the main overlay never shows it
+  const overlay = await context.newPage();
+  await overlay.setViewportSize({ width: 1920, height: 1080 });
+  await overlay.goto("#/lower-third");
+  await expect(overlay.getByTestId("lower-third-page")).toBeAttached();
+  await expect(dock.getByTestId("url-lower-third")).toHaveText(/#\/lower-third$/);
   const plate = overlay.getByTestId("lower-third");
   await expect(plate).toHaveCount(0);
   // the buttons follow the race on screen (11R); 6 is scratched
@@ -665,9 +671,11 @@ test("lower third: a number button shows the runner over any scene, again hides 
   await expect(plate.getByTestId("lt-jockey")).toHaveText("C. RIDER");
   await expect(plate.getByTestId("lt-body")).toHaveText(/514kg\s*\+2/);
   await expect(plate.getByTestId("lt-weight")).toHaveText(/57\.0\s*kg/);
-  // it stays through a scene change, blank included
+  await expect(main.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Cup");
+  await expect(main.getByTestId("lower-third")).toHaveCount(0);
+  // it stays through a scene change on the main overlay, blank included
   await dock.getByRole("button", { name: "ตั้งหน้าเปล่าเป็น Active" }).click();
-  await expect(overlay.getByTestId("blank")).toBeVisible();
+  await expect(main.getByTestId("blank")).toBeVisible();
   await expect(plate).toHaveAttribute("data-no", "3");
   // another horse swaps the plate
   await dock.locator("[data-lt='9']").click();

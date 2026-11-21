@@ -1,4 +1,4 @@
-/** Landing page (#/): what the two URLs are for, with a live preview. */
+/** Landing page (#/): what the URLs are for, with a live preview (overlay with the lower third on top, as in OBS). */
 import { Section, hintClass } from "./components/Section";
 import { LiveScene } from "./overlay/LiveScene";
 import { Stage } from "./overlay/Stage";
@@ -9,6 +9,7 @@ export function Landing() {
   const links = [
     ["Dock", "OBS → Docks → Custom Browser Docks", "#/dock"],
     ["Browser Source (1920×1080)", "OBS → Sources → Browser", "#/overlay"],
+    ["Lower third ม้า (1920×1080)", "OBS → Sources → Browser อีกตัว วางไว้บนสุด", "#/lower-third"],
   ] as const;
   return (
     <main className="mx-auto grid max-w-[1100px] gap-5 px-4 pt-8 pb-14">

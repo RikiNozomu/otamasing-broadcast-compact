@@ -7,7 +7,8 @@
 | หน้า | URL | ใช้ใน OBS เป็น |
 | --- | --- | --- |
 | Dock | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/dock` | Docks → Custom Browser Docks |
-| หน้าจอออกอากาศ | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/overlay` | Sources → Browser ขนาด 1920×1080 (ตัวเดียว) |
+| หน้าจอออกอากาศ | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/overlay` | Sources → Browser ขนาด 1920×1080 |
+| Lower third ม้า | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/lower-third` | Sources → Browser อีกตัว ขนาด 1920×1080 วางไว้บนหน้าจอออกอากาศ (คุมจาก dock แท็บภาพรวม) |
 
 ## ใช้งาน
 

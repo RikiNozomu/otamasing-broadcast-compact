@@ -72,6 +72,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
   const [paste, setPaste] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const overlayUrl = `${location.origin}${location.pathname}#/overlay`;
+  const lowerThirdUrl = `${location.origin}${location.pathname}#/lower-third`;
 
   const home = paginate(d.races, HOME_ROWS, d.home.page);
   const setHomePage = (i: number) => update((x) => ({ ...x, home: { ...x.home, page: i } }));
@@ -157,8 +158,8 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
     try { await clearAllImages(); toast("ลบรูปทั้งหมดในเครื่องนี้แล้ว"); }
     catch { toast("ลบรูปไม่สำเร็จ", true); }
   };
-  const copy = async () => {
-    try { await navigator.clipboard.writeText(overlayUrl); toast("คัดลอก URL แล้ว"); }
+  const copy = async (url: string) => {
+    try { await navigator.clipboard.writeText(url); toast("คัดลอก URL แล้ว"); }
     catch { toast("คัดลอกไม่ได้ ให้เลือกข้อความ URL แล้วคัดลอกเอง", true); }
   };
 
@@ -294,11 +295,16 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
       </Section>
 
       <Section title="URL สำหรับ Browser Source ใน OBS">
-        <div className="flex items-center gap-1.5">
-          <code title={overlayUrl} className="min-w-0 flex-1 truncate border border-line bg-panel px-1.5 py-[5px] text-xs text-ink-muted">{overlayUrl}</code>
-          <Button onClick={copy}>คัดลอก</Button>
-        </div>
-        <span className={hintClass}>ใส่ Browser Source ตัวเดียว ขนาด 1920×1080</span>
+        {([["หน้าจอหลัก", overlayUrl, "url-overlay"], ["Lower third ม้า", lowerThirdUrl, "url-lower-third"]] as const).map(([label, url, id]) => (
+          <div key={id} className="grid gap-1">
+            <span className="text-[13px]">{label}</span>
+            <div className="flex items-center gap-1.5">
+              <code title={url} data-testid={id} className="min-w-0 flex-1 truncate border border-line bg-panel px-1.5 py-[5px] text-xs text-ink-muted">{url}</code>
+              <Button onClick={() => copy(url)} aria-label={`คัดลอก URL ${label}`}>คัดลอก</Button>
+            </div>
+          </div>
+        ))}
+        <span className={hintClass}>Browser Source สองตัว ขนาด 1920×1080 ทั้งคู่ วาง Lower third ไว้บนหน้าจอหลัก</span>
       </Section>
 
       <Section title="รูปที่เก็บในเครื่องนี้">
