@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { exportFile, mergeImport, parseFile, type AppData } from "../../src/lib/model";
+import { exportFile, mergeImport, mergeRaceData, parseFile, type AppData } from "../../src/lib/model";
 import { sampleData } from "../../src/lib/sample";
 import { buildSchema } from "../../scripts/build-schema";
 
@@ -73,6 +73,48 @@ describe("mergeImport", () => {
     const next = mergeImport({ ...cur, races: [] }, res.data, "replace");
     expect(next.races).toEqual(cur.races);
     expect(next.home).toEqual(cur.home);
+  });
+});
+
+describe("mergeRaceData", () => {
+  const base = sampleData();
+  const r11 = base.races.find((r) => r.round === "11R")!;
+  const cur: AppData = {
+    ...base, active: "sample-11:result",
+    races: base.races.map((r) => (r.id === r11.id ? { ...r, highlight: 2, style: { ...r.style, numberScheme: "jra" as const } } : r)),
+  };
+  const fileOf = (races: unknown[], extra: object = {}) => {
+    const r = parseFile(JSON.stringify({ races, ...extra }));
+    if (!r.ok) throw new Error(r.error);
+    return r.data;
+  };
+  const runners = r11.runners.map((x, i) => ({ ...x, fav: i + 1, finish: i + 1, horseWeight: 480, horseWeightChange: 2, scratched: x.number === 3 }));
+  it("updates only race data of matching races; horses, photos, style, screen stay", () => {
+    const file = fileOf([{ date: r11.date, course: r11.course.toUpperCase(), round: r11.round, name: "Updated", postTime: "15:40", runners },
+      { date: "2030-01-01", name: "Not here", runners: [{ number: 1 }, { number: 2 }] }],
+      { horses: [{ name: "Some Horse" }], home: { title: "Changed" } });
+    const { data, updated, skipped } = mergeRaceData(cur, file);
+    expect([updated, skipped]).toEqual([1, 1]);
+    const r = data.races.find((x) => x.id === r11.id)!;
+    const was = cur.races.find((x) => x.id === r11.id)!;
+    expect(r.name).toBe("Updated");
+    expect(r.postTime).toBe("15:40");
+    expect(r.runners[0]).toMatchObject({ fav: 1, finish: 1, horseWeight: 480, horseWeightChange: 2 });
+    expect(r.runners.find((x) => x.number === 3)!.scratched).toBe(true);
+    expect(r.style).toEqual(was.style);
+    expect(r.photos).toEqual(was.photos);
+    expect(r.card).toEqual(was.card);
+    expect(r.result).toEqual(was.result);
+    expect(r.highlight).toBe(2);
+    expect(data.races).toHaveLength(cur.races.length);
+    expect(data.horses).toBe(cur.horses);
+    expect(data.horseSettings).toBe(cur.horseSettings);
+    expect(data.home).toBe(cur.home);
+    expect(data.active).toBe("sample-11:result");
+  });
+  it("drops the highlight when that horse is scratched or gone", () => {
+    const file = fileOf([{ date: r11.date, course: r11.course, round: r11.round, name: r11.name, runners: runners.map((x) => ({ ...x, scratched: x.number === 2 })) }]);
+    expect(mergeRaceData(cur, file).data.races.find((x) => x.id === r11.id)!.highlight).toBeNull();
   });
 });
 

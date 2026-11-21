@@ -1,7 +1,7 @@
 /** Tab "ภาพรวม": pick Active (home or a race), import/export, order, delete, home page settings, URL. */
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState, type ReactNode } from "react";
-import { BLANK, exportFile, HOME, mergeImport, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
+import { BLANK, exportFile, HOME, mergeImport, mergeRaceData, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
 import { getData, setData, update, updateRace, useData } from "../lib/store";
 import { checkImportImages, clearAllImages, dropUnused, storeImage } from "../lib/imageStore";
 import { isZip, readBundle } from "../lib/bundle";
@@ -115,6 +115,16 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
     if (missing.length) toast(`นำเข้า ${importCount(file)}แล้ว แต่ไม่พบรูปในเครื่องนี้หรือไฟล์รูปเสีย ${missing.length} รูป จึงเอาออกจากข้อมูล: ${missing.join(", ")}`, true);
     else toast(`นำเข้า ${importCount(file)}แล้ว`);
   };
+  /** Only race data (results, Fav, body weight, scratches...) into races already here; horses and pictures untouched. */
+  const doRaceData = () => {
+    if (!pending) return;
+    setPending(null);
+    const { data, updated, skipped } = mergeRaceData(getData(), pending.data);
+    if (updated) setData(data);
+    const skip = skipped ? ` · ข้าม ${skipped} รายการที่ยังไม่มีในเครื่อง` : "";
+    if (!updated) toast(`ไม่มีรายการแข่งในไฟล์ที่ตรงกับในเครื่อง (วันที่ + สนาม + R)${skip}`, true);
+    else toast(`อัปเดตข้อมูลแข่ง ${updated} รายการแล้ว ข้อมูลม้าไม่เปลี่ยน${skip}`);
+  };
   const addRace = () => {
     const id = newId();
     update((x) => ({
@@ -198,6 +208,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
             <span className="flex flex-wrap gap-1.5">
               <Button variant="primary" onClick={() => doImport("append")}>เพิ่มต่อ</Button>
               <Button onClick={() => doImport("replace")}>{replaceLabel(pending.data)}</Button>
+              {pending.data.races.length > 0 && <Button onClick={doRaceData} title="อัปเดตเฉพาะผล Fav น้ำหนัก ม้าถอน ฯลฯ ของรายการที่มีอยู่แล้ว ไม่แตะข้อมูลม้า รูป และการตั้งค่าหน้า">อัปเดตข้อมูลแข่งเท่านั้น</Button>}
               <Button onClick={() => setPending(null)}>ยกเลิก</Button>
             </span>
           </motion.div>
