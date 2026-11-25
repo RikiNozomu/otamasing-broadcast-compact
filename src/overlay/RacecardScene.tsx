@@ -5,7 +5,7 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 import type { Race, Runner } from "../lib/model";
-import { boxColors, drawOf, favColor } from "../lib/colors";
+import { boxColors, boxExtra, drawOf, favColor } from "../lib/colors";
 import { ordinal } from "../lib/labels";
 import { useCardPage } from "../lib/cardPages";
 import { cx } from "../lib/cx";
@@ -38,7 +38,7 @@ export function NumberBox({ colors, value, hl }: { colors: readonly [string, str
   return (
     <motion.span initial={false} {...hl?.cell}
       className={cx(cell, "justify-center font-display text-[38px] font-bold", !colors && "bg-scene text-white shadow-[inset_0_0_0_3px_#fff]")}
-      style={colors ? { background: colors[0], color: colors[1] } : undefined}>
+      style={colors ? { background: colors[0], color: colors[1], ...boxExtra(colors) } : undefined}>
       {value}
     </motion.span>
   );

@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CLASSES, RACE_NOW_H, RACE_NOW_W, type Race, type RaceNow as RN, type RaceNowStatus, type RaceNowTz } from "../lib/model";
-import { boxColors, GRADE_COLOR } from "../lib/colors";
+import { boxColors, boxExtra, GRADE_COLOR } from "../lib/colors";
 import { gradeLabel } from "../lib/labels";
 import { useData } from "../lib/store";
 import { cx } from "../lib/cx";
@@ -149,7 +149,7 @@ function RacePanel({ race, status, tz, highlight }: { race: Race; status: RaceNo
               className="grid min-w-0 items-stretch" style={{ gridTemplateColumns: "76px minmax(0,1fr)" }}
               initial={{ opacity: 0, x: 40 }} animate={{ opacity: dim ? 0.45 : 1, x: 0, transition: { duration: 0.3, ease: EASE, delay: 0.35 + i * 0.03 } }}>
               <span className={cx("flex items-center justify-center text-[44px] leading-none font-bold", !colors && "bg-scene shadow-[inset_0_0_0_3px_#fff]")}
-                style={colors ? { background: colors[0], color: colors[1] } : undefined}>{h.number}</span>
+                style={colors ? { background: colors[0], color: colors[1], ...boxExtra(colors) } : undefined}>{h.number}</span>
               <span className={cx("flex min-w-0 items-center gap-3 px-4 transition-colors duration-300", hl ? "bg-yellow text-navy" : "bg-band")}>
                 <FitText strike={h.scratched} className="leading-none font-bold" ><span style={{ fontSize: nameSize }}>{h.name.toUpperCase()}</span></FitText>
                 {h.scratched && <span className="flex-none text-[24px] font-bold text-danger-ink">SCR</span>}

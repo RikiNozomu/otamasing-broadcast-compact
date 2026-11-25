@@ -71,6 +71,19 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
   await expect(dock.getByText("ไม่พบประเทศ")).toBeVisible();
   await dock.keyboard.press("Escape");
   await dock.getByRole("tab", { name: "สไตล์" }).click();
+  // Hong Kong draw: white box, dark green number in IBM Plex Sans
+  await dock.getByLabel("สีช่อง DRAW").selectOption("hk");
+  const drawBox = overlay.locator("[data-layer][data-active] [data-no='1'] > span").first();
+  await expect(drawBox).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(drawBox).toHaveCSS("color", "rgb(19, 91, 51)");
+  await expect(drawBox).toHaveCSS("font-family", /IBM Plex Sans/);
+  // Britain / France: yellow draw, NO. navy / red with a white frame
+  await dock.getByLabel("สีช่อง DRAW").selectOption("gb");
+  await expect(drawBox).toHaveCSS("background-color", "rgb(255, 237, 13)");
+  await dock.getByLabel("สีช่อง NO.").selectOption("fr");
+  const noBox = overlay.locator("[data-layer][data-active] [data-no='1'] > span").nth(1);
+  await expect(noBox).toHaveCSS("background-color", "rgb(192, 15, 12)");
+  await expect(noBox).toHaveCSS("box-shadow", /255, 255, 255/);
   await dock.getByTestId("show-draw").click();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=table-head] span")).toHaveText(["NO.", "HORSE", "HORSE WT.", "JOCKEY", "WEIGHT"]);
 });

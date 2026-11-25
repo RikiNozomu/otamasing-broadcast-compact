@@ -9,7 +9,7 @@ import { HorseSchema, HorseSettingsSchema, type Horse, type HorseSettings } from
 export const MAX_RUNNERS = 30;
 export const MIN_RUNNERS = 2;
 
-export const SCHEMES = ["jra", "us", "plain", "custom"] as const;
+export const SCHEMES = ["jra", "us", "hk", "gb", "fr", "plain", "custom"] as const;
 export type Scheme = (typeof SCHEMES)[number];
 export const TRANSITIONS = ["wipe", "slide", "fade", "none"] as const;
 export type Transition = (typeof TRANSITIONS)[number];

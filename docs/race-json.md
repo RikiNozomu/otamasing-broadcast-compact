@@ -130,8 +130,8 @@
 
 | ช่อง | ค่า | ค่าเริ่มต้น | ความหมาย |
 | --- | --- | --- | --- |
-| `drawScheme` | `"jra"` `"us"` `"plain"` `"custom"` | `"jra"` | สีช่อง DRAW: JRA 8 สี, saddle towel อเมริกา, กรอบขาว, กำหนดเอง |
-| `numberScheme` | เหมือนด้านบน | `"plain"` | สีช่อง NO. (`"jra"` = สีตามซองของม้า) |
+| `drawScheme` | `"jra"` `"us"` `"hk"` `"gb"` `"fr"` `"plain"` `"custom"` | `"jra"` | สีช่อง DRAW: JRA 8 สี, saddle towel อเมริกา, ฮ่องกง (กล่องขาว ตัวเลขเขียว ฟอนต์ IBM Plex Sans), อังกฤษ / ฝรั่งเศส (เหลือง ตัวเลขดำ), กรอบขาว, กำหนดเอง |
+| `numberScheme` | เหมือนด้านบน | `"plain"` | สีช่อง NO. (`"jra"` = สีตามซองของม้า, `"gb"` = น้ำเงินกรอบขาว, `"fr"` = แดงกรอบขาว) |
 | `autoDraw` | boolean | `true` | คิดซองให้จากเบอร์ตามกฎ JRA (เกิน 8 ตัว ม้าที่เกินไปอยู่ซองท้ายๆ ก่อน) |
 | `gradeStyle` | `"jra"` `"intl"` | `"jra"` | ป้ายเกรดแบบ GI/GII/GIII/LR หรือ G1/G2/G3/L |
 | `show` | object ของ boolean | ทุกช่อง `true` | `draw`, `grade`, `class`, `fav`, `horseFlag`, `jockeyFlag`, `horseWeight`, `weight` (คอลัมน์น้ำหนักขึ้นเมื่อเปิดไว้และมีม้าอย่างน้อย 1 ตัวที่ใส่ค่า) (`jpName` ยังรับได้แต่ไม่มีผล) |
