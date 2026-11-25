@@ -15,6 +15,7 @@ import { useData } from "../lib/store";
 import { cx } from "../lib/cx";
 import { FitText } from "../components/FitText";
 import { Logo } from "../components/Logo";
+import { BgVideo } from "../components/BgVideo";
 
 const EASE = [0.65, 0, 0.35, 1] as const;
 const LEFT_W = 540;
@@ -117,8 +118,10 @@ function RacePanel({ race, status, tz, highlight }: { race: Race; status: RaceNo
   return (
     <motion.div data-testid="race-now" data-race={race.id} className="absolute inset-0 grid font-display text-white" style={{ gridTemplateColumns: `${LEFT_W}px minmax(0,1fr)` }}
       initial={{ clipPath: "inset(0 100% 0 0)" }} animate={{ clipPath: "inset(0 0% 0 0)" }} exit={{ clipPath: "inset(0 0 0 100%)" }} transition={{ duration: 0.6, ease: EASE }}>
+      {/* the สนทนาม้าซิ่ง tile video behind the whole box */}
+      <BgVideo className="-z-10" />
       {/* left: RACE NOW, the race, the clock */}
-      <div className="flex min-w-0 flex-col bg-scene px-9 pt-8 pb-7">
+      <div className="flex min-w-0 flex-col px-9 pt-8 pb-7">
         <span className="flex w-max items-center gap-3 bg-yellow px-4 py-1.5 text-[34px] leading-none font-extrabold tracking-[.08em] text-navy">
           <span className={cx("size-4 rounded-full bg-[#E23B24]", status === "live" && "animate-pulse")} aria-hidden="true" />RACE NOW
         </span>
@@ -135,7 +138,7 @@ function RacePanel({ race, status, tz, highlight }: { race: Race; status: RaceNo
         <div className="mt-auto"><Status race={race} status={status} tz={tz} /></div>
       </div>
       {/* right: every runner, top to bottom then the next column */}
-      <div data-testid="race-now-runners" className="grid gap-x-4 gap-y-2 bg-navy p-5"
+      <div data-testid="race-now-runners" className="grid gap-x-4 gap-y-2 bg-navy/45 p-5"
         style={{ gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))`, gridTemplateRows: `repeat(${rows}, minmax(0,1fr))`, gridAutoFlow: "column" }}>
         {race.runners.map((h, i) => {
           const colors = boxColors(S.numberScheme, h.number, h.number, n, S, true);
@@ -163,8 +166,9 @@ function RacePanel({ race, status, tz, highlight }: { race: Race; status: RaceNo
 /** No race picked: the logo and the clock, nothing else. */
 function IdlePanel() {
   return (
-    <motion.div data-testid="race-now-idle" className="absolute inset-0 flex items-center justify-center gap-24 bg-navy"
+    <motion.div data-testid="race-now-idle" className="absolute inset-0 flex items-center justify-center gap-24"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.45, ease: EASE }}>
+      <BgVideo className="-z-10" />
       <Logo className="w-[560px]" />
       <span aria-hidden="true" className="h-[300px] w-[4px] bg-yellow" />
       <Clock />

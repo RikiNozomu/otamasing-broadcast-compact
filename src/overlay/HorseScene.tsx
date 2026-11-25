@@ -18,6 +18,7 @@ import { cx } from "../lib/cx";
 import { Flag } from "../components/Flag";
 import { FitText } from "../components/FitText";
 import { Logo } from "../components/Logo";
+import { BgVideo } from "../components/BgVideo";
 import { SilksSvg } from "../components/SilksSvg";
 import { PageCount, pill } from "./RaceBackdrop";
 import { cell, headClass, headLeft, rowMotion } from "./RacecardScene";
@@ -65,13 +66,12 @@ function Badge({ letter }: { letter: string }) {
   return <span className="grid size-[44px] flex-none place-items-center rounded-[6px] bg-yellow font-display text-[30px] font-bold text-navy [text-shadow:none]">{letter}</span>;
 }
 
-/** One picture of the slideshow: sharp on the left third (moved and zoomed as set in the dock), and faintly across the whole screen behind. Fades in once loaded. */
+/** One picture of the slideshow on the left third (moved and zoomed as set in the dock). Fades in once loaded. */
 function HorsePicture({ k, rev, frame }: { k: string; rev: number | undefined; frame: PhotoFrame }) {
   const url = useImage(k, rev);
   const fade = { initial: { opacity: 0 }, animate: { opacity: url ? 1 : 0 }, exit: { opacity: 0 }, transition: { duration: 0.8, ease: "easeInOut" } } as const;
   return (
     <>
-      <motion.div {...fade} animate={{ opacity: url ? 0.35 : 0 }} className="absolute inset-0 scale-110 bg-cover bg-center blur-[18px]" style={{ backgroundImage: url ? `url("${url}")` : undefined }} />
       <motion.div {...fade} data-testid="horse-photo-img" data-key={k} data-frame={`${frame.x} ${frame.y} ${frame.zoom}`} className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: PHOTO_W }}>
         {url && <img src={url} alt="" draggable={false} className="absolute inset-0 size-full transition-[object-position,transform] duration-300 ease-out" style={frameStyle(frame)} />}
       </motion.div>
@@ -89,17 +89,17 @@ function HorsePhoto({ h }: { h: Horse }) {
   // no picture: the navy fills the screen and the text takes the whole width
   if (!set.keys.length) return (
     <>
-      <div data-testid="horse-photo" className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_21_125/.9)_0%,rgb(0_21_125/.8)_45%,rgb(0_10_70/.94)_100%)]" />
+      <div data-testid="horse-photo" className="absolute inset-0"><BgVideo /></div>
       <Logo className="absolute top-[34px] right-[60px] w-48" />
     </>
   );
   return (
     <>
+      {/* the tile video full screen, the horse picture over its left part */}
+      <BgVideo />
       <AnimatePresence initial={false}>
         {key && <HorsePicture key={key} k={key} rev={d.images[key]} frame={frameOf(h.photos.frames, key)} />}
       </AnimatePresence>
-      {/* the navy over the right of the screen (the blurred picture shows through) */}
-      <div className="absolute inset-y-0 right-0 bg-[linear-gradient(180deg,rgb(0_21_125/.9)_0%,rgb(0_21_125/.8)_45%,rgb(0_10_70/.94)_100%)]" style={{ left: PHOTO_W }} />
       <div data-testid="horse-photo" data-has={key ? "" : undefined} className="pointer-events-none absolute inset-y-0 left-0 overflow-hidden" style={{ width: PHOTO_W }}>
         {!key && (
           <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(70%_60%_at_50%_45%,#1d2f9e_0%,#0b1a86_60%,var(--color-scene)_100%)]">

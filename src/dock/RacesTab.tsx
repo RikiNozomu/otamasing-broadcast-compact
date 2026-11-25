@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState, type ReactNode } from "react";
 import { BLANK, exportFile, HOME, mergeImport, mergeRaceData, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
 import { getData, setData, update, updateRace, useData } from "../lib/store";
-import { checkImportImages, clearAllImages, dropUnused, storeImage } from "../lib/imageStore";
+import { checkImportImages, clearAllImages, dropUnused } from "../lib/imageStore";
 import { isZip, readBundle } from "../lib/bundle";
 import { imageRefs } from "../lib/imageRefs";
 import { putImage } from "../lib/images";
@@ -16,7 +16,7 @@ import { LowerThirdSection } from "./LowerThirdSection";
 import { RaceNowSection } from "./RaceNowSection";
 import { CardPageButtons } from "./CardPagesSection";
 import { cx } from "../lib/cx";
-import { Button, buttonClass } from "../components/Button";
+import { Button } from "../components/Button";
 import { Field, inputClass } from "../components/Field";
 import { Section, hintClass } from "../components/Section";
 import { Switch } from "../components/Switch";
@@ -154,17 +154,6 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
       return { ...x, races };
     });
   };
-  const setBg = async (f: File | undefined) => {
-    if (!f) return;
-    const old = d.home.background, name = await storeImage(f);
-    update((x) => ({ ...x, images: { ...x.images, [name]: Date.now() }, home: { ...x.home, background: name } }));
-    await dropUnused([old]);
-  };
-  const clearBg = async () => {
-    const old = d.home.background;
-    update((x) => ({ ...x, home: { ...x.home, background: null } }));
-    await dropUnused([old]);
-  };
   const clearPictures = async () => {
     setConfirmClear(false);
     try { await clearAllImages(); toast("ลบรูปทั้งหมดในเครื่องนี้แล้ว"); }
@@ -286,11 +275,6 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
       <Section title="หน้าแรก (รายการแข่งขัน)">
         <Field id="l-title" label="Title"><input className={inputClass} id="l-title" value={d.home.title} onChange={(e) => update((x) => ({ ...x, home: { ...x.home, title: e.target.value } }))} /></Field>
         <Field id="l-sub" label="Sub title (วันที่)"><input className={inputClass} id="l-sub" value={d.home.subtitle} onChange={(e) => update((x) => ({ ...x, home: { ...x.home, subtitle: e.target.value } }))} /></Field>
-        <div className="flex flex-wrap gap-1.5">
-          <label className={buttonClass("primary")} htmlFor="l-bg">เลือก BG…</label>
-          <input type="file" id="l-bg" accept="image/*" hidden onChange={(e) => { setBg(e.target.files?.[0]); e.target.value = ""; }} />
-          {d.home.background ? <Button onClick={clearBg}>ไม่ใช้รูป</Button> : null}
-        </div>
         <Switch on={d.home.showDate} label="คอลัมน์วันที่" testId="home-show-date" onToggle={() => update((x) => ({ ...x, home: { ...x.home, showDate: !x.home.showDate } }))} />
         <Switch on={d.home.showCourse} label="คอลัมน์สนาม" testId="home-show-course" onToggle={() => update((x) => ({ ...x, home: { ...x.home, showCourse: !x.home.showCourse } }))} />
         <PageButtons label="หน้า" count={home.pageCount} page={home.page} onPick={setHomePage} testId="home-pages" />
