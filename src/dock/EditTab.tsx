@@ -9,7 +9,6 @@ import { update, updateRace, useData } from "../lib/store";
 import { RacecardScene } from "../overlay/RacecardScene";
 import { ResultScene } from "../overlay/ResultScene";
 import { ResultPanel } from "./ResultPanel";
-import { PhotoSetEditor } from "./PhotoSetEditor";
 import { Stage } from "../overlay/Stage";
 import { Button } from "../components/Button";
 import { Field, inputClass } from "../components/Field";
@@ -99,7 +98,6 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
 
       {sub === "data" ? (
         <div className="grid gap-3" role="tabpanel" aria-labelledby="sub-data">
-          <PhotoSetEditor race={race} view="card" />
           <Section title="ข้อมูลรายการ">
             {text("name", "ชื่อรายการ")}
             {text("date", "วันที่", { type: "date" })}
@@ -165,7 +163,6 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
         </div>
       ) : sub === "result" ? (
         <div className="grid gap-3">
-          <PhotoSetEditor race={race} view="result" />
           <ResultPanel race={race} />
         </div>
       ) : (

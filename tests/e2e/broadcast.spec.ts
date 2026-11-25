@@ -368,40 +368,33 @@ test("the blank page takes everything off the screen, with or without a transiti
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==", "base64");
 const png = (name: string) => ({ name, mimeType: "image/png", buffer: PNG });
 
-test("pictures: separate sets for the racecard and the result page, step by hand or change automatically", async ({ context }) => {
+test("every scene, Race Now and the lower third stand on the tile video; no background picture settings", async ({ context }) => {
   const { dock, overlay } = await open(context);
-  const shownKey = () => overlay.locator("[data-layer][data-active] [data-testid=photo]").last().getAttribute("data-key");
+  const layer = overlay.locator("[data-layer][data-active]");
+  await expect(layer.getByTestId("bg-video")).toHaveCount(1);
+  const video = layer.locator("[data-testid=bg-video] video");
+  await expect(video).toHaveAttribute("loop", "");
+  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => !v.paused && v.readyState >= 2)).toBe(true);
+  // home, result and horse pages too
+  await dock.getByRole("button", { name: "ตั้งหน้าแรกเป็น Active" }).click();
+  await expect(layer.getByTestId("race-list").getByTestId("bg-video")).toHaveCount(1);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await dock.getByRole("button", { name: "ตั้งเป็น Active" }).click();
+  await expect(layer.getByTestId("horse").getByTestId("bg-video")).toHaveCount(1);
+  // the picture settings for the race pages and the home page are gone
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
+  await expect(dock.locator("#l-bg")).toHaveCount(0);
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  await dock.getByTestId("add-photos-card").setInputFiles([png("a.png"), png("b.png")]);
-  await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(2);
-  // pictures are changed by hand by default
-  await expect(dock.getByTestId("auto-card")).toHaveAttribute("aria-checked", "false");
-  await dock.getByRole("button", { name: "แสดงรูปที่ 1" }).click();
-  await expect(dock.getByTestId("photo-pos-card")).toHaveText("1 / 2");
-  await expect.poll(shownKey).toBeTruthy();
-  // wait for an earlier picture still fading out
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=photo]")).toHaveCount(1);
-  const first = await shownKey();
-  await dock.getByRole("button", { name: "รูปถัดไป" }).click();
-  await expect(dock.getByTestId("photo-pos-card")).toHaveText("2 / 2");
-  await expect.poll(shownKey).not.toBe(first);
-  const second = await shownKey();
-  // automatic every 1 second
-  await dock.getByLabel("ทุกกี่วินาที", { exact: true }).fill("1");
-  await dock.getByTestId("auto-card").click();
-  await expect.poll(shownKey, { timeout: 4000 }).toBe(first);
-  await expect.poll(shownKey, { timeout: 4000 }).toBe(second);
-
-  // the result page has its own pictures
-  await dock.getByRole("tab", { name: "ผล" }).click();
-  await dock.getByTestId("add-photos-result").setInputFiles([png("c.png")]);
-  await dock.getByRole("button", { name: "ตั้งหน้าผลเป็น Active" }).click();
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=result]")).toBeVisible();
-  await expect.poll(shownKey).not.toBe(first);
-  expect([first, second]).not.toContain(await shownKey());
-  // removing it leaves the result page without a picture
-  await dock.getByRole("button", { name: "ลบรูปที่ 1" }).click();
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=photo]")).toHaveCount(0);
+  await expect(dock.getByTestId("add-photos-card")).toHaveCount(0);
+  // Race Now (logo + clock) and the lower third
+  const rn = await context.newPage();
+  await rn.goto("#/race-now");
+  await expect(rn.getByTestId("race-now-idle").getByTestId("bg-video")).toHaveCount(1);
+  const lt = await context.newPage();
+  await lt.goto("#/lower-third");
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
+  await dock.locator("[data-lt='3']").click();
+  await expect(lt.getByTestId("lower-third").getByTestId("bg-video")).toHaveCount(1);
 });
 
 test("the home page shows 8 races a page; the dock turns the page", async ({ context }) => {
@@ -546,23 +539,23 @@ test("pictures are named image/<date-time>.<ext>, the JSON carries the names, a 
     const req = indexedDB.open("otamasing-broadcast-compact", 1);
     req.onsuccess = () => { const all = req.result.transaction("images").objectStore("images").getAllKeys(); all.onsuccess = () => res(all.result as string[]); };
   }));
-  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  await dock.getByTestId("add-photos-card").setInputFiles([png("a.png"), png("b.png")]);
-  await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(2);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await dock.getByTestId("add-photos-horse").setInputFiles([png("a.png"), png("b.png")]);
+  await expect(dock.getByTestId("thumbs-horse").locator("[data-thumb]")).toHaveCount(2);
   await expect.poll(stored).toHaveLength(2);
   const names = await stored();
   for (const n of names) expect(n).toMatch(/^image\/\d{17}\.png$/);
   // the export names the pictures
-  await dock.getByRole("button", { name: "ส่งออกรายการนี้" }).click();
+  await dock.getByRole("button", { name: "ส่งออกม้าตัวนี้" }).click();
   const file = JSON.parse(await dock.getByTestId("export-text").inputValue());
-  expect([...file.races[0].photos.card.keys].sort()).toEqual([...names].sort());
+  expect([...file.horses[0].photos.keys].sort()).toEqual([...names].sort());
   await dock.getByTestId("export-panel").getByRole("button", { name: "ปิด" }).click();
   // removing a picture in the dock deletes it from the browser too
   await dock.getByRole("button", { name: "ลบรูปที่ 2" }).click();
   await expect.poll(stored).toHaveLength(1);
   // importing the earlier JSON: the deleted picture and a made-up one are reported and taken out
   const kept = (await stored())[0];
-  file.races[0].photos.card.keys.push("image/20990101000000000.jpg");
+  file.horses[0].photos.keys.push("image/20990101000000000.jpg");
   await dock.getByRole("tab", { name: "ภาพรวม" }).click();
   await dock.getByRole("button", { name: "วาง JSON" }).click();
   await dock.getByTestId("paste-text").fill(JSON.stringify(file));
@@ -572,8 +565,8 @@ test("pictures are named image/<date-time>.<ext>, the JSON carries the names, a 
   await expect(alert).toContainText("ไม่พบรูปในเครื่องนี้หรือไฟล์รูปเสีย 2 รูป");
   await expect(alert).toContainText("image/20990101000000000.jpg");
   expect(await alert.textContent()).not.toContain(kept);
-  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(1);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await expect(dock.getByTestId("thumbs-horse").locator("[data-thumb]")).toHaveCount(1);
   // the danger button clears every stored picture, after a warning
   await dock.getByRole("tab", { name: "ภาพรวม" }).click();
   await expect(dock.getByTestId("stored-count")).toHaveText("1 รูป");
@@ -582,8 +575,8 @@ test("pictures are named image/<date-time>.<ext>, the JSON carries the names, a 
   await dock.getByRole("button", { name: "ลบรูปทั้งหมดเลย" }).click();
   await expect.poll(stored).toHaveLength(0);
   await expect(dock.getByTestId("stored-count")).toHaveText("0 รูป");
-  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  await expect(dock.getByTestId("thumbs-card")).toHaveCount(0);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await expect(dock.getByTestId("thumbs-horse")).toHaveCount(0);
 });
 
 test("a .zip with the JSON and its pictures moves pictures to another browser (e.g. into OBS)", async ({ browser, baseURL }) => {
@@ -591,9 +584,9 @@ test("a .zip with the JSON and its pictures moves pictures to another browser (e
   const chrome = await browser.newContext({ baseURL });
   await chrome.addInitScript(() => { delete (window as unknown as { showSaveFilePicker?: unknown }).showSaveFilePicker; });
   const { dock } = await open(chrome);
-  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  await dock.getByTestId("add-photos-card").setInputFiles([png("a.png")]);
-  await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(1);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  await dock.getByTestId("add-photos-horse").setInputFiles([png("a.png")]);
+  await expect(dock.getByTestId("thumbs-horse").locator("[data-thumb]")).toHaveCount(1);
   await dock.getByRole("tab", { name: "ภาพรวม" }).click();
   await dock.getByRole("button", { name: "ส่งออก", exact: true }).click();
   const [download] = await Promise.all([dock.waitForEvent("download"), dock.getByRole("button", { name: "บันทึก .zip พร้อมรูป…" }).click()]);
@@ -611,10 +604,10 @@ test("a .zip with the JSON and its pictures moves pictures to another browser (e
   await o.dock.getByRole("button", { name: "แทนที่ทั้งหมด" }).click();
   await expect(o.dock.getByRole("status")).toContainText("นำเข้า 3 รายการ");
   await expect(o.dock.getByRole("alert")).toHaveCount(0);
-  await o.dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
-  await expect(o.dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(1);
-  // after an import the home page is on screen, so look at the race's preview in the dock
-  await expect(o.dock.getByTestId("preview").locator("[data-testid=photo]")).toHaveCount(1);
+  await o.dock.getByRole("tab", { name: "ม้า" }).click();
+  await expect(o.dock.getByTestId("thumbs-horse").locator("[data-thumb]")).toHaveCount(1);
+  // after an import the home page is on screen, so look at the horse's preview in the dock
+  await expect(o.dock.getByTestId("horse-preview").getByTestId("horse-photo-img")).toHaveCount(1);
   await obs.close();
 });
 

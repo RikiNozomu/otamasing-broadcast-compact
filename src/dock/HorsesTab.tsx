@@ -23,7 +23,7 @@ import { Stage } from "../overlay/Stage";
 import { HorseScene } from "../overlay/HorseScene";
 import { FlagPicker } from "./FlagPicker";
 import { ExportPanel } from "./ExportPanel";
-import { Thumb } from "./PhotoSetEditor";
+import { Thumb } from "./Thumb";
 import { PhotoFrameEditor } from "./PhotoFrameEditor";
 import { frameOf, withFrame } from "../lib/photoFrame";
 import { setAuto, showPhoto, shownIndex, useShownIndex } from "../lib/photos";

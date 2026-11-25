@@ -1,16 +1,16 @@
 /**
- * The home scene ("หน้าแรก"): the races in dock order, HOME_ROWS a page, title + subtitle, optional background,
+ * The home scene ("หน้าแรก"): the races in dock order, HOME_ROWS a page, title + subtitle over the tile video,
  * one race highlighted. On a page change the rows slide out to the left one after another and the next ones slide in.
  */
 import { AnimatePresence, motion } from "motion/react";
 import { GRADE_COLOR } from "../lib/colors";
 import { gradeLabel } from "../lib/labels";
-import { useImage } from "../lib/images";
 import { useData } from "../lib/store";
 import { HOME_ROWS, paginate } from "../lib/paging";
 import { cx } from "../lib/cx";
 import { FitText } from "../components/FitText";
 import { Logo } from "../components/Logo";
+import { BgVideo } from "../components/BgVideo";
 import { HighlightBar, useHighlight } from "./Highlight";
 
 const box = "flex items-center gap-[18px] overflow-hidden whitespace-nowrap px-[22px] font-display text-[40px] font-bold text-white";
@@ -20,7 +20,6 @@ const ROW_H = 78;
 
 export function RaceListScene() {
   const d = useData();
-  const bg = useImage(d.home.background ?? "", d.home.background ? d.images[d.home.background] : undefined);
   const { rows: races } = paginate(d.races, HOME_ROWS, d.home.page);
   // the round column fits the longest round of ALL races, so it doesn't change width between pages
   const roundW = Math.max(110, ...d.races.map((x) => 44 + 24 * x.round.length));
@@ -32,11 +31,7 @@ export function RaceListScene() {
   const cols = [`${roundW}px`, showDate ? "230px" : null, "150px", showCourse ? "260px" : null, "minmax(0,1fr)", "330px"].filter(Boolean).join(" ");
   return (
     <div className="absolute inset-0 bg-scene" data-testid="race-list">
-      {bg && (
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url("${bg}")` }}>
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(0_21_125/.92)_0%,rgb(0_21_125/.75)_60%,rgb(0_21_125/.55)_100%)]" />
-        </div>
-      )}
+      <BgVideo />
       <Logo className="absolute top-[30px] right-10 w-48" />
       <div className="absolute top-[70px] left-20 text-white">
         <div data-testid="home-subtitle" className="font-display text-[34px] leading-[normal] font-semibold tracking-[.06em] text-home-date">{d.home.subtitle}</div>

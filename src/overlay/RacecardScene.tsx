@@ -12,7 +12,7 @@ import { cx } from "../lib/cx";
 import { Flag } from "../components/Flag";
 import { FitText } from "../components/FitText";
 import { HighlightBar, useHighlight, type RowHighlight } from "./Highlight";
-import { PageCount, pill, RacePhoto, RaceTitle, SIDE, TABLE_TOP, TABLE_W } from "./RaceBackdrop";
+import { PageCount, pill, RaceBackground, RaceTitle, SIDE, TABLE_TOP, TABLE_W } from "./RaceBackdrop";
 
 export const cell = "flex h-full items-center";
 /** A text cell of the table (horse, jockey): a dark band fading out on its right. */
@@ -96,7 +96,7 @@ export function RacecardScene({ race }: { race: Race }) {
   };
   return (
     <div className="absolute inset-0 bg-scene" data-testid="racecard" data-race={race.id} data-page={page + 1}>
-      <RacePhoto photos={race.photos.card} />
+      <RaceBackground />
       <RaceTitle race={race} />
       <div className="absolute grid content-start" style={{ left: SIDE, top: TABLE_TOP, width: TABLE_W }}>
         <div data-testid="table-head" className={headClass} style={{ gridTemplateColumns: cols }}>
