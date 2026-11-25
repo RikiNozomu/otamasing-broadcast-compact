@@ -58,6 +58,18 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
   await dock.getByLabel("ค้นหาประเทศ").fill("nzl");
   await dock.getByRole("option", { name: /นิวซีแลนด์/ }).click();
   await expect(overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse] img")).toHaveAttribute("alt", "NZ");
+  // the JRA training centres are offered for the horse flag only, drawn as a pill badge
+  await dock.getByRole("button", { name: "ธงม้าเบอร์ 1: นิวซีแลนด์" }).click();
+  await dock.getByLabel("ค้นหาประเทศ").fill("miho");
+  await dock.getByRole("option", { name: /มิโฮะ/ }).click();
+  await expect(overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse] [data-center]")).toHaveAttribute("data-center", "MIHO");
+  await dock.getByRole("button", { name: "ธงม้าเบอร์ 2: ญี่ปุ่น" }).click();
+  await dock.getByRole("option", { name: /ริตโต/ }).click();
+  await expect(overlay.locator("[data-layer][data-active] [data-no='2'] [data-testid=horse] [data-center]")).toHaveAttribute("data-center", "RITTO");
+  await dock.getByRole("button", { name: /^ธงจ็อกกี้เบอร์ 1:/ }).click();
+  await dock.getByLabel("ค้นหาประเทศ").fill("miho");
+  await expect(dock.getByText("ไม่พบประเทศ")).toBeVisible();
+  await dock.keyboard.press("Escape");
   await dock.getByRole("tab", { name: "สไตล์" }).click();
   await dock.getByTestId("show-draw").click();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=table-head] span")).toHaveText(["NO.", "HORSE", "HORSE WT.", "JOCKEY", "WEIGHT"]);

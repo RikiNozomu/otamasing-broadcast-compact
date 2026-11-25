@@ -135,7 +135,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
                 <div className="runner-row border-b border-line pb-1.5 text-xs" key={h.number}>
                   <span className="[grid-area:no] bg-navy py-[3px] text-center font-display text-[15px] font-bold">{h.number}</span>
                   <input className={cx(inputClass, "[grid-area:name]")} aria-label={`ชื่อม้าเบอร์ ${h.number}`} value={h.name} onChange={(e) => setRunner(i, { name: e.target.value })} />
-                  <div className="[grid-area:hflag]"><FlagPicker label={`ธงม้าเบอร์ ${h.number}`} value={h.horseCountry} onChange={(c) => setRunner(i, { horseCountry: c })} /></div>
+                  <div className="[grid-area:hflag]"><FlagPicker label={`ธงม้าเบอร์ ${h.number}`} value={h.horseCountry} centers onChange={(c) => setRunner(i, { horseCountry: c })} /></div>
                   <span className="narrow-only text-center text-[10px] text-ink-muted [grid-area:favl]">Fav</span>
                   <input className={cx(inputClass, "[grid-area:fav]")} type="number" min={1} max={MAX_RUNNERS} aria-label={`อันดับตัวเต็งเบอร์ ${h.number}`} title="อันดับตัวเต็ง (Fav)" value={h.fav ?? ""} onChange={(e) => setRunner(i, { fav: e.target.value ? Math.max(1, Math.round(+e.target.value)) : null })} />
                   <label className="flex items-center justify-center gap-1 [grid-area:scr]">
