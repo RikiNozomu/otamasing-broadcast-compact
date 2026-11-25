@@ -6,12 +6,12 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 import type { Race, Runner } from "../lib/model";
-import { boxColors, drawOf, numberFont } from "../lib/colors";
+import { boxColors, drawOf, numberFont } from "@otamasing/broadcast-shared/lib/colors";
 import { ordinal } from "../lib/labels";
 import { resultMark, useResultPage } from "../lib/results";
-import { cx } from "../lib/cx";
-import { Flag } from "../components/Flag";
-import { FitText } from "../components/FitText";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Flag } from "@otamasing/broadcast-shared/components/Flag";
+import { FitText } from "@otamasing/broadcast-shared/components/FitText";
 import { HighlightBar, NAVY } from "./Highlight";
 import { band, BOX_W, headLeft, cell, EASE, GAP, headClass, NumberBox, ROW_H, rowMotion } from "./RacecardScene";
 import { PageCount, RaceBackground, RaceTitle, SIDE, TABLE_TOP, TABLE_W } from "./RaceBackdrop";

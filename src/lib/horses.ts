@@ -5,7 +5,7 @@
  */
 export * from "./horseSchema.ts";
 import { CURRENCIES, type CareerRace, type Currency, type Horse, type HorseSettings, type HorseView, type SilksMode } from "./horseSchema.ts";
-import { cycleAt, cycleSet, cycleTo, useCycle } from "./cycle";
+import { cycleAt, cycleSet, cycleTo, useCycle } from "@otamasing/broadcast-shared/lib/cycle";
 import { paginate } from "./paging";
 
 /** Picture keys in IndexedDB. `horsePhotoKey` is the one picture of a horse from before the slideshow; new pictures are `photo:<id>`. */

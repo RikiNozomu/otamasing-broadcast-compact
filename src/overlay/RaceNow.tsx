@@ -9,14 +9,14 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CLASSES, RACE_NOW_H, RACE_NOW_W, type Race, type RaceNow as RN, type RaceNowStatus, type RaceNowTz } from "../lib/model";
-import { boxColors, boxExtra, numberFont, GRADE_COLOR } from "../lib/colors";
+import { boxColors, boxExtra, numberFont, GRADE_COLOR } from "@otamasing/broadcast-shared/lib/colors";
 import { gradeLabel } from "../lib/labels";
 import { useData } from "../lib/store";
-import { cx } from "../lib/cx";
-import { FitText } from "../components/FitText";
-import { WeatherLogo } from "../components/WeatherLogo";
-import { Logo } from "../components/Logo";
-import { BgVideo } from "../components/BgVideo";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { FitText } from "@otamasing/broadcast-shared/components/FitText";
+import { WeatherLogo } from "@otamasing/broadcast-shared/components/WeatherLogo";
+import { Logo } from "@otamasing/broadcast-shared/components/Logo";
+import { BgVideo } from "@otamasing/broadcast-shared/components/BgVideo";
 
 const EASE = [0.65, 0, 0.35, 1] as const;
 const LEFT_W = 540;

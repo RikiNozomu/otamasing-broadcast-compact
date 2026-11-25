@@ -4,14 +4,14 @@
  * The import schema fills defaults, so a hand-written file only needs the race facts and runners.
  */
 import { z } from "zod";
-import { WEATHER_KEYS } from "./weather.ts";
+import { WEATHER_KEYS } from "@otamasing/broadcast-shared/data";
 import { HorseSchema, HorseSettingsSchema, type Horse, type HorseSettings } from "./horseSchema.ts";
 
 export const MAX_RUNNERS = 30;
 export const MIN_RUNNERS = 2;
 
-export const SCHEMES = ["jra", "us", "hk", "gb", "fr", "plain", "custom"] as const;
-export type Scheme = (typeof SCHEMES)[number];
+import { SCHEMES, type Scheme } from "@otamasing/broadcast-shared/data";
+export { SCHEMES, type Scheme };
 export const TRANSITIONS = ["wipe", "slide", "fade", "none"] as const;
 export type Transition = (typeof TRANSITIONS)[number];
 export const GRADES = ["G1", "G2", "G3", "L"] as const;

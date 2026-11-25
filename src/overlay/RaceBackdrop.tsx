@@ -4,12 +4,12 @@
  */
 import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { CLASSES, type Race } from "../lib/model";
-import { GRADE_COLOR } from "../lib/colors";
+import { GRADE_COLOR } from "@otamasing/broadcast-shared/lib/colors";
 import { gradeLabel } from "../lib/labels";
-import { cx } from "../lib/cx";
-import { Logo } from "../components/Logo";
-import { BgVideo } from "../components/BgVideo";
-import { WeatherLogo } from "../components/WeatherLogo";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Logo } from "@otamasing/broadcast-shared/components/Logo";
+import { BgVideo } from "@otamasing/broadcast-shared/components/BgVideo";
+import { WeatherLogo } from "@otamasing/broadcast-shared/components/WeatherLogo";
 
 export const pill = "inline-flex items-center justify-center whitespace-nowrap rounded-full font-display font-bold leading-none [text-shadow:none]";
 

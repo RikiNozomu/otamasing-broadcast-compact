@@ -1,20 +1,20 @@
 /** Tab "การแข่งขัน": pick any race, edit its data (ข้อมูล), its result (ผล) or its own style (สไตล์). A scene that is not on screen shows a preview. */
-import { WEATHERS, type Weather } from "../lib/weather";
+import { WEATHERS, type Weather } from "@otamasing/broadcast-shared/lib/weather";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CLASSES, exportFile, parseActive, resultOf, GRADES, MAX_RUNNERS, MIN_RUNNERS, SURFACES, type Grade, type Race, type RaceClass, type Runner, type Scheme, type Style } from "../lib/model";
-import { customPair, US } from "../lib/colors";
+import { customPair, US } from "@otamasing/broadcast-shared/lib/colors";
 import { ExportPanel } from "./ExportPanel";
-import { cx } from "../lib/cx";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
 import { update, updateRace, useData } from "../lib/store";
 import { RacecardScene } from "../overlay/RacecardScene";
 import { ResultScene } from "../overlay/ResultScene";
 import { ResultPanel } from "./ResultPanel";
 import { Stage } from "../overlay/Stage";
-import { Button } from "../components/Button";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
-import { Switch } from "../components/Switch";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 import { FlagPicker } from "./FlagPicker";
 import { CardPagesSection } from "./CardPagesSection";
 import { pageOfHorse, showCardPage } from "../lib/cardPages";

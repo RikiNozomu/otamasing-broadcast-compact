@@ -41,4 +41,4 @@ Stack: Vite + React + TypeScript, [Tailwind CSS v4](https://tailwindcss.com) (�
 
 ทุก PR รัน CI (typecheck, Vitest, Playwright) และ merge เข้า `main` แล้ว deploy ขึ้น GitHub Pages ให้เอง
 
-ฟอนต์ Otamasing Display / Otamasing Sans (OFL) อยู่ใน `public/fonts` ธงจาก [flag-icons](https://github.com/lipis/flag-icons) (MIT)
+ฟอนต์ Otamasing Display / Otamasing Sans (OFL), โลโก้, วิดีโอฉากหลัง, ไอคอนสภาพอากาศ, ธง และสีเบอร์/ซอง มาจากแพ็กเกจกลาง [otamasing-broadcast-shared](https://github.com/RikiNozomu/otamasing-broadcast-shared) ธงจาก [flag-icons](https://github.com/lipis/flag-icons) (MIT)

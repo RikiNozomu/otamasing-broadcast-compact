@@ -3,14 +3,14 @@
  * one race highlighted. On a page change the rows slide out to the left one after another and the next ones slide in.
  */
 import { AnimatePresence, motion } from "motion/react";
-import { GRADE_COLOR } from "../lib/colors";
+import { GRADE_COLOR } from "@otamasing/broadcast-shared/lib/colors";
 import { gradeLabel } from "../lib/labels";
 import { useData } from "../lib/store";
 import { HOME_ROWS, paginate } from "../lib/paging";
-import { cx } from "../lib/cx";
-import { FitText } from "../components/FitText";
-import { Logo } from "../components/Logo";
-import { BgVideo } from "../components/BgVideo";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { FitText } from "@otamasing/broadcast-shared/components/FitText";
+import { Logo } from "@otamasing/broadcast-shared/components/Logo";
+import { BgVideo } from "@otamasing/broadcast-shared/components/BgVideo";
 import { HighlightBar, useHighlight } from "./Highlight";
 
 const box = "flex items-center gap-[18px] overflow-hidden whitespace-nowrap px-[22px] font-display text-[40px] font-bold text-white";

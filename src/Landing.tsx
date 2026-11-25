@@ -1,5 +1,5 @@
 /** Landing page (#/): what the URLs are for, with a live preview (overlay with the lower third on top, as in OBS). */
-import { Section, hintClass } from "./components/Section";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
 import { LiveScene } from "./overlay/LiveScene";
 import { Stage } from "./overlay/Stage";
 import { LowerThird } from "./overlay/LowerThird";

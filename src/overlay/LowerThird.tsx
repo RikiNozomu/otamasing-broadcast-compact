@@ -7,12 +7,12 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 import { LOWER_THIRD_H, LOWER_THIRD_W, type LowerThird as LT, type Race, type Runner } from "../lib/model";
-import { boxColors, boxExtra, numberFont } from "../lib/colors";
+import { boxColors, boxExtra, numberFont } from "@otamasing/broadcast-shared/lib/colors";
 import { useData } from "../lib/store";
-import { cx } from "../lib/cx";
-import { Flag } from "../components/Flag";
-import { FitText } from "../components/FitText";
-import { BgVideo } from "../components/BgVideo";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Flag } from "@otamasing/broadcast-shared/components/Flag";
+import { FitText } from "@otamasing/broadcast-shared/components/FitText";
+import { BgVideo } from "@otamasing/broadcast-shared/components/BgVideo";
 
 const EASE = [0.65, 0, 0.35, 1] as const;
 const TOP_H = 92;
