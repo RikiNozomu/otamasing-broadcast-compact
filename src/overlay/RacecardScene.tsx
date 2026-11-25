@@ -3,9 +3,10 @@
  * The pages take turns by themselves (or are picked in the dock); on a page change the rows slide out to
  * the left one after another and the next ones slide in from the right.
  */
+import type { CSSProperties } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { Race, Runner } from "../lib/model";
-import { boxColors, boxExtra, drawOf, favColor } from "../lib/colors";
+import { boxColors, boxExtra, drawOf, numberFont, favColor } from "../lib/colors";
 import { ordinal } from "../lib/labels";
 import { useCardPage } from "../lib/cardPages";
 import { cx } from "../lib/cx";
@@ -34,11 +35,11 @@ export const rowMotion = (i: number, dim = false) => ({
 });
 
 /** A DRAW or NO. box: coloured, or plain (white frame on navy). `hl` fades it with its row. */
-export function NumberBox({ colors, value, hl }: { colors: readonly [string, string] | null; value: number; hl?: RowHighlight }) {
+export function NumberBox({ colors, value, hl, font }: { colors: readonly [string, string] | null; value: number; hl?: RowHighlight; font?: CSSProperties }) {
   return (
     <motion.span initial={false} {...hl?.cell}
       className={cx(cell, "justify-center font-display text-[38px] font-bold", !colors && "bg-scene text-white shadow-[inset_0_0_0_3px_#fff]")}
-      style={colors ? { background: colors[0], color: colors[1], ...boxExtra(colors) } : undefined}>
+      style={{ ...font, ...(colors && { background: colors[0], color: colors[1], ...boxExtra(colors) }) }}>
       {value}
     </motion.span>
   );
@@ -70,7 +71,7 @@ export function RacecardScene({ race }: { race: Race }) {
         className="relative grid items-center gap-2 py-1" style={{ height: ROW_H, gridTemplateColumns: cols }}>
         <HighlightBar on={hl.on} className="inset-y-1" style={{ left: barLeft, width: barWidth }} />
         {show.draw && <NumberBox colors={boxColors(S.drawScheme, d, h.number, n, S, false)} value={d} hl={hl} />}
-        <NumberBox colors={boxColors(S.numberScheme, h.number, h.number, n, S, true)} value={h.number} hl={hl} />
+        <NumberBox colors={boxColors(S.numberScheme, h.number, h.number, n, S, true)} value={h.number} hl={hl} font={numberFont(S)} />
         <motion.span data-testid="horse" initial={false} {...hl.ink(false)} className={cx(band, "font-bold")}>
           {show.horseFlag && <Flag code={h.horseCountry} className="relative h-[26px] w-[39px]" />}
           <FitText className="relative" strike={h.scratched}>{h.name.toUpperCase()}</FitText>

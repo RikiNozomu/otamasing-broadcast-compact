@@ -9,6 +9,7 @@ import { gradeLabel } from "../lib/labels";
 import { cx } from "../lib/cx";
 import { Logo } from "../components/Logo";
 import { BgVideo } from "../components/BgVideo";
+import { WeatherLogo } from "../components/WeatherLogo";
 
 export const pill = "inline-flex items-center justify-center whitespace-nowrap rounded-full font-display font-bold leading-none [text-shadow:none]";
 
@@ -31,7 +32,7 @@ export function RaceBackground() {
 
 /**
  * The title on top: the race name with the grade and class badges right after it (the name shrinks until
- * the line fits beside the logo), then date · round · course · distance. `tag` goes before those facts (e.g. RESULT).
+ * the line fits beside the logo), then date · round · course · distance and the weather logo. `tag` goes before those facts (e.g. RESULT).
  */
 export function RaceTitle({ race, tag }: { race: Race; tag?: ReactNode }) {
   const S = race.style, show = S.show;
@@ -61,6 +62,7 @@ export function RaceTitle({ race, tag }: { race: Race; tag?: ReactNode }) {
         <div data-testid="race-facts" className="font-display text-[40px] leading-[1.2] font-semibold tracking-[.02em] uppercase">
           {facts.map((f, i) => <span key={i}>{i > 0 && <span className="px-3 text-white/55">·</span>}{f}</span>)}
         </div>
+        {race.weather && <WeatherLogo kind={race.weather} testId="race-weather" className="size-[52px] [filter:drop-shadow(0_2px_6px_rgb(0_0_0/.35))]" />}
       </div>
     </div>
   );

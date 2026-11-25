@@ -1,4 +1,5 @@
 /** Tab "การแข่งขัน": pick any race, edit its data (ข้อมูล), its result (ผล) or its own style (สไตล์). A scene that is not on screen shows a preview. */
+import { WEATHERS, type Weather } from "../lib/weather";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CLASSES, exportFile, parseActive, resultOf, GRADES, MAX_RUNNERS, MIN_RUNNERS, SURFACES, type Grade, type Race, type RaceClass, type Runner, type Scheme, type Style } from "../lib/model";
@@ -108,6 +109,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             <Field id="f-dist" label="ระยะ (เมตร)">
               <input className={inputClass} id="f-dist" type="number" min={800} max={7000} step={100} value={race.distanceM ?? ""} onChange={(e) => set({ distanceM: e.target.value ? Math.round(+e.target.value) : null })} />
             </Field>
+            {select("f-weather", "สภาพอากาศ", race.weather ?? "", (v) => set({ weather: (v || null) as Weather | null }), [["", "ไม่ใส่"], ...(Object.keys(WEATHERS) as Weather[]).map((w): [string, string] => [w, WEATHERS[w]])])}
             {select("f-grade", "เกรด", race.grade ?? "", (v) => set({ grade: (v || null) as Grade | null }), [["", "ไม่มี"], ...GRADES.map((g): [string, string] => [g, g === "L" ? "Listed" : g])])}
             <Switch on={race.jump} label="Jump race (ขึ้น J- หน้าเกรด)" onToggle={() => set({ jump: !race.jump })} />
             {select("f-class", "Class", race.class ?? "", (v) => set({ class: (v || null) as RaceClass | null }), [["", "ไม่มี"], ...(Object.keys(CLASSES) as RaceClass[]).map((c): [string, string] => [c, CLASS_LABEL[c]])])}

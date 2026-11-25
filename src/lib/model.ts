@@ -4,6 +4,7 @@
  * The import schema fills defaults, so a hand-written file only needs the race facts and runners.
  */
 import { z } from "zod";
+import { WEATHER_KEYS } from "./weather.ts";
 import { HorseSchema, HorseSettingsSchema, type Horse, type HorseSettings } from "./horseSchema.ts";
 
 export const MAX_RUNNERS = 30;
@@ -135,6 +136,8 @@ export const RaceSchema = z
     class: z.enum(Object.keys(CLASSES) as [RaceClass, ...RaceClass[]]).nullable().default(null),
     surface: z.enum(SURFACES).default("Turf"),
     distanceM: z.number().int().positive().nullable().default(null),
+    /** Weather of the race (shared by compact and intro), shown as the weather logo; null = none. */
+    weather: z.enum(WEATHER_KEYS).nullable().default(null),
     highlight: z.number().int().nullable().default(null),
     style: StyleSchema.default({}),
     result: ResultViewSchema.default({}),

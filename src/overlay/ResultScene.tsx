@@ -6,7 +6,7 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 import type { Race, Runner } from "../lib/model";
-import { boxColors, drawOf } from "../lib/colors";
+import { boxColors, drawOf, numberFont } from "../lib/colors";
 import { ordinal } from "../lib/labels";
 import { resultMark, useResultPage } from "../lib/results";
 import { cx } from "../lib/cx";
@@ -52,7 +52,7 @@ export function ResultScene({ race }: { race: Race }) {
         <HighlightBar on={on} className="inset-y-1" style={{ left: 0, width: POS_W }} />
         <HighlightBar on={on} className="inset-y-1" style={{ left: textL, width: textW }} />
         <motion.span data-testid="pos" {...ink(on, 0)} className={cx(solid, "justify-center font-bold")}><span className="relative">{mark ?? ordinal(h.finish!)}</span></motion.span>
-        <NumberBox colors={boxColors(S.numberScheme, h.number, h.number, n, S, true)} value={h.number} />
+        <NumberBox colors={boxColors(S.numberScheme, h.number, h.number, n, S, true)} value={h.number} font={numberFont(S)} />
         {show.draw && <NumberBox colors={boxColors(S.drawScheme, d, h.number, n, S, false)} value={d} />}
         <motion.span data-testid="horse" {...ink(on, 0)} className={cx(band, "font-bold")}>
           {show.horseFlag && <Flag code={h.horseCountry} className="relative h-[26px] w-[39px]" />}
