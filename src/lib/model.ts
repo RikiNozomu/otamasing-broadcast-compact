@@ -4,13 +4,14 @@
  * The import schema fills defaults, so a hand-written file only needs the race facts and runners.
  */
 import { z } from "zod";
+import { WEATHER_KEYS } from "@otamasing/broadcast-shared/data";
 import { HorseSchema, HorseSettingsSchema, type Horse, type HorseSettings } from "./horseSchema.ts";
 
 export const MAX_RUNNERS = 30;
 export const MIN_RUNNERS = 2;
 
-export const SCHEMES = ["jra", "us", "plain", "custom"] as const;
-export type Scheme = (typeof SCHEMES)[number];
+import { SCHEMES, type Scheme } from "@otamasing/broadcast-shared/data";
+export { SCHEMES, type Scheme };
 export const TRANSITIONS = ["wipe", "slide", "fade", "none"] as const;
 export type Transition = (typeof TRANSITIONS)[number];
 export const GRADES = ["G1", "G2", "G3", "L"] as const;
@@ -36,7 +37,7 @@ export const RunnerSchema = z.object({
   draw: z.number().int().min(1).max(MAX_RUNNERS).nullable().default(null),
   name: z.string().default(""),
   jockey: z.string().default(""),
-  horseCountry: country.default(""),
+  horseCountry: z.union([country, z.literal("MIHO"), z.literal("RITTO")]).default(""),
   jockeyCountry: country.default(""),
   fav: z.number().int().min(1).max(MAX_RUNNERS).nullable().default(null),
   /** The horse's body weight in kg (e.g. 486) and its change since the last race (e.g. +4), shown on the racecard. */
@@ -135,6 +136,8 @@ export const RaceSchema = z
     class: z.enum(Object.keys(CLASSES) as [RaceClass, ...RaceClass[]]).nullable().default(null),
     surface: z.enum(SURFACES).default("Turf"),
     distanceM: z.number().int().positive().nullable().default(null),
+    /** Weather of the race (shared by compact and intro), shown as the weather logo; null = none. */
+    weather: z.enum(WEATHER_KEYS).nullable().default(null),
     highlight: z.number().int().nullable().default(null),
     style: StyleSchema.default({}),
     result: ResultViewSchema.default({}),

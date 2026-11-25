@@ -12,12 +12,12 @@ import {
 import { update, useData } from "../lib/store";
 import { useImage } from "../lib/images";
 import { dropUnused, storeImage } from "../lib/imageStore";
-import { cx } from "../lib/cx";
-import { Button, buttonClass } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button, buttonClass } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
-import { Switch } from "../components/Switch";
-import { PageButtons } from "../components/PageButtons";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
+import { PageButtons } from "@otamasing/broadcast-shared/components/PageButtons";
 import { SilksSvg } from "../components/SilksSvg";
 import { Stage } from "../overlay/Stage";
 import { HorseScene } from "../overlay/HorseScene";

@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } fr
 import type { PhotoFrame } from "../lib/horseSchema";
 import { useImage } from "../lib/images";
 import { clampFrame, dragFrame, frameStyle, isDefaultFrame, MAX_ZOOM, MIN_ZOOM, zoomFrame } from "../lib/photoFrame";
-import { Button } from "../components/Button";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { PHOTO_W } from "../overlay/HorseScene";
 
 /** Width of the box in the dock; its height keeps the slot's shape (640x1080). */

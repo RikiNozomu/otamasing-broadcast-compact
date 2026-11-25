@@ -5,7 +5,7 @@
  */
 import { AnimatePresence, motion, type Transition } from "motion/react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { cx } from "../lib/cx";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
 
 const BAR_EASE = [0.65, 0, 0.35, 1] as const;
 const BAR_MS = 500;

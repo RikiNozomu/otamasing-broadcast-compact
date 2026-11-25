@@ -2,11 +2,11 @@
 import { CARD_ROWS, setCardAuto, showCardPage, useCardPage } from "../lib/cardPages";
 import type { Race } from "../lib/model";
 import { updateRace } from "../lib/store";
-import { cx } from "../lib/cx";
-import { PageButtons } from "../components/PageButtons";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { PageButtons } from "@otamasing/broadcast-shared/components/PageButtons";
 import { inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
-import { Switch } from "../components/Switch";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 
 /** Page buttons for the racecard; the page on screen follows auto page turning. */
 export function CardPageButtons({ race, label = "หน้ารายชื่อ", className, testId }: { race: Race; label?: string; className?: string; testId?: string }) {

@@ -5,10 +5,10 @@
  */
 import { RACE_NOW_H, RACE_NOW_STATUS, RACE_NOW_TZ, RACE_NOW_W, newRaceNow, type RaceNow as RN } from "../lib/model";
 import { update, useData } from "../lib/store";
-import { cx } from "../lib/cx";
-import { Button } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { Field } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
 import { Stage } from "../overlay/Stage";
 import { RaceNow, raceNowBox } from "../overlay/RaceNow";
 

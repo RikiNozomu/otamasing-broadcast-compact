@@ -6,7 +6,7 @@
  * e.g. 17 finishers with 1st–3rd locked: page 1 = 1–3 + 4–10, page 2 = 1–3 + 11–17.
  * With `result.auto` the pages take turns every `result.seconds`, worked out from the clock.
  */
-import { cycleAt, cycleSet, cycleTo, useCycle } from "./cycle";
+import { cycleAt, cycleSet, cycleTo, useCycle } from "@otamasing/broadcast-shared/lib/cycle";
 import type { Race, ResultView, Runner } from "./model";
 
 export const RESULT_ROWS = 10;

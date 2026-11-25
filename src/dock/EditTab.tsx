@@ -1,25 +1,26 @@
 /** Tab "การแข่งขัน": pick any race, edit its data (ข้อมูล), its result (ผล) or its own style (สไตล์). A scene that is not on screen shows a preview. */
+import { WEATHERS, type Weather } from "@otamasing/broadcast-shared/lib/weather";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CLASSES, exportFile, parseActive, resultOf, GRADES, MAX_RUNNERS, MIN_RUNNERS, SURFACES, type Grade, type Race, type RaceClass, type Runner, type Scheme, type Style } from "../lib/model";
-import { customPair, US } from "../lib/colors";
+import { customPair, US } from "@otamasing/broadcast-shared/lib/colors";
 import { ExportPanel } from "./ExportPanel";
-import { cx } from "../lib/cx";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
 import { update, updateRace, useData } from "../lib/store";
 import { RacecardScene } from "../overlay/RacecardScene";
 import { ResultScene } from "../overlay/ResultScene";
 import { ResultPanel } from "./ResultPanel";
 import { Stage } from "../overlay/Stage";
-import { Button } from "../components/Button";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
-import { Switch } from "../components/Switch";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 import { FlagPicker } from "./FlagPicker";
 import { CardPagesSection } from "./CardPagesSection";
 import { pageOfHorse, showCardPage } from "../lib/cardPages";
 
-const SCHEME_LABEL: Record<Scheme, string> = { jra: "JRA 8 สีตามซอง", us: "อเมริกา (Saddle towel)", plain: "ไม่มีสี (กรอบขาว)", custom: "Custom" };
-const NO_SCHEME_LABEL: Record<Scheme, string> = { ...SCHEME_LABEL, jra: "JRA ตามซองของม้า" };
+const SCHEME_LABEL: Record<Scheme, string> = { jra: "JRA 8 สีตามซอง", us: "อเมริกา (Saddle towel)", hk: "ฮ่องกง (ขาว ตัวเลขเขียว)", gb: "อังกฤษ (เหลือง)", fr: "ฝรั่งเศส (เหลือง)", plain: "ไม่มีสี (กรอบขาว)", custom: "Custom" };
+const NO_SCHEME_LABEL: Record<Scheme, string> = { ...SCHEME_LABEL, jra: "JRA ตามซองของม้า", gb: "อังกฤษ (น้ำเงิน)", fr: "ฝรั่งเศส (แดง)" };
 const CLASS_LABEL: Record<RaceClass, string> = { "2YO": "2YO", "2YO_F": "2YO (ตัวเมีย)", "3YO": "3YO", FM: "F&M" };
 
 export function EditTab({ editing, setEditing }: { editing: string | null; setEditing: (id: string) => void }) {
@@ -108,6 +109,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             <Field id="f-dist" label="ระยะ (เมตร)">
               <input className={inputClass} id="f-dist" type="number" min={800} max={7000} step={100} value={race.distanceM ?? ""} onChange={(e) => set({ distanceM: e.target.value ? Math.round(+e.target.value) : null })} />
             </Field>
+            {select("f-weather", "สภาพอากาศ", race.weather ?? "", (v) => set({ weather: (v || null) as Weather | null }), [["", "ไม่ใส่"], ...(Object.keys(WEATHERS) as Weather[]).map((w): [string, string] => [w, WEATHERS[w]])])}
             {select("f-grade", "เกรด", race.grade ?? "", (v) => set({ grade: (v || null) as Grade | null }), [["", "ไม่มี"], ...GRADES.map((g): [string, string] => [g, g === "L" ? "Listed" : g])])}
             <Switch on={race.jump} label="Jump race (ขึ้น J- หน้าเกรด)" onToggle={() => set({ jump: !race.jump })} />
             {select("f-class", "Class", race.class ?? "", (v) => set({ class: (v || null) as RaceClass | null }), [["", "ไม่มี"], ...(Object.keys(CLASSES) as RaceClass[]).map((c): [string, string] => [c, CLASS_LABEL[c]])])}
@@ -135,7 +137,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
                 <div className="runner-row border-b border-line pb-1.5 text-xs" key={h.number}>
                   <span className="[grid-area:no] bg-navy py-[3px] text-center font-display text-[15px] font-bold">{h.number}</span>
                   <input className={cx(inputClass, "[grid-area:name]")} aria-label={`ชื่อม้าเบอร์ ${h.number}`} value={h.name} onChange={(e) => setRunner(i, { name: e.target.value })} />
-                  <div className="[grid-area:hflag]"><FlagPicker label={`ธงม้าเบอร์ ${h.number}`} value={h.horseCountry} onChange={(c) => setRunner(i, { horseCountry: c })} /></div>
+                  <div className="[grid-area:hflag]"><FlagPicker label={`ธงม้าเบอร์ ${h.number}`} value={h.horseCountry} centers onChange={(c) => setRunner(i, { horseCountry: c })} /></div>
                   <span className="narrow-only text-center text-[10px] text-ink-muted [grid-area:favl]">Fav</span>
                   <input className={cx(inputClass, "[grid-area:fav]")} type="number" min={1} max={MAX_RUNNERS} aria-label={`อันดับตัวเต็งเบอร์ ${h.number}`} title="อันดับตัวเต็ง (Fav)" value={h.fav ?? ""} onChange={(e) => setRunner(i, { fav: e.target.value ? Math.max(1, Math.round(+e.target.value)) : null })} />
                   <label className="flex items-center justify-center gap-1 [grid-area:scr]">
@@ -175,7 +177,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
           </Section>
           <Section title="สีช่อง NO. (เบอร์)">
             <select aria-label="สีช่อง NO." className={inputClass} value={S.numberScheme} onChange={(e) => setStyle((s) => ({ ...s, numberScheme: e.target.value as Scheme }))}>
-              {(["plain", "jra", "us", "custom"] as Scheme[]).map((k) => <option key={k} value={k}>{NO_SCHEME_LABEL[k]}</option>)}
+              {(["plain", "jra", "us", "gb", "fr", "custom"] as Scheme[]).map((k) => <option key={k} value={k}>{NO_SCHEME_LABEL[k]}</option>)}
             </select>
           </Section>
           {showCustom && (

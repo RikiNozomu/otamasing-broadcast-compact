@@ -10,16 +10,16 @@ import { putImage } from "../lib/images";
 import { sampleRunner } from "../lib/sample";
 import { showPage, useResultPage } from "../lib/results";
 import { HOME_ROWS, paginate } from "../lib/paging";
-import { PageButtons } from "../components/PageButtons";
+import { PageButtons } from "@otamasing/broadcast-shared/components/PageButtons";
 import { ExportPanel } from "./ExportPanel";
 import { LowerThirdSection } from "./LowerThirdSection";
 import { RaceNowSection } from "./RaceNowSection";
 import { CardPageButtons } from "./CardPagesSection";
-import { cx } from "../lib/cx";
-import { Button } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
-import { Switch } from "../components/Switch";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 import type { Toast } from "./Dock";
 
 const TRANSITION_LABEL: Record<Transition, string> = { wipe: "Wipe (แถบเหลืองกวาดจากซ้าย)", slide: "Slide (เลื่อนเข้าจากขวา)", fade: "Fade (จางเข้า)", none: "ไม่มี (ตัดทันที)" };
@@ -129,7 +129,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
     const id = newId();
     update((x) => ({
       ...x,
-      races: [...x.races, { id, date: new Date().toISOString().slice(0, 10), course: "", round: "", postTime: "", name: "New Race", jpName: "", subtitle: "", grade: null, jump: false, class: null, surface: "Turf", distanceM: null, highlight: null, style: newStyle(), result: newResult(), card: newCard(), photos: newPhotos(), runners: Array.from({ length: 8 }, (_, i) => ({ ...sampleRunner(i), name: `Horse ${i + 1}`, jockey: "", fav: null, horseWeight: null, horseWeightChange: null, weight: null })) }],
+      races: [...x.races, { id, date: new Date().toISOString().slice(0, 10), course: "", round: "", postTime: "", name: "New Race", jpName: "", subtitle: "", grade: null, jump: false, class: null, surface: "Turf", distanceM: null, weather: null, highlight: null, style: newStyle(), result: newResult(), card: newCard(), photos: newPhotos(), runners: Array.from({ length: 8 }, (_, i) => ({ ...sampleRunner(i), name: `Horse ${i + 1}`, jockey: "", fav: null, horseWeight: null, horseWeightChange: null, weight: null })) }],
     }));
     onEdit(id);
   };

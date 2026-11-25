@@ -6,11 +6,11 @@ import { useRef, useState } from "react";
 import { MAX_RUNNERS, type Race, type ResultView, type Runner } from "../lib/model";
 import { MAX_LOCKS, RESULT_ROWS, resultEntries, resultMark, setPageAuto, showPage, useResultPage } from "../lib/results";
 import { getData, updateRace } from "../lib/store";
-import { cx } from "../lib/cx";
-import { Button } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
-import { Switch } from "../components/Switch";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 
 /** Rows in result order (finishers, DNF, DQ, SCR), then the horses with no result yet by number. */
 const byFinish = (race: Race) => {

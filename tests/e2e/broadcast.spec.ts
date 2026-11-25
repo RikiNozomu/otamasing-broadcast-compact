@@ -58,7 +58,33 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
   await dock.getByLabel("ค้นหาประเทศ").fill("nzl");
   await dock.getByRole("option", { name: /นิวซีแลนด์/ }).click();
   await expect(overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse] img")).toHaveAttribute("alt", "NZ");
+  // the JRA training centres are offered for the horse flag only, drawn as a pill badge
+  await dock.getByRole("button", { name: "ธงม้าเบอร์ 1: นิวซีแลนด์" }).click();
+  await dock.getByLabel("ค้นหาประเทศ").fill("miho");
+  await dock.getByRole("option", { name: /มิโฮะ/ }).click();
+  await expect(overlay.locator("[data-layer][data-active] [data-no='1'] [data-testid=horse] [data-center]")).toHaveAttribute("data-center", "MIHO");
+  await dock.getByRole("button", { name: "ธงม้าเบอร์ 2: ญี่ปุ่น" }).click();
+  await dock.getByRole("option", { name: /ริตโต/ }).click();
+  await expect(overlay.locator("[data-layer][data-active] [data-no='2'] [data-testid=horse] [data-center]")).toHaveAttribute("data-center", "RITTO");
+  await dock.getByRole("button", { name: /^ธงจ็อกกี้เบอร์ 1:/ }).click();
+  await dock.getByLabel("ค้นหาประเทศ").fill("miho");
+  await expect(dock.getByText("ไม่พบประเทศ")).toBeVisible();
+  await dock.keyboard.press("Escape");
   await dock.getByRole("tab", { name: "สไตล์" }).click();
+  // Hong Kong draw: white box, dark green number in IBM Plex Sans
+  await dock.getByLabel("สีช่อง DRAW").selectOption("hk");
+  const drawBox = overlay.locator("[data-layer][data-active] [data-no='1'] > span").first();
+  await expect(drawBox).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(drawBox).toHaveCSS("color", "rgb(19, 91, 51)");
+  await expect(drawBox).toHaveCSS("font-family", /IBM Plex Sans/);
+  await expect(overlay.locator("[data-layer][data-active] [data-no='1'] > span").nth(1)).toHaveCSS("font-family", /IBM Plex Sans/);
+  // Britain / France: yellow draw, NO. navy / red with a white frame
+  await dock.getByLabel("สีช่อง DRAW").selectOption("gb");
+  await expect(drawBox).toHaveCSS("background-color", "rgb(255, 237, 13)");
+  await dock.getByLabel("สีช่อง NO.").selectOption("fr");
+  const noBox = overlay.locator("[data-layer][data-active] [data-no='1'] > span").nth(1);
+  await expect(noBox).toHaveCSS("background-color", "rgb(192, 15, 12)");
+  await expect(noBox).toHaveCSS("box-shadow", /255, 255, 255/);
   await dock.getByTestId("show-draw").click();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=table-head] span")).toHaveText(["NO.", "HORSE", "HORSE WT.", "JOCKEY", "WEIGHT"]);
 });
@@ -395,6 +421,27 @@ test("every scene, Race Now and the lower third stand on the tile video; no back
   await dock.getByRole("tab", { name: "ภาพรวม" }).click();
   await dock.locator("[data-lt='3']").click();
   await expect(lt.getByTestId("lower-third").getByTestId("bg-video")).toHaveCount(1);
+});
+
+test("weather: picked in the dock, shown as the weather logo on the racecard title and in Race Now", async ({ context }) => {
+  const { dock, overlay } = await open(context);
+  const title = overlay.locator("[data-layer][data-active] [data-testid=race-weather]");
+  // the sample 11R is sunny
+  await expect(title).toHaveAttribute("data-weather", "sunny");
+  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await dock.getByLabel("สภาพอากาศ").selectOption("drizzle");
+  await expect(title).toHaveAttribute("data-weather", "drizzle");
+  await expect(title).toHaveAttribute("src", /rain/);
+  await expect.poll(() => title.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+  const rn = await context.newPage();
+  await rn.goto("#/race-now");
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
+  await dock.locator("[data-rn='sample-11']").click();
+  await expect(rn.getByTestId("race-now-weather")).toHaveAttribute("data-weather", "drizzle");
+  await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();
+  await dock.getByLabel("สภาพอากาศ").selectOption("");
+  await expect(title).toHaveCount(0);
+  await expect(rn.getByTestId("race-now-weather")).toHaveCount(0);
 });
 
 test("the home page shows 8 races a page; the dock turns the page", async ({ context }) => {

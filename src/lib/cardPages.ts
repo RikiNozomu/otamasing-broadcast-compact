@@ -2,7 +2,7 @@
  * How the racecard pages: CARD_ROWS horses a page in number order (scratched horses keep their place).
  * With `card.auto` the pages take turns every `card.seconds`, worked out from the clock like the result page.
  */
-import { cycleAt, cycleSet, cycleTo, useCycle } from "./cycle";
+import { cycleAt, cycleSet, cycleTo, useCycle } from "@otamasing/broadcast-shared/lib/cycle";
 import type { CardView, Race } from "./model";
 import { paginate } from "./paging";
 

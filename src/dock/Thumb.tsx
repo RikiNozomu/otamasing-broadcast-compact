@@ -1,6 +1,6 @@
 /** One picture thumbnail in the dock: click to show it, ✕ to remove it (used by the horse pictures). */
 import { useImage } from "../lib/images";
-import { cx } from "../lib/cx";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
 
 export function Thumb({ k, rev, on, n, onShow, onRemove }: { k: string; rev: number | undefined; on: boolean; n: number; onShow: () => void; onRemove: () => void }) {
   const url = useImage(k, rev);

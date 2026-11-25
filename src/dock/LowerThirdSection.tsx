@@ -5,10 +5,10 @@
  */
 import { LOWER_THIRD_H, LOWER_THIRD_LOOKS, LOWER_THIRD_W, newLowerThird, parseActive, type LowerThird as LT } from "../lib/model";
 import { update, useData } from "../lib/store";
-import { cx } from "../lib/cx";
-import { Button } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
 import { Stage } from "../overlay/Stage";
 import { LowerThird, lowerThirdBox } from "../overlay/LowerThird";
 
