@@ -179,9 +179,9 @@ function Profile({ h }: { h: Horse }) {
       <Fact i={3} label="BORN IN" testId="fact-born">{place(h.bornIn)}</Fact>
       <Fact i={4} label="TRAINED IN" testId="fact-trained">{place(h.trainedIn)}</Fact>
       <Fact i={5} label="OWNER" testId="fact-owner">
-        {/* the owner's silks from the shared list, whole on a light tile */}
+        {/* the owner's silks from the shared list, whole, with no frame or edge */}
         {h.silks && (
-          <span className="flex h-[72px] w-[116px] flex-none items-center justify-center overflow-hidden rounded-[8px] bg-white p-1 shadow-[0_0_0_3px_rgb(255_255_255/.35)]">
+          <span className="flex h-[72px] w-[116px] flex-none items-center justify-center overflow-hidden">
             <Silks name={h.silks} className="h-full w-full" />
           </span>
         )}
