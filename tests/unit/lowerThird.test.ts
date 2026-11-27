@@ -22,7 +22,7 @@ describe("lower third", () => {
     expect(lowerThirdRunner(d.races, { ...d.lowerThird, raceId: "gone", number: 1 })).toBeNull();
   });
   it("writes the weight change with a sign", () => {
-    expect([signedChange(4), signedChange(0), signedChange(-4)]).toEqual(["+4", "±0", "−4"]);
+    expect([signedChange(4), signedChange(0), signedChange(-4), signedChange("n/a")]).toEqual(["+4", "±0", "−4", "n/a"]);
   });
   it("exports position and size but not the runner on screen; import keeps the runner if its race stays", () => {
     const d = withLt({ raceId: "sample-11", number: 3, x: 50, scale: 1.2 });

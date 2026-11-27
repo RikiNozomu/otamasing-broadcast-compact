@@ -42,7 +42,8 @@ export const RunnerSchema = z.object({
   fav: z.number().int().min(1).max(MAX_RUNNERS).nullable().default(null),
   /** The horse's body weight in kg (e.g. 486) and its change since the last race (e.g. +4), shown on the racecard. */
   horseWeight: z.number().int().min(200).max(800).nullable().default(null),
-  horseWeightChange: z.number().int().min(-99).max(99).nullable().default(null),
+  /** "n/a" when the last race had no weigh-in, so there is no change to show. */
+  horseWeightChange: z.union([z.number().int().min(-99).max(99), z.literal("n/a")]).nullable().default(null),
   /** Weight carried (the jockey's weight) in kg, e.g. 57 or 57.5. */
   weight: z.number().min(30).max(80).multipleOf(0.5).nullable().default(null),
   scratched: z.boolean().default(false),
