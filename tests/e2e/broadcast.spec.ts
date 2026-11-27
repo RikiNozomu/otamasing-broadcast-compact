@@ -473,16 +473,13 @@ test("horse tab: put a horse on screen, profile then past races newest first, cu
   await expect(scene.getByTestId("fact-record")).toContainText("10 (5-2-1-2)");
   await expect(scene.getByTestId("fact-earnings")).toContainText("¥812,345,000");
   await expect(scene.getByTestId("fact-born")).toContainText("Japan");
-  // the owner's silks drawn as SVG; turned off in the dock they leave the screen
-  await expect(scene.getByTestId("silks-svg")).toBeVisible();
-  // silks: upload / pattern / none
-  await dock.getByTestId("silks-mode-none").click();
+  // the owner's silks from the shared list; another name swaps the picture, none takes it off the screen
+  await expect(scene.getByTestId("silks")).toHaveAttribute("data-silks", "Godolphin");
+  await dock.getByTestId("silks-picker").selectOption("Kitasan");
+  await expect(scene.getByTestId("silks")).toHaveAttribute("data-silks", "Kitasan");
+  await expect(dock.getByTestId("silks-preview")).toHaveAttribute("data-silks", "Kitasan");
+  await dock.getByTestId("silks-picker").selectOption("");
   await expect(scene.getByTestId("silks")).toHaveCount(0);
-  await dock.getByTestId("silks-mode-upload").click();
-  await dock.getByTestId("silks-file").setInputFiles(png("silks.png"));
-  await expect(scene.locator("[data-testid=silks] img")).toBeVisible();
-  await dock.getByTestId("silks-mode-pattern").click();
-  await expect(scene.getByTestId("silks-svg")).toBeVisible();
   // no picture: the text takes the whole screen
   await expect(scene).toHaveAttribute("data-full", "");
   // several horse pictures take turns

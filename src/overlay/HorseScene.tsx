@@ -7,7 +7,7 @@
  */
 import { AnimatePresence, motion } from "motion/react";
 import { createContext, useContext, useLayoutEffect, useRef, type ReactNode } from "react";
-import { careerPage, COATS, dotDate, earningsIn, horsePageKinds, silksModeOf, moneyText, posText, recordText, sexText, useHorsePage, CAREER_ROWS, type CareerRace, type Horse } from "../lib/horses";
+import { careerPage, COATS, dotDate, earningsIn, horsePageKinds, moneyText, posText, recordText, sexText, useHorsePage, CAREER_ROWS, type CareerRace, type Horse } from "../lib/horses";
 import { useData } from "../lib/store";
 import { useImage } from "../lib/images";
 import { useShownIndex } from "../lib/photos";
@@ -19,7 +19,7 @@ import { Flag } from "@otamasing/broadcast-shared/components/Flag";
 import { FitText } from "@otamasing/broadcast-shared/components/FitText";
 import { Logo } from "@otamasing/broadcast-shared/components/Logo";
 import { BgVideo } from "@otamasing/broadcast-shared/components/BgVideo";
-import { SilksSvg } from "../components/SilksSvg";
+import { Silks } from "@otamasing/broadcast-shared/components/Silks";
 import { PageCount, pill } from "./RaceBackdrop";
 import { cell, headClass, headLeft, rowMotion } from "./RacecardScene";
 
@@ -163,8 +163,6 @@ function Fact({ i, label, testId, span = 3, color, children }: { i: number; labe
 
 function Profile({ h }: { h: Horse }) {
   const d = useData();
-  const mode = silksModeOf(h);
-  const silks = useImage(h.silksImage ?? "", mode === "upload" && h.silksImage ? d.images[h.silksImage] : undefined);
   const money = earningsIn(h, d.horseSettings);
   const coat = h.coat ? COATS[h.coat] : null;
   const dash = <span className="text-white/50">–</span>;
@@ -181,10 +179,10 @@ function Profile({ h }: { h: Horse }) {
       <Fact i={3} label="BORN IN" testId="fact-born">{place(h.bornIn)}</Fact>
       <Fact i={4} label="TRAINED IN" testId="fact-trained">{place(h.trainedIn)}</Fact>
       <Fact i={5} label="OWNER" testId="fact-owner">
-        {/* the uploaded picture (PNG or SVG) or the silks drawn by the app, whole on a light tile */}
-        {((mode === "upload" && silks) || (mode === "pattern" && h.silks)) && (
-          <span data-testid="silks" className="grid h-[72px] w-[116px] flex-none place-items-center overflow-hidden rounded-[8px] bg-white p-1 shadow-[0_0_0_3px_rgb(255_255_255/.35)]">
-            {silks ? <img src={silks} alt="" className="h-full w-full object-contain" /> : <SilksSvg silks={h.silks!} className="h-full w-full" />}
+        {/* the owner's silks from the shared list, whole, with no frame or edge */}
+        {h.silks && (
+          <span className="flex h-[72px] w-[116px] flex-none items-center justify-center overflow-hidden">
+            <Silks name={h.silks} className="h-full w-full" />
           </span>
         )}
         {/* a long owner (several partners) wraps onto up to three smaller lines instead of being squeezed thin */}

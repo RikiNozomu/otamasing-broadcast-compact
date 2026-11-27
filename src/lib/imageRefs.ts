@@ -4,10 +4,10 @@
  * and the data (and so the exported JSON) refers to it by that name.
  */
 
-/** What holds picture names: races' slideshows, horses' slideshows and uploaded silks, the home page background. */
+/** What holds picture names: races' slideshows, horses' slideshows, the home page background. */
 type Holder = {
   races?: { photos: { card: { keys: string[] }; result: { keys: string[] } } }[];
-  horses?: { photos: { keys: string[]; frames?: Record<string, unknown> }; silksImage?: string | null }[];
+  horses?: { photos: { keys: string[]; frames?: Record<string, unknown> } }[];
   home?: { background?: string | null };
 };
 
@@ -50,7 +50,6 @@ export function imageRefs(d: Holder): string[] {
   for (const r of d.races ?? []) for (const k of [...r.photos.card.keys, ...r.photos.result.keys]) out.add(k);
   for (const h of d.horses ?? []) {
     for (const k of h.photos.keys) out.add(k);
-    if (h.silksImage) out.add(h.silksImage);
   }
   if (d.home?.background) out.add(d.home.background);
   return [...out];
@@ -65,7 +64,7 @@ export function mapImageRefs<T extends Holder>(d: T, fn: (k: string) => string |
   return {
     ...d,
     ...(d.races && { races: d.races.map((r) => ({ ...r, photos: { ...r.photos, card: { ...r.photos.card, keys: keys(r.photos.card.keys) }, result: { ...r.photos.result, keys: keys(r.photos.result.keys) } } })) }),
-    ...(d.horses && { horses: d.horses.map((h) => ({ ...h, photos: { ...h.photos, keys: keys(h.photos.keys), ...(h.photos.frames && { frames: frames(h.photos.frames) }) }, ...("silksImage" in h && { silksImage: one(h.silksImage) }) })) }),
+    ...(d.horses && { horses: d.horses.map((h) => ({ ...h, photos: { ...h.photos, keys: keys(h.photos.keys), ...(h.photos.frames && { frames: frames(h.photos.frames) }) } })) }),
     ...(d.home && { home: { ...d.home, ...("background" in d.home && { background: one(d.home.background) }) } }),
   };
 }

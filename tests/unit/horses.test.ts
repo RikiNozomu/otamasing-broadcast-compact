@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "vitest";
-import { careerPage, nameMatches, horsesInRace, silksModeOf, earningsIn, horsePageKinds, horsePages, sexText, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
+import { careerPage, nameMatches, horsesInRace, earningsIn, horsePageKinds, horsePages, sexText, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
 import { activeExists, exportHorse, horseOf, mergeImport, parseActive, parseFile } from "../../src/lib/model";
 import { sampleData, sampleHorse } from "../../src/lib/sample";
 
@@ -55,10 +55,10 @@ describe("horse profile", () => {
     expect(sexText({ sex: "G", foaled: "" }, now)).toBe("GELDING");
     expect(sexText({ sex: null, foaled: "" }, now)).toBe("");
   });
-  it("silks mode: the drawn pattern when silks are set, unless chosen", () => {
-    expect(silksModeOf(horse())).toBe("none");
-    expect(silksModeOf(horse({ silks: {} }))).toBe("pattern");
-    expect(silksModeOf(horse({ silks: {}, silksMode: "upload" }))).toBe("upload");
+  it("silks: a name from the shared list; drawn silks (an object) from older files read as none", () => {
+    expect(horse().silks).toBe("");
+    expect(horse({ silks: "Godolphin" }).silks).toBe("Godolphin");
+    expect(horse({ silks: { body: "#000000", pattern: "cross" }, silksMode: "pattern" }).silks).toBe("");
   });
   it("position text", () => {
     const [a, b, c] = horse({ races: [race("2026-01-01", 1, { field: 18 }), race("2026-01-02", null, { outcome: "dq" }), race("2026-01-03", null)] }).races;
