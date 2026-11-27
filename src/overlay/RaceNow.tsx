@@ -151,7 +151,7 @@ function RacePanel({ race, status, tz, highlight }: { race: Race; status: RaceNo
               className="grid min-w-0 items-stretch" style={{ gridTemplateColumns: "76px minmax(0,1fr)" }}
               initial={{ opacity: 0, x: 40 }} animate={{ opacity: dim ? 0.45 : 1, x: 0, transition: { duration: 0.3, ease: EASE, delay: 0.35 + i * 0.03 } }}>
               <span className={cx("flex items-center justify-center text-[44px] leading-none font-bold", !colors && "bg-scene shadow-[inset_0_0_0_3px_#fff]")}
-                style={{ ...numberFont(S), ...(colors && { background: colors[0], color: colors[1], ...boxExtra(colors) }) }}>{h.number}</span>
+                style={{ ...numberFont, ...(colors && { background: colors[0], color: colors[1], ...boxExtra(colors) }) }}>{h.number}</span>
               <span className={cx("flex min-w-0 items-center gap-3 px-4 transition-colors duration-300", hl ? "bg-yellow text-navy" : "bg-band")}>
                 <FitText strike={h.scratched} className="leading-none font-bold" ><span style={{ fontSize: nameSize }}>{h.name.toUpperCase()}</span></FitText>
                 {h.scratched && <span className="flex-none text-[24px] font-bold text-danger-ink">SCR</span>}

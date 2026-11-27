@@ -48,7 +48,7 @@ function Plate({ race, runner }: { race: Race; runner: Runner }) {
       <BgVideo className="-z-10" />
       {/* number box, both lines tall */}
       <span className={cx("row-span-2 flex items-center justify-center text-[84px] leading-none font-bold", !colors && "bg-scene shadow-[inset_0_0_0_4px_#fff]")}
-        style={{ ...numberFont(S), ...(colors && { background: colors[0], color: colors[1], ...boxExtra(colors) }) }}>{runner.number}</span>
+        style={{ ...numberFont, ...(colors && { background: colors[0], color: colors[1], ...boxExtra(colors) }) }}>{runner.number}</span>
       {/* horse */}
       <span className="flex min-w-0 items-center gap-4 px-6">
         {S.show.horseFlag && <Flag code={runner.horseCountry} className="h-[34px] w-[51px]" />}
