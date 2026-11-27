@@ -19,7 +19,7 @@ const TOP_H = 92;
 const BOX_W = 130;
 const SIDE_W = 330;
 /** "+4", "±0", "-2" (with a real minus sign) */
-export const signedChange = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "±0");
+export const signedChange = (n: number | "n/a") => (n === "n/a" ? n : n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "±0");
 
 /** Top-left corner of the plate on the 1920x1080 stage, from the x/y percentages of the free room. */
 export function lowerThirdBox(lt: Pick<LT, "x" | "y" | "scale">) {

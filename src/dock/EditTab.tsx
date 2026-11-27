@@ -151,7 +151,12 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
                   <span className="text-center text-[10px] text-ink-muted [grid-area:hwl]">ตัวม้า</span>
                   <div className="flex min-w-0 items-center gap-1 [grid-area:hw]">
                     <input className={cx(inputClass, "w-20 min-w-0")} type="number" min={200} max={800} aria-label={`น้ำหนักตัวม้าเบอร์ ${h.number}`} title="น้ำหนักตัวม้า (กก.)" placeholder="น้ำหนักตัว กก." value={h.horseWeight ?? ""} onChange={(e) => setRunner(i, { horseWeight: e.target.value ? Math.round(+e.target.value) : null })} />
-                    <input className={cx(inputClass, "w-16 min-w-0")} type="number" min={-99} max={99} aria-label={`น้ำหนักตัวม้าเปลี่ยนเบอร์ ${h.number}`} title="เพิ่ม/ลดจากครั้งก่อน (กก.)" placeholder="+/-" value={h.horseWeightChange ?? ""} onChange={(e) => setRunner(i, { horseWeightChange: e.target.value ? Math.round(+e.target.value) : null })} />
+                    {h.horseWeightChange === "n/a" ? (
+                      <input className={cx(inputClass, "w-16 min-w-0 text-ink-muted")} readOnly aria-label={`น้ำหนักตัวม้าเปลี่ยนเบอร์ ${h.number}`} value="n/a" />
+                    ) : (
+                      <input className={cx(inputClass, "w-16 min-w-0")} type="number" min={-99} max={99} aria-label={`น้ำหนักตัวม้าเปลี่ยนเบอร์ ${h.number}`} title="เพิ่ม/ลดจากครั้งก่อน (กก.)" placeholder="+/-" value={h.horseWeightChange ?? ""} onChange={(e) => setRunner(i, { horseWeightChange: e.target.value ? Math.round(+e.target.value) : null })} />
+                    )}
+                    <button type="button" className={cx("shrink-0 rounded px-1 text-[10px]", "border", h.horseWeightChange === "n/a" ? "border-yellow bg-yellow text-navy" : "border-line bg-studio text-ink-muted")} aria-pressed={h.horseWeightChange === "n/a"} aria-label={`ครั้งก่อนไม่ได้ชั่งน้ำหนัก เบอร์ ${h.number}`} title="ครั้งก่อนไม่ได้ชั่ง: แสดงส่วนต่างเป็น n/a" onClick={() => setRunner(i, { horseWeightChange: h.horseWeightChange === "n/a" ? null : "n/a" })}>n/a</button>
                   </div>
                 </div>
               ))}

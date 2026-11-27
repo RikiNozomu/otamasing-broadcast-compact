@@ -88,7 +88,7 @@ describe("mergeRaceData", () => {
     if (!r.ok) throw new Error(r.error);
     return r.data;
   };
-  const runners = r11.runners.map((x, i) => ({ ...x, fav: i + 1, finish: i + 1, horseWeight: 480, horseWeightChange: 2, scratched: x.number === 3 }));
+  const runners = r11.runners.map((x, i) => ({ ...x, fav: i + 1, finish: i + 1, horseWeight: 480, horseWeightChange: i === 1 ? "n/a" : 2, scratched: x.number === 3 }));
   it("updates only race data of matching races; horses, photos, style, screen stay", () => {
     const file = fileOf([{ date: r11.date, course: r11.course.toUpperCase(), round: r11.round, name: "Updated", postTime: "15:40", runners },
       { date: "2030-01-01", name: "Not here", runners: [{ number: 1 }, { number: 2 }] }],
@@ -100,6 +100,7 @@ describe("mergeRaceData", () => {
     expect(r.name).toBe("Updated");
     expect(r.postTime).toBe("15:40");
     expect(r.runners[0]).toMatchObject({ fav: 1, finish: 1, horseWeight: 480, horseWeightChange: 2 });
+    expect(r.runners[1].horseWeightChange).toBe("n/a");
     expect(r.runners.find((x) => x.number === 3)!.scratched).toBe(true);
     expect(r.style).toEqual(was.style);
     expect(r.photos).toEqual(was.photos);
