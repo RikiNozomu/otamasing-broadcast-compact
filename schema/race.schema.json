@@ -479,9 +479,17 @@
                     "horseWeightChange": {
                       "anyOf": [
                         {
-                          "type": "integer",
-                          "minimum": -99,
-                          "maximum": 99
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": -99,
+                              "maximum": 99
+                            },
+                            {
+                              "type": "string",
+                              "const": "n/a"
+                            }
+                          ]
                         },
                         {
                           "type": "null"

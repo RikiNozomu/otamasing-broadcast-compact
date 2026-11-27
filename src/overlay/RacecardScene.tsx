@@ -47,7 +47,7 @@ export function NumberBox({ colors, value, hl }: { colors: readonly [string, str
 /** A number cell (horse weight, weight carried): centred on the same dark band. */
 const numCell = cx(cell, "justify-center gap-1.5 whitespace-nowrap bg-band px-2 font-display text-[36px] font-bold");
 /** "+4", "0", "-2" */
-const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
+const signed = (n: number | "n/a") => (n === "n/a" ? n : n > 0 ? `+${n}` : String(n));
 
 export function RacecardScene({ race }: { race: Race }) {
   const S = race.style, show = S.show, n = race.runners.length;
