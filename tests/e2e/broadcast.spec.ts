@@ -396,13 +396,14 @@ test("the blank page takes everything off the screen, with or without a transiti
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==", "base64");
 const png = (name: string) => ({ name, mimeType: "image/png", buffer: PNG });
 
-test("every scene, Race Now and the lower third stand on the tile video; no background picture settings", async ({ context }) => {
+test("every scene, Race Now and the lower third stand on the moving tiles; no background picture settings", async ({ context }) => {
   const { dock, overlay } = await open(context);
   const layer = overlay.locator("[data-layer][data-active]");
   await expect(layer.getByTestId("bg-video")).toHaveCount(1);
-  const video = layer.locator("[data-testid=bg-video] video");
-  await expect(video).toHaveAttribute("loop", "");
-  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => !v.paused && v.readyState >= 2)).toBe(true);
+  // no <video> (OBS frame rate): a strip of tiles moved by a running transform animation
+  await expect(layer.locator("[data-testid=bg-video] video")).toHaveCount(0);
+  const strip = layer.locator("[data-testid=bg-video] > div");
+  await expect.poll(() => strip.evaluate((el) => el.getAnimations().some((a) => a.playState === "running"))).toBe(true);
   // home, result and horse pages too
   await dock.getByRole("button", { name: "ตั้งหน้าแรกเป็น Active" }).click();
   await expect(layer.getByTestId("race-list").getByTestId("bg-video")).toHaveCount(1);
