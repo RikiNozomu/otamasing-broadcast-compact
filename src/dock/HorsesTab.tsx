@@ -6,7 +6,7 @@ import { AnimatePresence } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { exportHorse, horseOf, HOME, newId, parseActive, type AppData } from "../lib/model";
 import {
-  COATS, CURRENCIES, HorseSchema, nameMatches, careerNewestFirst, posText, rateOf, recordFromRaces, recordText, setHorseAuto, showHorsePage, useHorsePage, dotDate,
+  COATS, CURRENCIES, HorseSchema, nameMatches, horsesInRace, careerNewestFirst, posText, rateOf, recordFromRaces, recordText, setHorseAuto, showHorsePage, useHorsePage, dotDate,
   CAREER_GRADES, CareerRaceSchema, SilksSchema, SILKS_BODY, SILKS_MODES, SILKS_SLEEVES, silksModeOf, type CareerRace, type SilksMode, type Silks, type Coat, type Currency, type Horse,
 } from "../lib/horses";
 import { update, useData } from "../lib/store";
@@ -332,8 +332,11 @@ export function HorsesTab() {
   const [confirmDel, setConfirmDel] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [query, setQuery] = useState("");
+  // "" = every horse; otherwise a race id: only the horses running in it, in number order
+  const [raceId, setRaceId] = useState("");
+  const race = d.races.find((r) => r.id === raceId);
   const h = d.horses.find((x) => x.id === sel) ?? d.horses[0];
-  const found = d.horses.filter((x) => nameMatches(x.name, query));
+  const found = (race ? horsesInRace(d.horses, race) : d.horses).filter((x) => nameMatches(x.name, query));
   const searching = query.trim() !== "";
   const pick = (id: string) => { setSel(id); setConfirmDel(false); setExporting(false); };
 
@@ -345,6 +348,15 @@ export function HorsesTab() {
   // the search box shows once there are a few horses; Enter picks the first match, Esc clears
   const search = d.horses.length > 1 && (
     <div className="grid gap-1">
+      {d.races.length > 0 && (
+        <select className={inputClass} aria-label="กลุ่มม้าตามรายการ" data-testid="horse-race-group" value={race ? raceId : ""} onChange={(e) => setRaceId(e.target.value)}>
+          <option value="">ม้าทุกตัว ({d.horses.length})</option>
+          {d.races.map((r) => {
+            const n = horsesInRace(d.horses, r).length;
+            return n > 0 && <option key={r.id} value={r.id}>{[r.date.replaceAll("-", "."), r.round, r.name].filter(Boolean).join(" · ")} ({n})</option>;
+          })}
+        </select>
+      )}
       <span className="relative flex items-center">
         <input type="text" className={cx(inputClass, "pr-8")} placeholder="ค้นหาชื่อม้า…" aria-label="ค้นหาชื่อม้า" data-testid="horse-search" value={query}
           onChange={(e) => setQuery(e.target.value)}

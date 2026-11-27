@@ -110,3 +110,9 @@ const fold = (s: string) => s.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCa
 
 /** Whether a horse's name holds the search text (case, spaces, dots and accents ignored); an empty search matches every horse. */
 export const nameMatches = (name: string, query: string) => fold(name).includes(fold(query));
+
+/** The horses running in a race (runner name = horse name, folded like the search), in horse-number order. */
+export function horsesInRace<H extends { name: string }>(horses: H[], race: { runners: { number: number; name: string }[] }): H[] {
+  const byName = new Map(horses.map((h) => [fold(h.name), h]));
+  return [...new Set([...race.runners].sort((a, b) => a.number - b.number).flatMap((r) => byName.get(fold(r.name)) ?? []))];
+}

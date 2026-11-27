@@ -579,6 +579,26 @@ test("horse tab: the name search filters the horse picker", async ({ context }) 
   await expect(picker).toHaveCount(4);
 });
 
+test("horse tab: the race group shows only that race's horses, in number order", async ({ context }) => {
+  const { dock } = await open(context);
+  await dock.getByRole("tab", { name: "ม้า" }).click();
+  const picker = dock.getByRole("tablist", { name: "เลือกม้า" }).getByRole("tab");
+  for (const name of ["Silver Paddock", "Morning Gallop", "Not In Any Race"]) {
+    await dock.getByRole("button", { name: "+ เพิ่มม้า" }).click();
+    await dock.locator("#h-name").fill(name);
+  }
+  const group = dock.getByTestId("horse-race-group");
+  await expect(group.locator("option").first()).toHaveText("ม้าทุกตัว (4)");
+  await group.selectOption({ label: "2026.11.29 · 11R · Sample Cup (2)" });
+  await expect(picker).toHaveText(["Morning Gallop", "Silver Paddock"]);
+  // the name search works inside the group
+  await dock.getByTestId("horse-search").fill("silver");
+  await expect(picker).toHaveText(["Silver Paddock"]);
+  await dock.getByTestId("horse-search").fill("");
+  await group.selectOption("");
+  await expect(picker).toHaveCount(4);
+});
+
 test("pictures are named image/<date-time>.<ext>, the JSON carries the names, a missing one is reported and taken out", async ({ context }) => {
   context.addInitScript(() => { (window as unknown as { obsstudio: object }).obsstudio = {}; });
   const { dock } = await open(context);
