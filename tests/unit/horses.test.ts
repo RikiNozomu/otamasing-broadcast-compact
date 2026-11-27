@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { careerPage, nameMatches, silksModeOf, earningsIn, horsePageKinds, horsePages, sexText, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
+import { describe, expect, it, test } from "vitest";
+import { careerPage, nameMatches, horsesInRace, silksModeOf, earningsIn, horsePageKinds, horsePages, sexText, HorseSchema, moneyText, newHorseSettings, posText, recordFromRaces, recordText, type Horse } from "../../src/lib/horses";
 import { activeExists, exportHorse, horseOf, mergeImport, parseActive, parseFile } from "../../src/lib/model";
 import { sampleData, sampleHorse } from "../../src/lib/sample";
 
@@ -112,4 +112,10 @@ describe("horses in the data", () => {
     expect(res.ok).toBe(true);
     if (res.ok) expect(res.data.horses[0]).toMatchObject({ name: "Sample Star", races: d.horses[0].races });
   });
+});
+
+test("horsesInRace: horses whose name is a runner of the race, in horse-number order", () => {
+  const horses = [{ name: "Masquerade Ball" }, { name: "Do Deuce" }, { name: "Not Running" }];
+  const race = { runners: [{ number: 5, name: "MASQUERADE BALL" }, { number: 2, name: "Do  Deuce" }, { number: 1, name: "Unknown" }] };
+  expect(horsesInRace(horses, race).map((h) => h.name)).toEqual(["Do Deuce", "Masquerade Ball"]);
 });
