@@ -1,19 +1,16 @@
 /**
  * Horse profiles: the "ม้า" tab of the dock and the horse scene on screen. A horse has its facts
  * (pedigree, connections, record, prize money) and its past races; page 1 of the scene shows the facts,
- * the next pages its races, newest first. Pictures (the horse, the owner's silks) live in IndexedDB.
+ * the next pages its races, newest first. Pictures of the horse live in IndexedDB.
  */
 export * from "./horseSchema.ts";
-import { CURRENCIES, type CareerRace, type Currency, type Horse, type HorseSettings, type HorseView, type SilksMode } from "./horseSchema.ts";
+import { CURRENCIES, type CareerRace, type Currency, type Horse, type HorseSettings, type HorseView } from "./horseSchema.ts";
 import { cycleAt, cycleSet, cycleTo, useCycle } from "@otamasing/broadcast-shared/lib/cycle";
 import { paginate } from "./paging";
 
 /** Picture keys in IndexedDB. `horsePhotoKey` is the one picture of a horse from before the slideshow; new pictures are `photo:<id>`. */
 export const horsePhotoKey = (id: string) => `horse:${id}`;
-export const silksKey = (id: string) => `silks:${id}`;
 
-/** The silks shown: "upload", "pattern" or "none" (see Horse.silksMode). */
-export const silksModeOf = (h: Pick<Horse, "silks" | "silksMode">): SilksMode => h.silksMode ?? (h.silks ? "pattern" : "none");
 
 /** Past races per page of the scene. */
 export const CAREER_ROWS = 7;

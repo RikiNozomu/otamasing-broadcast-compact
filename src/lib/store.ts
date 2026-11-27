@@ -7,7 +7,7 @@ import { useSyncExternalStore } from "react";
 import { activeExists, HOME, newLowerThird, newRaceNow, raceNowAfter, newPhotos, newCard, newResult, type AppData } from "./model";
 import { sampleData } from "./sample";
 import { HOME_BG, raceImageKey } from "./images";
-import { horsePhotoKey, newHorseSettings, newHorseView, silksKey } from "./horses";
+import { horsePhotoKey, newHorseSettings, newHorseView } from "./horses";
 
 // own keys: this site shares the rikinozomu.github.io origin (and so its storage) with otamasing-broadcast
 export const STORAGE_KEY = "otamasing-broadcast-compact/v1";
@@ -47,17 +47,16 @@ export function getData(): AppData {
   data.horseSettings = { ...newHorseSettings(), ...data.horseSettings };
   for (const h of data.horses) {
     h.view = { ...newHorseView(), ...h.view };
-    h.silks ??= null;
+    // drawn or uploaded silks before the shared silks list: none
+    if (typeof h.silks !== "string") h.silks = "";
+    delete (h as { silksMode?: unknown }).silksMode;
+    delete (h as { silksImage?: unknown }).silksImage;
     h.sex ??= null;
     h.sireSire ??= ""; h.sireDam ??= ""; h.damDam ??= "";
     // one picture per horse before the slideshow
     if (!h.photos) h.photos = { keys: data.images[horsePhotoKey(h.id)] ? [horsePhotoKey(h.id)] : [], frames: {}, index: 0, auto: false, seconds: 5, since: 0 };
     // saved before pictures could be moved and zoomed
     h.photos.frames ??= {};
-    // an uploaded silks picture used to win over the drawn one
-    if (!h.silksMode && data.images[silksKey(h.id)]) h.silksMode = "upload";
-    // the uploaded silks used to be found by the horse's id; now the horse names its picture
-    if (h.silksImage === undefined) h.silksImage = data.images[silksKey(h.id)] ? silksKey(h.id) : null;
   }
   // saved before the lower third; a runner whose race is gone is hidden
   data.lowerThird = { ...newLowerThird(), ...data.lowerThird };
